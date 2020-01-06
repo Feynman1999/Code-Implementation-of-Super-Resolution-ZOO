@@ -6,26 +6,31 @@ from PIL import Image
 import os
 
 
-def tensor2im(input_image, imtype=np.uint8):
+def tensor2im(input_images, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)):
     """"Converts a Tensor array into a numpy image array.
 
     Parameters:
-        input_image (tensor) --  the input image tensor array
+        input_images (tensor) --  the input image tensor array
         imtype (type)        --  the desired type of the converted numpy array
     """
-    assert (len(input_image.shape) == 4), 'tensor2im_image should be 4 dims'
-    if not isinstance(input_image, np.ndarray):
-        if isinstance(input_image, torch.Tensor):  # get the data from a variable
-            image_tensor = input_image.data
+    assert (len(input_images.shape) == 4), 'tensor2im_image should be 4 dims due to mini-batch'
+    if not isinstance(input_images, np.ndarray):
+        if isinstance(input_images, torch.Tensor):  # get the data from a variable
+            images_tensor = input_images.data
         else:
-            return input_image  # who knows what is it  /(ㄒoㄒ)/~~
-        image_numpy = image_tensor[0].cpu().float().numpy()  # convert it into a numpy array. only select the first one
-        if image_numpy.shape[0] == 1:  # grayscale to RGB
-            image_numpy = np.tile(image_numpy, (3, 1, 1))
-        image_numpy = (np.transpose(image_numpy, (1, 2, 0)) + 1) / 2.0 * 255.0  # post-processing: tranpose and scaling
+            return input_images  # who knows what is it  /(ㄒoㄒ)/~~
+        image_tensor = images_tensor[0].cpu().float()  # only select the first one
+        if image_tensor.shape[0] == 1:  # grayscale to RGB
+            image_tensor = torch.cat((image_tensor, image_tensor, image_tensor), 0)
+        # normalize
+        image_tensor = image_tensor * torch.tensor(rgb_std).view(3, 1, 1) + torch.tensor(rgb_mean).view(3, 1, 1)
+        # clamp to [0,255]  or min max map to 0~255 is better?
+        image_tensor = image_tensor.mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to(torch.uint8)
+        image_numpy = image_tensor.numpy()  # convert it into a numpy array.
+
     else:  # if it is a numpy array, do nothing
-        image_numpy = input_image
-    return image_numpy.astype(imtype)
+        image_numpy = input_images[0]
+    return image_numpy
 
 
 def diagnose_network(net, name='network'):

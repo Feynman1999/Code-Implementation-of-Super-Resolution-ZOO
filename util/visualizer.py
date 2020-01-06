@@ -66,6 +66,8 @@ class Visualizer():
         self.name = opt.name
         self.port = opt.display_port
         self.saved = False
+        self.rgb_mean = list(map(float, opt.normalize_means.split(',')))
+        self.rgb_std = list(map(float, opt.normalize_stds.split(',')))
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom
             self.ncols = opt.display_ncols
@@ -118,7 +120,7 @@ class Visualizer():
                 images = []
                 idx = 0
                 for label, image in visuals.items():
-                    image_numpy = util.tensor2im(image)  # shape: [h,w,c].  the first one in the batch
+                    image_numpy = util.tensor2im(image, rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # shape: [h,w,c].  the first one in the batch
                     label_html_row += '<td>%s</td>' % label
                     images.append(image_numpy.transpose([2, 0, 1]))  # [c,h,w]
                     idx += 1
@@ -133,6 +135,7 @@ class Visualizer():
                 if label_html_row != '':
                     label_html += '<tr>%s</tr>' % label_html_row
                 try:
+                    print(len(images))
                     self.vis.images(images, nrow=ncols, win=self.display_id + 1,
                                     padding=2, opts=dict(title=self.name + ' images'))
                     label_html = '<table>%s</table>' % label_html
@@ -146,7 +149,7 @@ class Visualizer():
                 idx = 1
                 try:
                     for label, image in visuals.items():
-                        image_numpy = util.tensor2im(image)  # [h,w,c]
+                        image_numpy = util.tensor2im(image, rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
                         self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label),
                                        win=self.display_id + idx)
                         idx += 1
@@ -157,7 +160,7 @@ class Visualizer():
             self.saved = True
             # save images to the disk
             for label, image in visuals.items():
-                image_numpy = util.tensor2im(image)  # [h,w,c]
+                image_numpy = util.tensor2im(image, rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
                 img_path = os.path.join(self.img_dir, 'epoch%.4d_%s.png' % (epoch, label))
                 util.save_image(image_numpy, img_path)
 

@@ -49,15 +49,17 @@ class AlignedDataset(BaseDataset):
         A = Image.open(A_path).convert('RGB')
         B = Image.open(B_path).convert('RGB')
 
-        # apply the same transform to both A and B
+        if self.opt.direction == 'BtoA':
+            A, B = B, A
+            A_path, B_path = B_path, A_path
+
+        assert (B.size[0] >= A.size[0] and B.size[1] >= A.size[1]), 'By default, we think that in general tasks, the image size of target domain B is greater than or equal to source domain A'
         transform_params = get_params(self.opt, A.size)
-        # make sure use same params
         A_transform = get_transform(self.opt, transform_params, grayscale=(self.input_nc == 1))
-        B_transform = get_transform(self.opt, transform_params, grayscale=(self.output_nc == 1))
+        B_transform = get_transform(self.opt, transform_params, grayscale=(self.output_nc == 1), crop_size_scale=self.opt.SR_factor)
 
         A = A_transform(A)
         B = B_transform(B)
-
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
     def __len__(self):

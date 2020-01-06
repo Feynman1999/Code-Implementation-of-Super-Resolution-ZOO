@@ -62,8 +62,9 @@ class BaseDataset(data.Dataset, ABC):
 
 def get_params(opt, size):
     w, h = size
-    new_h = h
     new_w = w
+    new_h = h
+    # if do resize or scale_width, first set new_w and new_h
     if opt.preprocess == 'resize_and_crop':
         new_h = new_w = opt.load_size
     elif opt.preprocess == 'scale_width_and_crop':
@@ -78,10 +79,27 @@ def get_params(opt, size):
     return {'crop_pos': (x, y), 'flip': flip}
 
 
-def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, convert_to_tensor=True):
+def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_size_scale=1):
+    '''
+    opt.preprocess:     [resize | scale_width | crop | resize_and_crop | scale_width_and_crop | none]
+
+    :param opt:
+    :param params:
+    :param grayscale:
+    :param method:
+    :param crop_size_scale: if you do crop, you can set bigger crop through this param factor
+    :return: transforms.Compose(transform_list)
+    '''
+    rgb_mean = list(map(float, opt.normalize_means.split(',')))
+    rgb_std = list(map(float, opt.normalize_stds.split(',')))
+    if not grayscale:
+        assert (len(rgb_mean) == 3 and len(rgb_std) == 3), 'please check out --normalize_means and --normalize_stds!'
+
     transform_list = []
+
     if grayscale:
         transform_list.append(transforms.Grayscale(1))
+
     if 'resize' in opt.preprocess:
         osize = [opt.load_size, opt.load_size]
         transform_list.append(transforms.Resize(osize, method))
@@ -90,11 +108,13 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
 
     if 'crop' in opt.preprocess:
         if params is None:
-            transform_list.append(transforms.RandomCrop(opt.crop_size))
+            assert (crop_size_scale == 1), 'due to scale != 1, The content of the two images may not correspond'
+            transform_list.append(transforms.RandomCrop(opt.crop_size * crop_size_scale))
         else:
-            transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt.crop_size)))
+            transform_list.append(transforms.Lambda(lambda img: __crop(img, tuple([crop_size_scale*loc for loc in params['crop_pos']]), opt.crop_size * crop_size_scale)))
 
-    if opt.preprocess == 'none':
+    # if none preprocess , make sure size some multiple of base. e.g. 4
+    if opt.preprocess.lower() == 'none':
         transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
 
     if not opt.no_flip:
@@ -103,12 +123,12 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         elif params['flip']:
             transform_list.append(transforms.Lambda(lambda img: __flip(img, params['flip'])))
 
-    if convert_to_tensor:
-        transform_list += [transforms.ToTensor()]
-        if grayscale:
-            transform_list += [transforms.Normalize((0.5,), (0.5,))]
-        else:
-            transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    transform_list += [transforms.ToTensor()]
+
+    if grayscale:
+        transform_list += [transforms.Normalize((rgb_mean[0],), (rgb_std[0],))]
+    else:
+        transform_list += [transforms.Normalize(rgb_mean, rgb_std)]
     return transforms.Compose(transform_list)
 
 
