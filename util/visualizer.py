@@ -13,27 +13,31 @@ else:
     VisdomExceptionBase = ConnectionError
 
 
-def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256):
+def save_images(opt, webpage, visuals, image_path, aspect_ratio=1.0, width=400):
     """Save images to the disk.
 
     Parameters:
+        opt                      -- the options
         webpage (the HTML class) -- the HTML webpage class that stores these imaegs (see html.py for more details)
         visuals (OrderedDict)    -- an ordered dictionary that stores (name, images (either tensor or numpy) ) pairs
         image_path (str)         -- the string is used to create image paths
         aspect_ratio (float)     -- the aspect ratio of saved images
-        width (int)              -- the images will be resized to width x width
+        width (int)              -- the images old_width will be resized to width, when display in html
 
     This function will save images stored in 'visuals' to the HTML file specified by 'webpage'.
     """
+    rgb_mean = list(map(float, opt.normalize_means.split(',')))
+    rgb_std = list(map(float, opt.normalize_stds.split(',')))
+
     image_dir = webpage.get_image_dir()
-    short_path = ntpath.basename(image_path[0])
-    name = os.path.splitext(short_path)[0]
+    short_path = ntpath.basename(image_path[0])  # get file name, it is name from domain A
+    name = os.path.splitext(short_path)[0]  # Separating file name from extensions
 
     webpage.add_header(name)
     ims, txts, links = [], [], []
 
     for label, im_data in visuals.items():
-        im = util.tensor2im(im_data)
+        im = util.tensor2im(im_data, rgb_mean, rgb_std)
         image_name = '%s_%s.png' % (name, label)
         save_path = os.path.join(image_dir, image_name)
         util.save_image(im, save_path, aspect_ratio=aspect_ratio)

@@ -4,20 +4,16 @@ train/test代码pipeline
 
 todolist:
 
-方便的transform的设置
-
-std和mean
-totensor
-
-检查参数初始化问题
 
 
-模型参数大小统计有误
 
-* 完善util
+* 加上test时候的no_html
 
-* 完善model （可以train lwsr）
+* 完成iqa
 
+* 检查参数初始化是否有问题
+
+* 设置随机数种子
 
 
 ## help
@@ -29,7 +25,7 @@ first run
 
 
 ## idea
-每次batchsize = 1 
-但是crop的size不一样 这样会不会好点
+
+* 每次batchsize = 1  但是crop的size不一样 这样会不会好点
 
 
