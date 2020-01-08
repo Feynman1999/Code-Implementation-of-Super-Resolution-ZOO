@@ -4,11 +4,6 @@ train/test代码pipeline
 
 todolist:
 
-
-
-
-* 加上test时候的no_html
-
 * 完成iqa
 
 * 检查参数初始化是否有问题
