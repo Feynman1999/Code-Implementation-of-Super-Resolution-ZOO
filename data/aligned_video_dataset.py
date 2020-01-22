@@ -1,7 +1,10 @@
 import os.path
+import random
 from data.base_dataset import BaseDataset, get_params, get_transform
-from data.video_folder import make_videos_dataset
-import cv2
+from data.video_folder import make_videos_dataset, read_video
+import torch
+from PIL import Image
+import numpy as np
 
 class AlignedVideoDataset(BaseDataset):
     """A dataset class for paired video dataset.
@@ -45,20 +48,45 @@ class AlignedVideoDataset(BaseDataset):
         # read a video given a random integer index
         A_path = self.A_paths[index]
         B_path = self.B_paths[index]
-        A = read video   A_path   e.g. [120,3,720,540]
-        B = pass
+        A = read_video(A_path)  # a list of PIL.image
+        B = read_video(B_path)
 
         if self.opt.direction == 'BtoA':
             A, B = B, A
             A_path, B_path = B_path, A_path
 
-        assert (B.size[0] >= A.size[0] and B.size[1] >= A.size[1]), 'By default, we think that in general tasks, the image size of target domain B is greater than or equal to source domain A'
-        transform_params = get_params(self.opt, A.size)
+        # some checks
+        assert (len(A) == len(B))
+        for i in range(len(A)):
+            assert (B[i].size[0] >= A[i].size[0] and B[i].size[1] >= A[i].size[1]), 'By default, we think that in general tasks, the image size of target domain B is greater than or equal to source domain A'
+        for i in range(len(A)):
+            assert (B[i].size[0] == self.opt.SR_factor * A[i].size[0] and B[i].size[1] == self.opt.SR_factor * A[i].size[1]), 'the dataset should satisfy the sr_factor {}'.format(self.opt.SR_factor)
+
+        # Capture the substring of video sequence
+        if self.opt.imgseqlen > 0:
+            assert self.opt.imgseqlen <= len(A), 'images sequence length for train should less than or equal to length of all images'
+            start_id = random.randint(0, len(A)-self.opt.imgseqlen)
+            A = A[start_id: start_id + self.opt.imgseqlen]
+            B = B[start_id: start_id + self.opt.imgseqlen]
+
+        # by default, we add an black image to the start of list A, B
+        black_img_A = Image.fromarray(np.zeros((A[0].size[1], A[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
+        black_img_B = Image.fromarray(np.zeros((B[0].size[1], B[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
+        A.insert(0, black_img_A)
+        B.insert(0, black_img_B)
+
+        transform_params = get_params(self.opt, A[0].size)
         A_transform = get_transform(self.opt, transform_params, grayscale=(self.input_nc == 1))
         B_transform = get_transform(self.opt, transform_params, grayscale=(self.output_nc == 1), crop_size_scale=self.opt.SR_factor)
 
-        A = A_transform(A)  # 问： 只能对pillow库中的image对象做?
-        B = B_transform(B)
+        for i in range(len(A)):
+            A[i] = A_transform(A[i])
+            B[i] = B_transform(B[i])
+
+        # list of 3dim to 4dim  e.g. ... [3,128,128] ... to [11,3,128,128]
+        A = torch.cat([t.unsqueeze(0) for t in A], 0)
+        B = torch.cat([t.unsqueeze(0) for t in B], 0)
+
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
     def __len__(self):

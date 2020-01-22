@@ -1,5 +1,9 @@
 """
-python train.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr --display_ncols -1
+training:
+    python train.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr --display_ncols -1
+
+test:
+    python test.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr
 """
 
 import torch
@@ -25,7 +29,7 @@ class LWSRModel(BaseModel):
         Returns:
             the modified parser.
 
-        The training objective is: xxxxxxxxxx
+        The training objective is: std L1 loss
         """
         parser.set_defaults(dataset_mode='aligned')
         parser.set_defaults(batch_size=16)
@@ -40,7 +44,7 @@ class LWSRModel(BaseModel):
         parser.set_defaults(lr=0.0001)
         parser.add_argument('--n_feats', type=int, default=32, help='number of feature maps')
         if is_train:
-            parser.set_defaults(pool_size=0, gan_mode='lsgan')
+            parser.set_defaults(gan_mode='')
             parser.add_argument('--lambda_L1', type=float, default=100.0, help='weight for L1 loss')
             parser.add_argument('--lambda_L2', type=float, default=100.0, help='weight for L2 loss')
 

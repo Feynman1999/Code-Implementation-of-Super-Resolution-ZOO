@@ -10,6 +10,11 @@ todolist:
 
 * 设置随机数种子
 
+* 适用于视频的可视化模块
+
+* 重新调整options的位置及其结构
+
+* 修改 base networks  将多余的放到Pix2pix   仔细思考 什么是多余的
 
 ## help
 

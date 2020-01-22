@@ -1,4 +1,4 @@
-from . import networks
+from . import base_networks
 import torch
 import torch.nn as nn
 import math
@@ -214,4 +214,4 @@ class LwsrGenerator(nn.Module):
 
 def define_lwsr_net(opt):
     net = LwsrGenerator(opt)
-    return networks.init_net(net, opt.init_type, opt.init_gain, opt.gpu_ids)
+    return base_networks.init_net(net, opt.init_type, opt.init_gain, opt.gpu_ids)

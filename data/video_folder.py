@@ -4,11 +4,15 @@ this class can load videos from both current directory and its subdirectories.
 """
 
 import os
+import cv2
+from PIL import Image
 
 VIDEO_EXTENSIONS = [
     '.mp4', '.MP4', '.avi', '.AVI',
     '.rmvb', '.RMVB', '.flv', '.FLV',
+    '.mkv', '.MKV',
 ]
+
 
 def is_video_file(filename):
     return any(filename.endswith(extension) for extension in VIDEO_EXTENSIONS)
@@ -24,3 +28,28 @@ def make_videos_dataset(dir, max_dataset_size=float("inf")):
                 path = os.path.join(root, fname)
                 videos.append(path)
     return videos[:min(max_dataset_size, len(videos))]
+
+
+def read_video(videopath):
+    """
+
+    :param videopath: the path to the video
+    :return: PIL.image frames list
+    """
+    cap = cv2.VideoCapture(videopath)
+    frames = []
+    while True:
+        ret, frame = cap.read()
+        if ret:
+            frames.append(frame)
+            # cv2.imshow('frame', frame)
+            # cv2.waitKey(25)
+        else:
+            break
+    cap.release()  # close vapture
+
+    for i, img in enumerate(frames):
+        frames[i] = Image.fromarray(img)
+
+    return frames
+    # cv2.destroyAllWindows()
