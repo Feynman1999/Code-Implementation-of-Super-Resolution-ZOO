@@ -1,25 +1,26 @@
 """This module contains simple helper functions """
 from __future__ import print_function
 import torch
+import ntpath
 import numpy as np
 from PIL import Image
 import os
+import cv2
 
 
-def tensor2im(input_images, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)):
-    """"Converts a Tensor array into a numpy image array.
+def tensor2im(input_image, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)):
+    """"Converts a Tensor array into a numpy image array. [h,w,c]
 
     Parameters:
-        input_images (tensor) --  the input image tensor array
-        imtype (type)        --  the desired type of the converted numpy array
+        input_image (tensor) --  the input image tensor array,  without batchsize dim
     """
-    assert (len(input_images.shape) == 4), 'tensor2im_image should be 4 dims due to mini-batch'
-    if not isinstance(input_images, np.ndarray):
-        if isinstance(input_images, torch.Tensor):  # get the data from a variable
-            images_tensor = input_images.data
+    assert (len(input_image.shape) == 3), 'input_image should be 3 dims'
+    if not isinstance(input_image, np.ndarray):
+        if isinstance(input_image, torch.Tensor):  # get the data from a variable
+            image_tensor = input_image.data
         else:
-            return input_images  # who knows what is it  /(ㄒoㄒ)/~~
-        image_tensor = images_tensor[0].cpu().float()  # only select the first one
+            return input_image  # who knows what is it  /(ㄒoㄒ)/~~
+        image_tensor = image_tensor.cpu().float()
         if image_tensor.shape[0] == 1:  # grayscale to RGB
             image_tensor = torch.cat((image_tensor, image_tensor, image_tensor), 0)
         # normalize
@@ -29,27 +30,8 @@ def tensor2im(input_images, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0
         image_numpy = image_tensor.numpy()  # convert it into a numpy array.
 
     else:  # if it is a numpy array, do nothing
-        image_numpy = input_images[0]
+        image_numpy = input_image
     return image_numpy
-
-
-def diagnose_network(net, name='network'):
-    """Calculate and print the mean of average absolute(gradients)
-
-    Parameters:
-        net (torch network) -- Torch network
-        name (str) -- the name of the network
-    """
-    mean = 0.0
-    count = 0
-    for param in net.parameters():
-        if param.grad is not None:
-            mean += torch.mean(torch.abs(param.grad.data))
-            count += 1
-    if count > 0:
-        mean = mean / count
-    print(name)
-    print(mean)
 
 
 def save_image(image_numpy, image_path, aspect_ratio=1.0):
@@ -64,10 +46,37 @@ def save_image(image_numpy, image_path, aspect_ratio=1.0):
     h, w, _ = image_numpy.shape
 
     if aspect_ratio > 1.0:
-        image_pil = image_pil.resize((h, int(w * aspect_ratio)), Image.BICUBIC)
+        image_pil = image_pil.resize((int(w * aspect_ratio)), h, Image.BICUBIC)
     if aspect_ratio < 1.0:
-        image_pil = image_pil.resize((int(h / aspect_ratio), w), Image.BICUBIC)
+        image_pil = image_pil.resize((w, int(h / aspect_ratio)), Image.BICUBIC)
     image_pil.save(image_path)
+
+
+def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=25):
+    '''
+        Save a numpy image list (video) to the disk
+    :param video_frames_list:
+    :param video_path:
+    :param aspect_ratio:
+    :param fps:
+    :return:  none
+    '''
+    h, w, _ = video_frames_list[0].shape
+
+    if aspect_ratio > 1.0:
+        w = int(w * aspect_ratio)
+
+    if aspect_ratio < 1.0:
+        h = int(h / aspect_ratio)
+
+    if aspect_ratio != 1.0:
+        for i in range(len(video_frames_list)):
+            video_frames_list[i] = cv2.resize(video_frames_list[i], (w, h), interpolation=cv2.INTER_CUBIC)
+
+    out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
+    for frame in video_frames_list:
+        out.write(frame)
+    out.release()
 
 
 def print_numpy(x, val=True, shp=False):
@@ -107,3 +116,33 @@ def mkdir(path):
     """
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+def get_file_name(path):
+    '''
+        datasets/div2k/train/A/0001.jpg  ->  0001
+    :param path: the path
+    :return: the name
+    '''
+    short_path = ntpath.basename(path)  # get file name, it is name from domain A
+    name = os.path.splitext(short_path)[0]  # Separating file name from extensions
+    return name
+
+
+def diagnose_network(net, name='network'):
+    """Calculate and print the mean of average absolute(gradients)
+
+    Parameters:
+        net (torch network) -- Torch network
+        name (str) -- the name of the network
+    """
+    mean = 0.0
+    count = 0
+    for param in net.parameters():
+        if param.grad is not None:
+            mean += torch.mean(torch.abs(param.grad.data))
+            count += 1
+    if count > 0:
+        mean = mean / count
+    print(name)
+    print(mean)

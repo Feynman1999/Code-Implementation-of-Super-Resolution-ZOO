@@ -23,9 +23,9 @@ One algorithm have three states：
 
 
 
-For an algorithm, you can see `"./algoname_model.py"` file for training and test scripts details.
+For an algorithm, you can see `"./models/algoname_model.py"` file for training and test scripts details.
 
-e.g. for s-LWSR algorithm,  The beginning of `"./lwsr_model.py"` file is as follows:
+e.g. for s-LWSR algorithm,  The beginning of `"./models/lwsr_model.py"` file is as follows:
 
 ![training and test scripts](https://s2.ax1x.com/2020/01/10/l4Fejf.png)
 
@@ -33,7 +33,7 @@ e.g. for s-LWSR algorithm,  The beginning of `"./lwsr_model.py"` file is as foll
 
 
 
-## Code structure
+## Code Structure
 
 ...
 

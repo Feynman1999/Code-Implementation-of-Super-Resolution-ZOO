@@ -114,8 +114,8 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
             transform_list.append(transforms.Lambda(lambda img: __crop(img, tuple([crop_size_scale*loc for loc in params['crop_pos']]), opt.crop_size * crop_size_scale)))
 
     # if none preprocess , make sure size some multiple of base. e.g. 4
-    if opt.preprocess.lower() == 'none':
-        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=4, method=method)))
+    if opt.preprocess.lower() == 'none' and opt.multi_base > 0:
+        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=opt.multi_base, method=method)))
 
     if not opt.no_flip:
         if params is None:

@@ -1,6 +1,6 @@
 """
 training:
-    python train.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr --display_ncols -1
+    python train.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr
 
 test:
     python test.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr
@@ -61,7 +61,7 @@ class LWSRModel(BaseModel):
 
         # specify the training losses you want to print out. The training/test scripts will call <BaseModel.get_current_losses>
         # self.loss_names = ['G_GAN', 'G_L1', 'D_real', 'D_fake']
-        self.loss_names = ['G_L1']
+        self.loss_names = ['G_L1']  # please use loss_G_L1 below
 
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
         self.visual_names = ['LR', 'HR_GroundTruth', 'HR_G']
@@ -100,7 +100,7 @@ class LWSRModel(BaseModel):
         self.LR = input['A'].to(self.device)
         self.HR_GroundTruth = input['B'].to(self.device)
         # print(self.LR.shape, self.HR_GroundTruth.shape)
-        self.A_paths = input['A_paths']
+        self.A_paths = input['A_paths']  # list
         self.B_paths = input['B_paths']
 
     def forward(self):

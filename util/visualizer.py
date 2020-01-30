@@ -1,9 +1,8 @@
 import numpy as np
 import os
 import sys
-import ntpath
 import time
-from . import util, html
+from . import util
 from subprocess import Popen, PIPE
 
 
@@ -13,44 +12,10 @@ else:
     VisdomExceptionBase = ConnectionError
 
 
-def save_images(opt, webpage, visuals, image_path, aspect_ratio=1.0, width=400):
-    """Save images to the disk.
-
-    Parameters:
-        opt                      -- the options
-        webpage (the HTML class) -- the HTML webpage class that stores these imaegs (see html.py for more details)
-        visuals (OrderedDict)    -- an ordered dictionary that stores (name, images (either tensor or numpy) ) pairs
-        image_path (str)         -- the string is used to create image paths
-        aspect_ratio (float)     -- the aspect ratio of saved images
-        width (int)              -- the images old_width will be resized to width, when display in html
-
-    This function will save images stored in 'visuals' to the HTML file specified by 'webpage'.
-    """
-    rgb_mean = list(map(float, opt.normalize_means.split(',')))
-    rgb_std = list(map(float, opt.normalize_stds.split(',')))
-
-    image_dir = webpage.get_image_dir()
-    short_path = ntpath.basename(image_path[0])  # get file name, it is name from domain A
-    name = os.path.splitext(short_path)[0]  # Separating file name from extensions
-
-    webpage.add_header(name)
-    ims, txts, links = [], [], []
-
-    for label, im_data in visuals.items():
-        im = util.tensor2im(im_data, rgb_mean, rgb_std)
-        image_name = '%s_%s.png' % (name, label)
-        save_path = os.path.join(image_dir, image_name)
-        util.save_image(im, save_path, aspect_ratio=aspect_ratio)
-        ims.append(image_name)
-        txts.append(label)
-        links.append(image_name)
-    webpage.add_images(ims, txts, links, width=width)
-
-
 class Visualizer():
-    """This class includes several functions that can display/save images and print/save logging information.
+    """This class includes several functions that can display/save images / videos and print/save logging information.
 
-    It uses a Python library 'visdom' for display, and a Python library 'dominate' (wrapped in 'HTML') for creating HTML files with images.
+    It uses a Python library 'visdom' for display.
     """
 
     def __init__(self, opt):
@@ -60,128 +25,117 @@ class Visualizer():
             opt -- stores all the experiment flags; needs to be a subclass of BaseOptions
         Step 1: Cache the training/test options
         Step 2: connect to a visdom server
-        Step 3: create an HTML object for saveing HTML filters
+        Step 3: create images/videos dir for intermediate results display
         Step 4: create a logging file to store training losses
         """
         self.opt = opt  # cache the option
         self.display_id = opt.display_id
-        self.use_html = opt.isTrain and not opt.no_html
-        self.win_size = opt.display_winsize
         self.name = opt.name
-        self.port = opt.display_port
-        self.saved = False
         self.rgb_mean = list(map(float, opt.normalize_means.split(',')))
         self.rgb_std = list(map(float, opt.normalize_stds.split(',')))
+
+        if opt.phase == "test":
+            self.aspect_ratio = opt.aspect_ratio
+        else:
+            self.aspect_ratio = 1.0
+
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom
-            self.ncols = opt.display_ncols
             self.vis = visdom.Visdom(server=opt.display_server, port=opt.display_port, env=opt.display_env)
             if not self.vis.check_connection():
                 self.create_visdom_connections()
 
-        if self.use_html:  # create an HTML object at <checkpoints_dir>/web/; images will be saved under <checkpoints_dir>/web/images/
-            self.web_dir = os.path.join(opt.checkpoints_dir, opt.name, 'web')
-            self.img_dir = os.path.join(self.web_dir, 'images')
-            print('create web directory %s...' % self.web_dir)
-            util.mkdirs([self.web_dir, self.img_dir])
-        # create a logging file to store training losses
-        self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
-        with open(self.log_name, "a") as log_file:
-            now = time.strftime("%c")
-            log_file.write('================ Training Loss (%s) ================\n' % now)
+        if opt.phase == "train":
+            self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
+        elif opt.phase == "test":
+            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
+            self.img_dir = os.path.join(opt.results_dir, opt.name, 'test_{}'.format(load_suffix))
+        else:
+            raise NotImplementedError("unknown opt.phase")
 
-    def reset(self):
-        """Reset the self.saved status"""
-        self.saved = False
+        print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
+        util.mkdirs([self.img_dir])
+
+        # create a logging file to store training losses
+        if opt.phase == "train":
+            self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
+            with open(self.log_name, "a") as log_file:
+                now = time.strftime("%c")
+                log_file.write('================ Training Loss (%s) ================\n' % now)
 
     def create_visdom_connections(self):
         """If the program could not connect to Visdom server, this function will start a new server at port < self.port > """
-        cmd = sys.executable + ' -m visdom.server -p %d &>/dev/null &' % self.port
+        cmd = sys.executable + ' -m visdom.server -p %d &>/dev/null &' % self.opt.display_port
         print('\n\nCould not connect to Visdom server. \n Trying to start a server....')
         print('Command: %s' % cmd)
         Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
-    def display_current_results(self, visuals, epoch, save_result):
-        """Display current results on visdom; save current results to an HTML file.
+    def display_and_save(self, visuals, epoch):
+        """Display current image or video results on visdom.
 
-        Parameters:
-            visuals (OrderedDict) - - dictionary of images to display or save
-            epoch (int) - - the current epoch
-            save_result (bool) - - if save the current results to an HTML file
+        :param visuals: dictionary of images to display and save
+        :param epoch: the current epoch
+        :return: no return
         """
-        if self.display_id > 0:  # show images in the browser using visdom
-            ncols = self.ncols
-            if ncols > 0:        # show all the images in one visdom panel
-                ncols = min(ncols, len(visuals))
-                # h, w = next(iter(visuals.values())).shape[:2]  # e.g. [1,3,256,256]
-                table_css = """<style>
-                                    table {border-collapse: separate; border-spacing: 4px; white-space: nowrap; text-align: center}
-                                    table td {width: 3px; height: 1px; padding: 4px; outline: 4px solid black}
-                                </style>"""  # create a table css
-                # create a table of images.
-                label_html = ''
-                label_html_row = ''
-                images = []
-                idx = 0
-                for label, image in visuals.items():
-                    image_numpy = util.tensor2im(image, rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # shape: [h,w,c].  the first one in the batch
-                    label_html_row += '<td>%s</td>' % label
-                    images.append(image_numpy.transpose([2, 0, 1]))  # [c,h,w]
-                    idx += 1
-                    if idx % ncols == 0:
-                        label_html += '<tr>%s</tr>' % label_html_row
-                        label_html_row = ''
-                white_image = np.ones_like(image_numpy.transpose([2, 0, 1])) * 255
-                while idx % ncols != 0:
-                    images.append(white_image)
-                    label_html_row += '<td></td>'
-                    idx += 1
-                if label_html_row != '':
-                    label_html += '<tr>%s</tr>' % label_html_row
-                try:
-                    print(len(images))
-                    self.vis.images(images, nrow=ncols, win=self.display_id + 1,
-                                    padding=2, opts=dict(title=self.name + ' images'))
-                    label_html = '<table>%s</table>' % label_html
-                    epoch_html = '<h2>epoch: %s</h2>' % epoch
-                    self.vis.text(table_css + label_html + epoch_html, win=self.display_id + 2,
-                                  opts=dict(title=self.name + ' labels'))
-                except VisdomExceptionBase:
-                    self.create_visdom_connections()
 
-            else:     # show each image in a separate visdom panel;
-                idx = 1
-                try:
-                    for label, image in visuals.items():
-                        image_numpy = util.tensor2im(image, rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
-                        self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label),
-                                       win=self.display_id + idx)
-                        idx += 1
-                except VisdomExceptionBase:
-                    self.create_visdom_connections()
+        len_dim = len(list(visuals.values())[0].shape)
+        if len_dim == 5:  # video
+            if self.display_id > 0:
+                 self.display_videos(visuals, epoch)
+            self.save_videos(visuals, epoch, aspect_ratio=self.aspect_ratio)
+        elif len_dim == 4:  # image
+            if self.display_id > 0:
+                self.display_images(visuals, epoch)
+            self.save_images(visuals, epoch, aspect_ratio=self.aspect_ratio)
+        else:
+            raise NotImplementedError('visual dim length %d not implemented' % len_dim)
 
-        if self.use_html and (save_result or not self.saved):  # save images to an HTML file if they haven't been saved.
-            self.saved = True
-            # save images to the disk
+    def display_images(self, visuals, epoch, batch_idx=0):
+        '''
+            show each image in a separate visdom panel;
+        '''
+        idx = 1
+        try:
             for label, image in visuals.items():
-                image_numpy = util.tensor2im(image, rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
-                img_path = os.path.join(self.img_dir, 'epoch%.4d_%s.png' % (epoch, label))
-                util.save_image(image_numpy, img_path)
+                assert len(image.shape) == 4, 'image dims length should be 4'
+                image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
+                self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label+"_epoch_"+str(epoch)),
+                               win=self.display_id + idx)  # c,h,w
+                idx += 1
+        except VisdomExceptionBase:
+            self.create_visdom_connections()
 
-            # update website
-            webpage = html.HTML(self.web_dir, 'Experiment name = %s' % self.name, refresh=1)
-            for n in range(epoch, 0, -1):
-                webpage.add_header('epoch [%d]' % n)
-                ims, txts, links = [], [], []
+    def save_images(self, visuals, epoch_or_name, batch_idx=0, aspect_ratio=1.0):  # 复用一下 test也用
+        for label, image in visuals.items():
+            assert len(image.shape) == 4, 'image dims length should be 4'
+            image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
+            if self.opt.phase == "train":
+                img_path = os.path.join(self.img_dir, 'epoch%.4d_%s.png' % (epoch_or_name, label))
+            elif self.opt.phase == "test":
+                img_path = os.path.join(self.img_dir, '%s_%s.png' % (epoch_or_name, label))
+            else:
+                raise NotImplementedError("unknown opt.phase")
+            util.save_image(image_numpy, img_path, aspect_ratio=aspect_ratio)
 
-                for label, image in visuals.items():
-                    # image_numpy = util.tensor2im(image)
-                    img_path = 'epoch%.4d_%s.png' % (n, label)
-                    ims.append(img_path)
-                    txts.append(label)
-                    links.append(img_path)
-                webpage.add_images(ims, txts, links, width=self.win_size)
-            webpage.save()
+    def display_videos(self, visuals, epoch, batch_idx=0):
+        '''
+            show each video in a separate visdom panel;
+        '''
+        pass
+
+    def save_videos(self, visuals, epoch_or_name, batch_idx=0, aspect_ratio=1.0):
+        for label, video in visuals.items():
+            assert len(video.shape) == 5, 'video dims length should be 5'
+            video_frames_list = []
+            for i in range(video.shape[1]):
+                video_frames_list.append(util.tensor2im(video[batch_idx][i], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std))  # [h,w,c]
+            if self.opt.phase == "train":
+                vid_path = os.path.join(self.img_dir, 'epoch%.4d_%s.avi' % (epoch_or_name, label))
+            elif self.opt.phase == "test":
+                vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
+            else:
+                raise NotImplementedError("unknown opt.phase")
+            util.save_video(video_frames_list, vid_path, aspect_ratio=aspect_ratio)
 
     def plot_current_losses(self, epoch, counter_ratio, losses):
         """display the current losses on visdom display: dictionary of error labels and values
