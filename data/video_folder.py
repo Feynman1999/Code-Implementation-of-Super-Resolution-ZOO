@@ -37,7 +37,7 @@ y4m_frames = []
 
 def process_y4m_frame(frame):
     global y4m_frames
-
+    assert frame.headers['C'] == '420mpeg2' and frame.headers['I'] == 'p', 'Encoding method not supported temporarily'
     rows = frame.headers['H']
     cols = frame.headers['W']
     rc = rows * cols
@@ -67,7 +67,7 @@ def read_video(videopath):
 
         with infd as f:
             while True:
-                data = f.read(1024)
+                data = f.read(1024 * 1024)
                 if not data:
                     break
                 parser.decode(data)

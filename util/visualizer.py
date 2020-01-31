@@ -33,6 +33,7 @@ class Visualizer():
         self.name = opt.name
         self.rgb_mean = list(map(float, opt.normalize_means.split(',')))
         self.rgb_std = list(map(float, opt.normalize_stds.split(',')))
+        self.dis_save_times = 0
 
         if opt.phase == "test":
             self.aspect_ratio = opt.aspect_ratio
@@ -71,13 +72,13 @@ class Visualizer():
         Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
     def display_and_save(self, visuals, epoch):
-        """Display current image or video results on visdom.
+        """Display current image or video results on visdom.used both in train and test.
 
         :param visuals: dictionary of images to display and save
         :param epoch: the current epoch
         :return: no return
         """
-
+        print("display and saving... the {}th visuals, epoch(train)_or_name(test): {}".format(self.dis_save_times+1, epoch))
         len_dim = len(list(visuals.values())[0].shape)
         if len_dim == 5:  # video
             if self.display_id > 0:
@@ -89,6 +90,7 @@ class Visualizer():
             self.save_images(visuals, epoch, aspect_ratio=self.aspect_ratio)
         else:
             raise NotImplementedError('visual dim length %d not implemented' % len_dim)
+        self.dis_save_times += 1
 
     def display_images(self, visuals, epoch, batch_idx=0):
         '''
@@ -110,7 +112,7 @@ class Visualizer():
             assert len(image.shape) == 4, 'image dims length should be 4'
             image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
             if self.opt.phase == "train":
-                img_path = os.path.join(self.img_dir, 'epoch%.4d_%s.png' % (epoch_or_name, label))
+                img_path = os.path.join(self.img_dir, '%.4d_epoch%.4d_%s.png' % (self.dis_save_times+1, epoch_or_name, label))
             elif self.opt.phase == "test":
                 img_path = os.path.join(self.img_dir, '%s_%s.png' % (epoch_or_name, label))
             else:
@@ -130,7 +132,7 @@ class Visualizer():
             for i in range(video.shape[1]):
                 video_frames_list.append(util.tensor2im(video[batch_idx][i], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std))  # [h,w,c]
             if self.opt.phase == "train":
-                vid_path = os.path.join(self.img_dir, 'epoch%.4d_%s.avi' % (epoch_or_name, label))
+                vid_path = os.path.join(self.img_dir, '%.4d_epoch%.4d_%s.avi' % (self.dis_save_times+1, epoch_or_name, label))
             elif self.opt.phase == "test":
                 vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
             else:

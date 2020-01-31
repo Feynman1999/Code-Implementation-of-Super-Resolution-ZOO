@@ -52,7 +52,7 @@ def save_image(image_numpy, image_path, aspect_ratio=1.0):
     image_pil.save(image_path)
 
 
-def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=25):
+def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=2):
     '''
         Save a numpy image list (video) to the disk
     :param video_frames_list:
@@ -62,7 +62,7 @@ def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=25):
     :return:  none
     '''
     h, w, _ = video_frames_list[0].shape
-
+    print_numpy(video_frames_list[1])  # notice that in general task, idx 0 is all black...
     if aspect_ratio > 1.0:
         w = int(w * aspect_ratio)
 
@@ -75,11 +75,11 @@ def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=25):
 
     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
     for frame in video_frames_list:
-        out.write(frame)
+        out.write(frame[..., ::-1])
     out.release()
 
 
-def print_numpy(x, val=True, shp=False):
+def print_numpy(x, val=True, shp=True):
     """Print the mean, min, max, median, std, and size of a numpy array
 
     Parameters:

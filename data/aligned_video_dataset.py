@@ -29,7 +29,8 @@ class AlignedVideoDataset(BaseDataset):
         self.A_paths = sorted(make_videos_dataset(self.dir_A, opt.max_dataset_size))
         self.B_paths = sorted(make_videos_dataset(self.dir_B, opt.max_dataset_size))  # get video paths
         assert (len(self.A_paths) == len(self.B_paths))
-        assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
+        if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
+            assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
         self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc  # The default is A->B
         self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
 
@@ -45,6 +46,7 @@ class AlignedVideoDataset(BaseDataset):
             A_paths (str) - - video paths
             B_paths (str) - - video paths
         """
+        # print("I'am in! index:{}".format(index))
         # read a video given a random integer index
         A_path = self.A_paths[index]
         B_path = self.B_paths[index]
@@ -80,6 +82,7 @@ class AlignedVideoDataset(BaseDataset):
         B_transform = get_transform(self.opt, transform_params, grayscale=(self.output_nc == 1), crop_size_scale=self.opt.SR_factor)
 
         for i in range(len(A)):
+            # print("doing transform..the {}th frame of {}th video".format(i, index))
             A[i] = A_transform(A[i])
             B[i] = B_transform(B[i])
 

@@ -27,7 +27,8 @@ class AlignedDataset(BaseDataset):
         self.A_paths = sorted(make_images_dataset(self.dir_A, opt.max_dataset_size))
         self.B_paths = sorted(make_images_dataset(self.dir_B, opt.max_dataset_size))  # get image paths
         assert (len(self.A_paths) == len(self.B_paths))
-        assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
+        if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
+            assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
         self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc  # The default is A->B
         self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
 

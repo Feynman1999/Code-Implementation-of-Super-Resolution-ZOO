@@ -4,7 +4,7 @@ train/test代码pipeline
 
 todolist:
 
-* 适用于视频的可视化模块  用visdom显示图片/视频 写入disk图片/视频 （显示视频受阻，先不显示了）
+* 完成frvsr
 
 * 完成iqa
 
@@ -18,6 +18,11 @@ todolist:
 
 * 像商业软件那样 拖动中间竖条 可以对比两张图片的前端
 
+* visdom显示视频
+
+* dataloader 加速！
+
+
 ## help
 
 first run 
@@ -28,6 +33,6 @@ first run
 
 ## idea
 
-* 每次batchsize = 1  但是crop的size不一样 这样会不会好点
+* 每次batchsize = 1  但是crop的size不一样 这样会不会效果好点
 
 

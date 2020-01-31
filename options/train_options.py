@@ -10,7 +10,7 @@ class TrainOptions(BaseOptions):
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)
         # visdom visualization parameters
-        parser.add_argument('--display_freq', type=int, default=400, help='frequency of showing training results on visdom and save to disk')
+        parser.add_argument('--display_freq', type=int, default=8, help='frequency of showing training results on visdom and save to disk, please make sure freq%batchsize =0 ')
         parser.add_argument('--display_id', type=int, default=1, help='window id of the visdom web display')
         parser.add_argument('--display_server', type=str, default="http://localhost", help='visdom server of the web display')
         parser.add_argument('--display_env', type=str, default='main', help='visdom display environment name (default is "main")')
