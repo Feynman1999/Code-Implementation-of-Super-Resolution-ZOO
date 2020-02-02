@@ -16,7 +16,7 @@ One algorithm have three states：
 
 | Algorithms and Paper URL                       | state | Remarks                      |
 | ---------------------------------------------- | ----- | ---------------------------- |
-| [s-LWSR](https://arxiv.org/pdf/1909.10774.pdf) | 2     | lightweight                  |
+| [s-LWSR](https://arxiv.org/pdf/1909.10774.pdf) | 2     | lightweight(unet / mobilenet similar)                  |
 | [FRVSR](https://arxiv.org/pdf/1801.04590.pdf)  | 2     | video / recurrent training   |                    |
 | [TeCoGAN](https://arxiv.org/abs/1811.09393v3)  | 1     | video / adversarial training |
 | ...                                            |       |                              |
