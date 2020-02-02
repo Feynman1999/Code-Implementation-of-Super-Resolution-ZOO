@@ -72,10 +72,10 @@ class AlignedVideoDataset(BaseDataset):
             B = B[start_id: start_id + self.opt.imgseqlen]
 
         # by default, we add an black image to the start of list A, B
-        black_img_A = Image.fromarray(np.zeros((A[0].size[1], A[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
-        black_img_B = Image.fromarray(np.zeros((B[0].size[1], B[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
-        A.insert(0, black_img_A)
-        B.insert(0, black_img_B)
+        # black_img_A = Image.fromarray(np.zeros((A[0].size[1], A[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
+        # black_img_B = Image.fromarray(np.zeros((B[0].size[1], B[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
+        # A.insert(0, black_img_A)
+        # B.insert(0, black_img_B)
 
         transform_params = get_params(self.opt, A[0].size)
         A_transform = get_transform(self.opt, transform_params, grayscale=(self.input_nc == 1))
@@ -87,8 +87,8 @@ class AlignedVideoDataset(BaseDataset):
             B[i] = B_transform(B[i])
 
         # list of 3dim to 4dim  e.g. ... [3,128,128] ... to [11,3,128,128]
-        A = torch.cat([t.unsqueeze(0) for t in A], 0)
-        B = torch.cat([t.unsqueeze(0) for t in B], 0)
+        A = torch.stack(A, 0)
+        B = torch.stack(B, 0)
 
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 

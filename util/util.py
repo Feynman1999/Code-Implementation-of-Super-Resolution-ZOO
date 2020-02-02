@@ -62,7 +62,8 @@ def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=2):
     :return:  none
     '''
     h, w, _ = video_frames_list[0].shape
-    print_numpy(video_frames_list[1])  # notice that in general task, idx 0 is all black...
+    # notice that in general task, idx 0 is all black...
+    # print_numpy(video_frames_list[1])
     if aspect_ratio > 1.0:
         w = int(w * aspect_ratio)
 

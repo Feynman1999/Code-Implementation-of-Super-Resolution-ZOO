@@ -33,9 +33,10 @@ class TeCoGan_G(nn.Module):
         self.channel_num = 64
         self.resblock_num = opt.resblock_num
         self.input_nc = opt.input_nc
+        self.SR_factor = opt.SR_factor
 
         self.model = nn.Sequential(
-            nn.Conv2d(self.input_nc*2, self.channel_num, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(self.input_nc + self.input_nc*opt.SR_factor*opt.SR_factor, self.channel_num, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             self.make_layer(ResBlock, self.channel_num, self.resblock_num),
             nn.ConvTranspose2d(self.channel_num, self.channel_num, kernel_size=3, stride=2, padding=1, output_padding=1),
@@ -52,15 +53,17 @@ class TeCoGan_G(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        hx = torch.nn.functional.interpolate(x[:, 0:3, ...], scale_factor=self.SR_factor, mode='bilinear')
         x = self.model(x)
+        x = x + hx
         return x
 
 
 class TecoGan_F(nn.Module):
-    def __init__(self):
+    def __init__(self, opt):
         super(TecoGan_F, self).__init__()
         self.channel_num = 32
-        self.maxvel = 1.0
+        self.maxvel = opt.maxvel
         self.model_1 = nn.Sequential(
             nn.Conv2d(2 * self.input_nc, self.channel_num, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
@@ -152,7 +155,7 @@ def define_G(opt):
 
 
 def define_F(opt):
-    net = TecoGan_F()
+    net = TecoGan_F(opt)
     return base_networks.init_net(net, opt.init_type, opt.init_gain, opt.gpu_ids)
 
 

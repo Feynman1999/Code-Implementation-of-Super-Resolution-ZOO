@@ -4,7 +4,7 @@ train/test代码pipeline
 
 todolist:
 
-* 完成frvsr
+* video可视化时 三张视频拼在一起 方便对比
 
 * 完成iqa
 

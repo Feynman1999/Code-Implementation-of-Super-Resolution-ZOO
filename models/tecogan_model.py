@@ -6,6 +6,7 @@ from .base_model import BaseModel
 from . import tecogan_networks
 from . import base_networks
 
+
 class TECOGANModel(BaseModel):
     """ This class implements the TeCoGAN model
 
@@ -37,6 +38,7 @@ class TECOGANModel(BaseModel):
         parser.set_defaults(init_type='xavier')
         parser.add_argument('--no_pingpong', action='store_true', help='if specified, do not use the pingpong loss for data augmentation')
         parser.add_argument('--resblock_num', type=int, default=10, help='the number of ResidualBlock, 10 / 16 in paper')
+        parser.add_argument('--maxvel', type=float, default=24.0, help='scales the flow network output to the normal velocity range')
         if is_train:
             parser.set_defaults(gan_mode='vanilla')
             parser.add_argument('--lambda_L1', type=float, default=100.0, help='weight for L1 loss')
