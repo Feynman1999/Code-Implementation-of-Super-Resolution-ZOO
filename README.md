@@ -45,3 +45,12 @@ e.g. for s-LWSR algorithm,  The beginning of `"./models/lwsr_model.py"` file is 
 
 This code is built on [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix) , thank the authors for sharing their codes.
 
+
+## Datasets and Benchmarks
+Please see [HERE](https://github.com/Feynman1999/Code-Implementation-of-Super-Resolution-ZOO/blob/master/datasets-and-benchmark) for the popular SR datasets and certain benchmark results.
+
+
+## Super Resolution Challenges
+
+* [Alibaba Youku video enhancement and super resolution challenge](https://tianchi.aliyun.com/competition/entrance/231711/introduction)
+
