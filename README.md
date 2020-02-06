@@ -27,9 +27,7 @@ For an algorithm, you can see `"./models/algoname_model.py"` file for training a
 
 e.g. for s-LWSR algorithm,  The beginning of `"./models/lwsr_model.py"` file is as follows:
 
-![training and test scripts](https://s2.ax1x.com/2020/01/10/l4Fejf.png)
-
-
+![training and test scripts](https://s2.ax1x.com/2020/02/06/1cAy6I.png)
 
 
 
