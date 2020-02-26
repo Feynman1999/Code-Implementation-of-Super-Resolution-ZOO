@@ -1,5 +1,11 @@
 ## SR Datasets and Benchmark
 
-Please refer to `datasets.md` for datasets description, and `benchmark_xxx.md` for benchmark results of popular methods.
+#### datasets
+
+Please refer to `datasets_image.md` for image datasets description and `datasets_video.md` for video datasets description.
 
 
+
+#### benchmark
+
+Please refer to `benchmark_xxx.md` for benchmark results of popular methods.

@@ -1,4 +1,4 @@
-from data.video_folder import read_video
+from util.util import dataset_images2video
 
-read_video("datasets/youku/train/B/Youku_00000_h_GT.y4m")
+dataset_images2video('datasets/FRVSR_VID4/LR')
 

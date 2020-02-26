@@ -4,6 +4,7 @@ import torch
 import ntpath
 import numpy as np
 from PIL import Image
+from data.image_folder import make_images_dataset
 import os
 import cv2
 
@@ -55,7 +56,7 @@ def save_image(image_numpy, image_path, aspect_ratio=1.0):
 def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=2):
     '''
         Save a numpy image list (video) to the disk
-    :param video_frames_list:
+    :param video_frames_list:  rgb numpy image list
     :param video_path:
     :param aspect_ratio:
     :param fps:
@@ -78,6 +79,31 @@ def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=2):
     for frame in video_frames_list:
         out.write(frame[..., ::-1])
     out.release()
+
+
+def images2video(filepath, fps=12, Suffix = '.avi'):
+    imagepathlist = make_images_dataset(filepath)
+    framelist = []
+    for imgpath in imagepathlist:
+        framelist.append(cv2.imread(imgpath)[..., ::-1])
+    dn = os.path.dirname(filepath)
+    name = os.path.split(filepath)[-1] + Suffix
+    save_video(framelist, os.path.join(dn, name), fps=fps)
+
+
+def dataset_images2video(filepath, fps=12):
+    for home, dirs, files in sorted(os.walk(filepath)):
+        for dir_ in dirs:
+            dir_ = os.path.join(home, dir_)
+            print(dir_)
+            images2video(dir_, fps=fps)
+
+        # print("#######file list#######")
+        # for filename in files:
+        #     print(filename)
+        #     fullname = os.path.join(home, filename)
+        #     print(fullname)
+        # print("#######file list#######")
 
 
 def print_numpy(x, val=True, shp=True):
