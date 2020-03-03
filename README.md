@@ -1,8 +1,8 @@
+[toc]
+
 ## Code-Implementation-of-Super-Resolution-ZOO
 
 Code-Implementation-of-Super-Resolution-ZOO
-
-
 
 
 
@@ -14,12 +14,22 @@ One algorithm have three states：
 2. Code completed, result has not yet been evaluated
 3. Result has been evaluated
 
-| Algorithms and Paper URL                       | state | Remarks                      |
-| ---------------------------------------------- | ----- | ---------------------------- |
-| [s-LWSR](https://arxiv.org/pdf/1909.10774.pdf) | 2     | lightweight(unet / mobilenet similar)                  |
-| [FRVSR](https://arxiv.org/pdf/1801.04590.pdf)  | 2     | video / recurrent training   |                    |
-| [TeCoGAN](https://arxiv.org/abs/1811.09393v3)  | 1     | video / adversarial training |
-| ...                                            |       |                              |
+### Image
+
+| Algorithms and Paper URL                       | **Publish** | state | Remarks                               |
+| ---------------------------------------------- | ----------- | ----- | ------------------------------------- |
+| [s-LWSR](https://arxiv.org/pdf/1909.10774.pdf) | arXiv 2019  | 2     | lightweight(unet / mobilenet similar) |
+| [DBPN](https://arxiv.org/pdf/1904.05677.pdf)   | CVPR 2018   | 1     | back projection module                |
+
+
+
+### Video
+
+| Algorithms and Paper URL                      | **Publish** | state | Remarks                             |
+| --------------------------------------------- | ----------- | ----- | ----------------------------------- |
+| [FRVSR](https://arxiv.org/pdf/1801.04590.pdf) | CVPR 2018   | 2     | recurrent training                  |
+| [TeCoGAN](https://arxiv.org/abs/1811.09393v3) | CVPR 2018   | 1     | adversarial training                |
+| [RBPN](https://arxiv.org/abs/1903.10128)      | CVPR 2019   | 1     | recurrent training, back projection |
 
 
 
@@ -34,8 +44,6 @@ e.g. for s-LWSR algorithm,  The beginning of `"./models/lwsr_model.py"` file is 
 ## Code Structure
 
 ...
-
-
 
 
 
@@ -68,9 +76,14 @@ Please see [HERE](https://github.com/Feynman1999/Code-Implementation-of-Super-Re
 * [Advances in Image Manipulation workshop and challenges on image and video manipulation in conjunction with ICCV 2019](http://www.vision.ee.ethz.ch/en/aim19/)
 
 * [2019 Alibaba Youku video enhancement and super resolution challenge](https://tianchi.aliyun.com/competition/entrance/231711/introduction)
+
 * [New Trends in Image Restoration and Enhancement workshop and challenges on image and video restoration and enhancement in conjunction with CVPR 2019](http://www.vision.ee.ethz.ch/ntire19/)
 
+* [The 1st National Artificial Intelligence Challenge (AI+4k HDR track)](https://www.kesci.com/home/competition/5d84728ab1468c002ca1825a/content/0)
+
 #### 2018
+
+* [PIRM2018  Workshop and Challenge on **Perceptual** Image Restoration and Manipulation](https://www.pirm2018.org/)
 
 * [New Trends in Image Restoration and Enhancement workshop and challenges on super-resolution, dehazing, and spectral reconstruction in conjunction with CVPR 2018](http://www.vision.ee.ethz.ch/ntire18/)
 

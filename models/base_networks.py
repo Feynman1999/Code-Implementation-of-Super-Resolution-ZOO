@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.nn import init
 import functools
 from torch.optim import lr_scheduler
+import math
 
 
 ###############################################################################
@@ -80,6 +81,15 @@ def init_weights(net, init_type='normal', init_gain=0.02):
             print("init {}".format(classname))
             if init_type == 'normal':
                 init.normal_(m.weight.data, 0.0, init_gain)
+            elif init_type == 'msra':
+                if classname.find('Conv') != -1:
+                    shp = m.weight.data.shape
+                    print(shp)
+                    nl = shp[0] * shp[2] * shp[3]
+                    std = math.sqrt(2.0/nl)
+                    init.normal_(m.weight.data, 0.0, std)
+                else:  # Linear
+                    init.normal_(m.weight.data, 0.0, init_gain)
             elif init_type == 'xavier':
                 init.xavier_normal_(m.weight.data, gain=init_gain)
             elif init_type == 'kaiming':

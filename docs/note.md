@@ -8,7 +8,7 @@ todolist:
 
 * 完成iqa
 
-* 检查参数初始化是否有问题
+* 检查参数初始化是否有问题，优化初始化的流程
 
 * 设置随机数种子
 
@@ -21,6 +21,8 @@ todolist:
 * visdom显示视频
 
 * dataloader 加速！
+
+
 
 
 ## help
