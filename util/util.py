@@ -36,27 +36,32 @@ def tensor2im(input_image, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)
     return image_numpy
 
 
-def save_image(image_numpy, image_path, SR_factor=1):
+def save_image(image_numpy, image_path, factor=1, inverse=False):
     """Save a numpy image to the disk
 
     Parameters:
         image_numpy (numpy array) -- input numpy array
         image_path (str)          -- the path of the image
+        factor                    -- factor for resize
+        inverse                   -- if True down sample otherwise up sample
     """
 
     image_pil = Image.fromarray(image_numpy)
     h, w, _ = image_numpy.shape
 
-    assert SR_factor >= 1, "SR_factor should >=1"
+    assert factor >= 1, "factor should >=1"
 
-    if SR_factor > 1:
-        assert w % SR_factor == 0 and h % SR_factor == 0, "w,h should % SR_factor=0"
-        image_pil = image_pil.resize(w//SR_factor, h//SR_factor, Image.BICUBIC)
+    if factor > 1:
+        if inverse:
+            assert w % factor == 0 and h % factor == 0, "w,h should % SR_factor=0"
+            image_pil = image_pil.resize((w//factor, h//factor), resample=Image.BICUBIC)
+        else:
+            image_pil = image_pil.resize((int(w*factor), int(h*factor)), resample=Image.BICUBIC)
 
     image_pil.save(image_path)
 
 
-def save_video(video_frames_list, video_path, SR_factor=1, fps=2):
+def save_video(video_frames_list, video_path, factor=1, fps=2, inverse=True):
     '''
         Save a numpy image list (video) to the disk
     :param video_frames_list:  rgb numpy image list
@@ -69,12 +74,16 @@ def save_video(video_frames_list, video_path, SR_factor=1, fps=2):
     # notice that in general task, idx 0 is all black...
     # print_numpy(video_frames_list[1])
 
-    assert SR_factor >= 1, "SR_factor should >=1"
+    assert factor >= 1, "factor should >=1"
 
-    if SR_factor > 1:
-        assert w % SR_factor == 0 and h % SR_factor == 0, "w,h should % SR_factor=0"
-        for i in range(len(video_frames_list)):
-            video_frames_list[i] = cv2.resize(video_frames_list[i], (w//SR_factor, h//SR_factor), interpolation=cv2.INTER_CUBIC)
+    if factor > 1:
+        if inverse:
+            assert w % factor == 0 and h % factor == 0, "w,h should % SR_factor=0"
+            for i in range(len(video_frames_list)):
+                video_frames_list[i] = cv2.resize(video_frames_list[i], (w//factor, h//factor), interpolation=cv2.INTER_CUBIC)
+        else:
+            for i in range(len(video_frames_list)):
+                video_frames_list[i] = cv2.resize(video_frames_list[i], (int(w*factor), int(h*factor)), interpolation=cv2.INTER_CUBIC)
 
     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
     for frame in video_frames_list:
@@ -107,11 +116,11 @@ def dataset_images2video(filepath, fps=12):
         # print("#######file list#######")
 
 
-def dataset_HR2AB(HRpath, path2datasets, datasetname, phase="train", SR_factor = 4):
+def dataset_HR2AB(HRpath, path2datasets, datasetname, phase="train", factor = 4):
     """
     for bitahub:
-        HRpath = data/bitahub/DIV2K/DIV2K_train_HR
-        path2datasets = data/bitahub
+        HRpath = /data/bitahub/DIV2K/DIV2K_train_HR
+        path2datasets = /data/bitahub
         datasetname = DIV2K
 
 
@@ -122,13 +131,15 @@ def dataset_HR2AB(HRpath, path2datasets, datasetname, phase="train", SR_factor =
     :return:
     """
     imagepath_list = make_images_dataset(HRpath)
+    Apath = os.path.join(path2datasets, datasetname, phase, "A")
+    mkdir(Apath)
+    Bpath = os.path.join(path2datasets, datasetname, phase, "B")
+    mkdir(Bpath)
     for i in tqdm(range(len(imagepath_list))):
         img = Image.open(imagepath_list[i])
         imgname = os.path.basename(imagepath_list[i])
-        Apath = os.path.join(path2datasets, datasetname, phase, "A")
-        Bpath = os.path.join(path2datasets, datasetname, phase, "B")
         img.save(os.path.join(Bpath, imgname))
-        save_image(np.array(img), os.path.join(Apath, imgname), SR_factor=SR_factor)
+        save_image(np.array(img), os.path.join(Apath, imgname), factor=factor, inverse=True)
 
 
 def print_numpy(x, val=True, shp=True):
@@ -168,6 +179,25 @@ def mkdir(path):
     """
     if not os.path.exists(path):
         os.makedirs(path)
+
+
+def check_whether_last_dir(path):
+    """
+    check whether the path is the last dir(thus don't include another dir)
+    :param path: path to dir
+    :return:
+    """
+    if not os.path.exists(path):
+        return False
+
+    if not os.path.isdir(path):
+        return False
+
+    for root, dirs, files in os.walk(path):
+        if len(dirs) > 0:
+            return False
+
+    return True
 
 
 def get_file_name(path):

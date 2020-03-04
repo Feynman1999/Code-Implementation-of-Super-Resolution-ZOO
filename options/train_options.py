@@ -10,7 +10,7 @@ class TrainOptions(BaseOptions):
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)
         # visdom visualization parameters
-        parser.add_argument('--display_freq', type=int, default=400, help='frequency of showing training results on visdom and save to disk, please make sure freq%batchsize =0 ')
+        parser.add_argument('--display_freq', type=int, default=4000, help='frequency of showing training results on visdom and save to disk, please make sure freq%batchsize =0 ')
         parser.add_argument('--display_id', type=int, default=1, help='window id of the visdom web display')
         parser.add_argument('--display_server', type=str, default="http://localhost", help='visdom server of the web display')
         parser.add_argument('--display_env', type=str, default='main', help='visdom display environment name (default is "main")')
@@ -33,5 +33,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--lr_policy', type=str, default='linear', help='learning rate policy. [linear | step | plateau | cosine]')
         parser.add_argument('--lr_decay_iters', type=int, default=50, help='multiply by a gamma every lr_decay_iters epoch when opt.lr_policy == step')
 
+        # only have HR data
+        parser.add_argument('--only_HR', action='store_true', help='only have the HR data when train, when this happen, dataroot should path to HR data filedir')
         self.isTrain = True
         return parser

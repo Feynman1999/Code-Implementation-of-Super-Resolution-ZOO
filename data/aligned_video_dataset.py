@@ -93,5 +93,5 @@ class AlignedVideoDataset(BaseDataset):
         return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
 
     def __len__(self):
-        """Return the total number of images in the dataset."""
-        return len(self.A_paths)
+        """Return the total number of videos in the dataset."""
+        return len(self.B_paths)

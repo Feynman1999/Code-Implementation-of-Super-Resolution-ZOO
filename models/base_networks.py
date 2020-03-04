@@ -84,7 +84,6 @@ def init_weights(net, init_type='normal', init_gain=0.02):
             elif init_type == 'msra':
                 if classname.find('Conv') != -1:
                     shp = m.weight.data.shape
-                    print(shp)
                     nl = shp[0] * shp[2] * shp[3]
                     std = math.sqrt(2.0/nl)
                     init.normal_(m.weight.data, 0.0, std)

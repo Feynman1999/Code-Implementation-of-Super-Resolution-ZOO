@@ -36,9 +36,9 @@ class Visualizer():
         self.dis_save_times = 0
 
         if opt.phase == "test":
-            self.aspect_ratio = opt.aspect_ratio
+            self.factor = opt.factor
         else:
-            self.aspect_ratio = 1.0
+            self.factor = 1
 
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom
@@ -82,12 +82,12 @@ class Visualizer():
         len_dim = len(list(visuals.values())[0].shape)
         if len_dim == 5:  # video
             if self.display_id > 0:
-                 self.display_videos(visuals, epoch)
-            self.save_videos(visuals, epoch, aspect_ratio=self.aspect_ratio)
+                self.display_videos(visuals, epoch)
+            self.save_videos(visuals, epoch, factor=self.factor)
         elif len_dim == 4:  # image
             if self.display_id > 0:
                 self.display_images(visuals, epoch)
-            self.save_images(visuals, epoch, aspect_ratio=self.aspect_ratio)
+            self.save_images(visuals, epoch, factor=self.factor)
         else:
             raise NotImplementedError('visual dim length %d not implemented' % len_dim)
         self.dis_save_times += 1
@@ -107,7 +107,7 @@ class Visualizer():
         except VisdomExceptionBase:
             self.create_visdom_connections()
 
-    def save_images(self, visuals, epoch_or_name, batch_idx=0, aspect_ratio=1.0):  # 复用一下 test也用
+    def save_images(self, visuals, epoch_or_name, batch_idx=0, factor=1):
         for label, image in visuals.items():
             assert len(image.shape) == 4, 'image dims length should be 4'
             image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
@@ -117,7 +117,7 @@ class Visualizer():
                 img_path = os.path.join(self.img_dir, '%s_%s.png' % (epoch_or_name, label))
             else:
                 raise NotImplementedError("unknown opt.phase")
-            util.save_image(image_numpy, img_path, aspect_ratio=aspect_ratio)
+            util.save_image(image_numpy, img_path, factor=factor)
 
     def display_videos(self, visuals, epoch, batch_idx=0):
         '''
@@ -125,7 +125,7 @@ class Visualizer():
         '''
         pass
 
-    def save_videos(self, visuals, epoch_or_name, batch_idx=0, aspect_ratio=1.0):
+    def save_videos(self, visuals, epoch_or_name, batch_idx=0, factor=1):
         for label, video in visuals.items():
             assert len(video.shape) == 5, 'video dims length should be 5'
             video_frames_list = []
@@ -137,7 +137,7 @@ class Visualizer():
                 vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
             else:
                 raise NotImplementedError("unknown opt.phase")
-            util.save_video(video_frames_list, vid_path, aspect_ratio=aspect_ratio)
+            util.save_video(video_frames_list, vid_path, factor=factor)
 
     def plot_current_losses(self, epoch, counter_ratio, losses):
         """display the current losses on visdom display: dictionary of error labels and values

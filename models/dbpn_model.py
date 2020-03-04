@@ -1,12 +1,16 @@
 """
 training:
-    python train.py --dataroot ./datasets/DIV2k --name DIV2k_dbpn --model dbpn
+AB
+    python train.py --dataroot ./datasets/DIV2K --name DIV2k_dbpn --model dbpn
+
+only HR:
+    python train.py --dataroot ./datasets/DIV2K/train/B --name DIV2k_dbpn --model dbpn --only_HR
 
 BitaHub:
-python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/feynman1999/Vid4/vid4 --name DIV2k_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints
+python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/bitahub/DIV2K/DIV2K_train_HR --name DIV2K_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints
 
 test:
-    python test.py --dataroot ./datasets/DIV2k --name DIV2k_dbpn --model dbpn
+    python test.py --dataroot ./datasets/DIV2K --name DIV2K_dbpn --model dbpn
 """
 
 import torch
@@ -50,6 +54,7 @@ class DBPNModel(BaseModel):
         parser.set_defaults(n_layers_D=2)
         parser.set_defaults(lr=0.0001)
         parser.set_defaults(n_epochs=20000)
+        parser.set_defaults(n_epochs_decay=0)
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=10000)
         parser.set_defaults(init_type='msra')
