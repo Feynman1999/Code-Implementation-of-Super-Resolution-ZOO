@@ -2,6 +2,9 @@
 training:
     python train.py --dataroot ./datasets/DIV2k --name DIV2k_dbpn --model dbpn
 
+BitaHub:
+python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/feynman1999/Vid4/vid4 --name DIV2k_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints
+
 test:
     python test.py --dataroot ./datasets/DIV2k --name DIV2k_dbpn --model dbpn
 """

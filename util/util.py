@@ -3,6 +3,7 @@ from __future__ import print_function
 import torch
 import ntpath
 import numpy as np
+from tqdm import tqdm
 from PIL import Image
 from data.image_folder import make_images_dataset
 import os
@@ -35,7 +36,7 @@ def tensor2im(input_image, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)
     return image_numpy
 
 
-def save_image(image_numpy, image_path, aspect_ratio=1.0):
+def save_image(image_numpy, image_path, SR_factor=1):
     """Save a numpy image to the disk
 
     Parameters:
@@ -46,34 +47,34 @@ def save_image(image_numpy, image_path, aspect_ratio=1.0):
     image_pil = Image.fromarray(image_numpy)
     h, w, _ = image_numpy.shape
 
-    if aspect_ratio > 1.0:
-        image_pil = image_pil.resize((int(w * aspect_ratio)), h, Image.BICUBIC)
-    if aspect_ratio < 1.0:
-        image_pil = image_pil.resize((w, int(h / aspect_ratio)), Image.BICUBIC)
+    assert SR_factor >= 1, "SR_factor should >=1"
+
+    if SR_factor > 1:
+        assert w % SR_factor == 0 and h % SR_factor == 0, "w,h should % SR_factor=0"
+        image_pil = image_pil.resize(w//SR_factor, h//SR_factor, Image.BICUBIC)
+
     image_pil.save(image_path)
 
 
-def save_video(video_frames_list, video_path, aspect_ratio=1.0, fps=2):
+def save_video(video_frames_list, video_path, SR_factor=1, fps=2):
     '''
         Save a numpy image list (video) to the disk
     :param video_frames_list:  rgb numpy image list
     :param video_path:
-    :param aspect_ratio:
+    :param SR_factor:
     :param fps:
     :return:  none
     '''
     h, w, _ = video_frames_list[0].shape
     # notice that in general task, idx 0 is all black...
     # print_numpy(video_frames_list[1])
-    if aspect_ratio > 1.0:
-        w = int(w * aspect_ratio)
 
-    if aspect_ratio < 1.0:
-        h = int(h / aspect_ratio)
+    assert SR_factor >= 1, "SR_factor should >=1"
 
-    if aspect_ratio != 1.0:
+    if SR_factor > 1:
+        assert w % SR_factor == 0 and h % SR_factor == 0, "w,h should % SR_factor=0"
         for i in range(len(video_frames_list)):
-            video_frames_list[i] = cv2.resize(video_frames_list[i], (w, h), interpolation=cv2.INTER_CUBIC)
+            video_frames_list[i] = cv2.resize(video_frames_list[i], (w//SR_factor, h//SR_factor), interpolation=cv2.INTER_CUBIC)
 
     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
     for frame in video_frames_list:
@@ -104,6 +105,30 @@ def dataset_images2video(filepath, fps=12):
         #     fullname = os.path.join(home, filename)
         #     print(fullname)
         # print("#######file list#######")
+
+
+def dataset_HR2AB(HRpath, path2datasets, datasetname, phase="train", SR_factor = 4):
+    """
+    for bitahub:
+        HRpath = data/bitahub/DIV2K/DIV2K_train_HR
+        path2datasets = data/bitahub
+        datasetname = DIV2K
+
+
+    :param HRpath: the path to HR images
+    :param datasetname: datasetname, will create dir in datasets
+    :param SR_factor: down-sample factor
+    :param phase:  train or test
+    :return:
+    """
+    imagepath_list = make_images_dataset(HRpath)
+    for i in tqdm(range(len(imagepath_list))):
+        img = Image.open(imagepath_list[i])
+        imgname = os.path.basename(imagepath_list[i])
+        Apath = os.path.join(path2datasets, datasetname, phase, "A")
+        Bpath = os.path.join(path2datasets, datasetname, phase, "B")
+        img.save(os.path.join(Bpath, imgname))
+        save_image(np.array(img), os.path.join(Apath, imgname), SR_factor=SR_factor)
 
 
 def print_numpy(x, val=True, shp=True):
