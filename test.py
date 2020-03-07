@@ -10,8 +10,8 @@ It then runs inference for --num_test images and save results to disk.
 
 Example (You need to train models first or download pre-trained models from somewhere):
 
-    Test a lwsr model:
-        python test.py --dataroot ./datasets/DIV2k --name DIV_lwsr_L1_loss --model lwsr
+    Test a dbpn model:
+        python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --epoch 1e6_iters --iqa --iqa_list psnr
 
 See options/base_options.py and options/test_options.py for more test options.
 """
@@ -20,7 +20,7 @@ from options.test_options import TestOptions
 from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
-from util.util import get_file_name
+from util.util_dataset import get_file_name
 
 
 if __name__ == '__main__':
@@ -39,7 +39,6 @@ if __name__ == '__main__':
     model.setup(opt)  # regular setup: load and print networks(default load "latest"); create schedulers
     visualizer = Visualizer(opt)
 
-    print_frq = 3
 
     # test with eval mode. This only affects layers like batchnorm and dropout.
     # For [pix2pix]: we use batchnorm and dropout in the original pix2pix. You can experiment it with and without eval() mode.
@@ -52,6 +51,10 @@ if __name__ == '__main__':
         model.test()  # run inference
         visuals = model.get_current_visuals()  # get image/video results
         A_paths, B_paths = model.get_image_paths()  # get image/video paths
-        if i % print_frq == 0:
-            print('processing (%04d)-th image... path: %s' % (i+1, A_paths))
-        visualizer.display_and_save(visuals, get_file_name(A_paths[0]))
+        file_name = get_file_name(A_paths[0])
+        visualizer.display_and_save(visuals, file_name)
+        if opt.iqa:
+            visualizer.cal_iqa(visuals, file_name)
+
+    if opt.iqa:
+        visualizer.summary_iqa()

@@ -1,16 +1,20 @@
 """
 training:
-AB
-    python train.py --dataroot ./datasets/DIV2K --name DIV2k_dbpn --model dbpn
+    AB:
+        python train.py --dataroot ./datasets/DIV2K --name DIV2K_dbpn --model dbpn
 
-only HR:
-    python train.py --dataroot ./datasets/DIV2K/train/B --name DIV2k_dbpn --model dbpn --only_HR
+    only HR:
+        python train.py --dataroot ./datasets/DIV2K/train/B --name DIV2K_dbpn --model dbpn --only_HR
 
-BitaHub:
-python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/bitahub/DIV2K/DIV2K_train_HR --name DIV2K_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints
+    BitaHub:
+    python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/bitahub/DIV2K/DIV2K_train_HR
+    --name DIV2K_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints --only_HR  --batch_size 16
 
 test:
-    python test.py --dataroot ./datasets/DIV2K --name DIV2K_dbpn --model dbpn
+    AB:
+        python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --epoch 1e6_iters --iqa --iqa_list psnr
+    only HR:
+
 """
 
 import torch

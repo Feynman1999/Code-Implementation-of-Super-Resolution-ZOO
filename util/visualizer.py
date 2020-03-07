@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from . import util
+from iqa import find_function_using_name
 from subprocess import Popen, PIPE
 
 
@@ -37,22 +38,31 @@ class Visualizer():
 
         if opt.phase == "test":
             self.factor = opt.factor
-        else:
+            self.iqa_name_list = opt.iqa_list.split(',')
+            self.iqa_values = []  # list in list
+            for i in range(len(self.iqa_name_list)):
+                self.iqa_values.append([])
+            self.iqa_dict = dict()
+            self.join_str = "   "
+            self.iqa_results = []
+
+            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
+            test_dataset_name = os.path.basename(self.opt.dataroot)
+            self.img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_suffix)
+            self.result_path = os.path.join(opt.results_dir, opt.name, self.img_dir_name+"_results.txt")
+            self.img_dir = os.path.join(opt.results_dir, opt.name, self.img_dir_name)
+        elif opt.phase == "train":
             self.factor = 1
+            self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
+
+        else:
+            raise NotImplementedError("unknown opt.phase")
 
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom
             self.vis = visdom.Visdom(server=opt.display_server, port=opt.display_port, env=opt.display_env)
             if not self.vis.check_connection():
                 self.create_visdom_connections()
-
-        if opt.phase == "train":
-            self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
-        elif opt.phase == "test":
-            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
-            self.img_dir = os.path.join(opt.results_dir, opt.name, 'test_{}'.format(load_suffix))
-        else:
-            raise NotImplementedError("unknown opt.phase")
 
         print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
         util.mkdirs([self.img_dir])
@@ -75,7 +85,7 @@ class Visualizer():
         """Display current image or video results on visdom.used both in train and test.
 
         :param visuals: dictionary of images to display and save
-        :param epoch: the current epoch
+        :param epoch: the current epoch for train and the file name for test
         :return: no return
         """
         print("display and saving... the {}th visuals, epoch(train)_or_name(test): {}".format(self.dis_save_times+1, epoch))
@@ -91,6 +101,43 @@ class Visualizer():
         else:
             raise NotImplementedError('visual dim length %d not implemented' % len_dim)
         self.dis_save_times += 1
+
+    def cal_iqa(self, visuals, file_name):
+        """used in train and test.
+
+        :param visuals: dictionary of images
+        :param file_name: file name
+        :return:no return
+        """
+        print("cal iqa for the {}th visuals, file_name: {}".format(self.dis_save_times, file_name))
+        assert 'HR_G' in visuals.keys() and 'HR_GroundTruth' in visuals.keys(), 'please make sure that the model has the corresponding attr HR_G and HR_GroundTruth'
+
+        temp_list = []
+        for i in range(len(self.iqa_name_list)):
+            func = find_function_using_name(self.iqa_name_list[i])
+            HR_G = util.tensor2im(visuals['HR_G'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
+            HR_GroundTruth = util.tensor2im(visuals['HR_GroundTruth'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)
+            val = func(HR_G, HR_GroundTruth, only_Luminance=True, crop=self.opt.SR_factor)
+            self.iqa_values[i].append(val)
+            temp_list.append("{}: {:.2f}".format(self.iqa_name_list[i], val))
+        self.iqa_dict[file_name] = self.join_str.join(temp_list)
+
+    def summary_iqa(self):
+        for i in range(len(self.iqa_name_list)):
+            result = sum(self.iqa_values[i]) / len(self.iqa_values[i])
+            self.iqa_results.append(result)
+            fmat ='*'*10 + ' '*10
+            print("{}{}: {:.2f}{}".format(fmat, 'average '+self.iqa_name_list[i], result, fmat[::-1]))
+        with open(self.result_path, "w+") as log_file:
+            now = time.strftime("%c")
+            content = '================ Result with {} ({}) ================\n\n'.format(" / ".join(self.iqa_name_list), now)
+            content += " "*15
+            for i, res in enumerate(self.iqa_results):
+                content += "average {}:{:.2f}   ".format(self.iqa_name_list[i], res)
+            content += "\n\n"
+            for key in sorted(self.iqa_dict.keys()):
+                content += "{:^30}:   {}\n".format(key, self.iqa_dict[key])
+            log_file.write(content)
 
     def display_images(self, visuals, epoch, batch_idx=0):
         '''
@@ -182,3 +229,6 @@ class Visualizer():
         print(message)  # print the message
         with open(self.log_name, "a") as log_file:
             log_file.write('%s\n' % message)  # save the message
+
+    def save_loss_json(self):
+        pass

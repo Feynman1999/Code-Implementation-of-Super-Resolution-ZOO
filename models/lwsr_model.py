@@ -1,11 +1,3 @@
-"""
-training:
-    python train.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr
-
-test:
-    python test.py --dataroot ./datasets/DIV2k --name DIV_lwsr --model lwsr
-"""
-
 import torch
 from .base_model import BaseModel
 from . import lwsr_networks

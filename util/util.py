@@ -1,39 +1,43 @@
 """This module contains simple helper functions """
 from __future__ import print_function
 import torch
-import ntpath
+
 import numpy as np
-from tqdm import tqdm
 from PIL import Image
-from data.image_folder import make_images_dataset
 import os
 import cv2
 
 
 def tensor2im(input_image, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)):
-    """"Converts a Tensor array into a numpy image array. [h,w,c]
+    """"Converts a Tensor array into a numpy image array. [h,w,c] or [b,h,w,c](video)
 
     Parameters:
-        input_image (tensor) --  the input image tensor array,  without batchsize dim
+        input_image (tensor) --  the input image tensor array
     """
-    assert (len(input_image.shape) == 3), 'input_image should be 3 dims'
-    if not isinstance(input_image, np.ndarray):
-        if isinstance(input_image, torch.Tensor):  # get the data from a variable
-            image_tensor = input_image.data
-        else:
-            return input_image  # who knows what is it  /(ㄒoㄒ)/~~
-        image_tensor = image_tensor.cpu().float()
-        if image_tensor.shape[0] == 1:  # grayscale to RGB
-            image_tensor = torch.cat((image_tensor, image_tensor, image_tensor), 0)
+    assert isinstance(input_image, torch.Tensor), 'the input tensor should be torch.Tensor'
+    image_tensor = input_image.data
+    image_tensor = image_tensor.cpu().float()
+    dim_len = len(image_tensor.shape)
+    assert dim_len in (3, 4), 'dim_len should in (3,4)'
+
+    # gray to RGB
+    if image_tensor.shape[dim_len-3] == 1:
+        image_tensor = torch.cat((image_tensor, image_tensor, image_tensor), dim_len-3)
+
+    if dim_len == 3:
         # normalize
         image_tensor = image_tensor * torch.tensor(rgb_std).view(3, 1, 1) + torch.tensor(rgb_mean).view(3, 1, 1)
         # clamp to [0,255]  or min max map to 0~255 is better?
         image_tensor = image_tensor.mul_(255).add_(0.5).clamp_(0, 255).permute(1, 2, 0).to(torch.uint8)
-        image_numpy = image_tensor.numpy()  # convert it into a numpy array.
+    elif dim_len == 4:
+        # normalize
+        image_tensor = image_tensor * torch.tensor(rgb_std).view(1, 3, 1, 1) + torch.tensor(rgb_mean).view(1, 3, 1, 1)
+        # clamp to [0,255]
+        image_tensor = image_tensor.mul_(255).add_(0.5).clamp_(0, 255).permute(0, 2, 3, 1).to(torch.uint8)
+    else:
+        raise NotImplementedError("unknown image.shape")
 
-    else:  # if it is a numpy array, do nothing
-        image_numpy = input_image
-    return image_numpy
+    return image_tensor.numpy()
 
 
 def save_image(image_numpy, image_path, factor=1, inverse=False):
@@ -91,73 +95,6 @@ def save_video(video_frames_list, video_path, factor=1, fps=2, inverse=True):
     out.release()
 
 
-def images2video(filepath, fps=12, Suffix = '.avi'):
-    imagepathlist = make_images_dataset(filepath)
-    framelist = []
-    for imgpath in imagepathlist:
-        framelist.append(cv2.imread(imgpath)[..., ::-1])
-    dn = os.path.dirname(filepath)
-    name = os.path.split(filepath)[-1] + Suffix
-    save_video(framelist, os.path.join(dn, name), fps=fps)
-
-
-def dataset_images2video(filepath, fps=12):
-    for home, dirs, files in sorted(os.walk(filepath)):
-        for dir_ in dirs:
-            dir_ = os.path.join(home, dir_)
-            print(dir_)
-            images2video(dir_, fps=fps)
-
-        # print("#######file list#######")
-        # for filename in files:
-        #     print(filename)
-        #     fullname = os.path.join(home, filename)
-        #     print(fullname)
-        # print("#######file list#######")
-
-
-def dataset_HR2AB(HRpath, path2datasets, datasetname, phase="train", factor = 4):
-    """
-    for bitahub:
-        HRpath = /data/bitahub/DIV2K/DIV2K_train_HR
-        path2datasets = /data/bitahub
-        datasetname = DIV2K
-
-
-    :param HRpath: the path to HR images
-    :param datasetname: datasetname, will create dir in datasets
-    :param SR_factor: down-sample factor
-    :param phase:  train or test
-    :return:
-    """
-    imagepath_list = make_images_dataset(HRpath)
-    Apath = os.path.join(path2datasets, datasetname, phase, "A")
-    mkdir(Apath)
-    Bpath = os.path.join(path2datasets, datasetname, phase, "B")
-    mkdir(Bpath)
-    for i in tqdm(range(len(imagepath_list))):
-        img = Image.open(imagepath_list[i])
-        imgname = os.path.basename(imagepath_list[i])
-        img.save(os.path.join(Bpath, imgname))
-        save_image(np.array(img), os.path.join(Apath, imgname), factor=factor, inverse=True)
-
-
-def print_numpy(x, val=True, shp=True):
-    """Print the mean, min, max, median, std, and size of a numpy array
-
-    Parameters:
-        val (bool) -- if print the values of the numpy array
-        shp (bool) -- if print the shape of the numpy array
-    """
-    x = x.astype(np.float64)
-    if shp:
-        print('shape,', x.shape)
-    if val:
-        x = x.flatten()
-        print('mean = %3.3f, min = %3.3f, max = %3.3f, median = %3.3f, std=%3.3f' % (
-            np.mean(x), np.min(x), np.max(x), np.median(x), np.std(x)))
-
-
 def mkdirs(paths):
     """create empty directories if they don't exist
 
@@ -200,15 +137,20 @@ def check_whether_last_dir(path):
     return True
 
 
-def get_file_name(path):
-    '''
-        datasets/div2k/train/A/0001.jpg  ->  0001
-    :param path: the path
-    :return: the name
-    '''
-    short_path = ntpath.basename(path)  # get file name, it is name from domain A
-    name = os.path.splitext(short_path)[0]  # Separating file name from extensions
-    return name
+def print_numpy(x, val=True, shp=True):
+    """Print the mean, min, max, median, std, and size of a numpy array
+
+    Parameters:
+        val (bool) -- if print the values of the numpy array
+        shp (bool) -- if print the shape of the numpy array
+    """
+    x = x.astype(np.float64)
+    if shp:
+        print('shape,', x.shape)
+    if val:
+        x = x.flatten()
+        print('mean = %3.3f, min = %3.3f, max = %3.3f, median = %3.3f, std=%3.3f' % (
+            np.mean(x), np.min(x), np.max(x), np.median(x), np.std(x)))
 
 
 def diagnose_network(net, name='network'):

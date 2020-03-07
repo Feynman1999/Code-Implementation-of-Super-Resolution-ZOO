@@ -1,4 +1,4 @@
 from util.util import dataset_HR2AB
 
 
-dataset_HR2AB(HRpath="./datasets/DIV2K/train/B", path2datasets="./datasets", datasetname="DIV")
+dataset_HR2AB("C:/Users/76397/Desktop/dataset/Set5", "./datasets", "Set5", phase="test")
