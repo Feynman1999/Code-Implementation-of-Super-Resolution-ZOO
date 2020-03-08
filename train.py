@@ -35,7 +35,7 @@ if __name__ == '__main__':
     visualizer = Visualizer(opt, dataset_size)   # create a visualizer that display/save images and plots
     total_iters = 0                # the total number of training iterations
 
-    for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>
+    for epoch in range(opt.epoch_count, opt.n_epochs + opt.n_epochs_decay + 1):    # outer loop for different epochs; we save the model by <epoch_count>, <epoch_count>+<save_epoch_freq>
         epoch_start_time = time.time()  # timer for entire epoch
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
@@ -63,23 +63,16 @@ if __name__ == '__main__':
                 visualizer.print_and_save_current_losses(epoch, epoch_iter, losses, t_comp, t_data)
                 visualizer.plot_current_losses(epoch, float(epoch_iter) / dataset_size, losses)
 
-            '''save model by total_iters'''
-            if total_iters % opt.save_latest_freq == 0:   # cache our latest model every <save_latest_freq> iterations
-                print('saving the latest model (epoch %d, total_iters %d)' % (epoch, total_iters))
-                save_suffix = 'iter_%d' % total_iters if opt.save_by_iter else 'latest'
-                model.save_networks(save_suffix)
-                visualizer.save_loss_image(save_suffix)
-
             iter_data_time = time.time()
 
         '''save model by epoch'''
         if epoch % opt.save_epoch_freq == 0:              # cache our model every <save_epoch_freq> epochs
-            print('saving the model at the end of epoch %d, total_iters %d' % (epoch, total_iters))
-            save_suffix = 'epoch_%d' % epoch
-            model.save_networks(save_suffix)
-            visualizer.save_loss_image(save_suffix)
+            print('saving the model at the end of epoch: %d,  now total iters: %d' % (epoch, total_iters))
+            save_prefix = 'epoch_%d' % epoch
+            model.save_networks(save_prefix)
+            visualizer.save_loss_image(save_prefix)
 
         print('End of epoch %d / %d \t Time Taken: %d sec' % (epoch, opt.n_epochs + opt.n_epochs_decay, time.time() - epoch_start_time))
-        model.update_learning_rate()                     # update learning rates at the end of every epoch.
+        model.update_learning_rate()  # update learning rates at the end of every epoch.
 
     model.save_networks('latest')

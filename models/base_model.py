@@ -88,8 +88,8 @@ class BaseModel(ABC):
         if self.isTrain:
             self.schedulers = [base_networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
         if not self.isTrain or opt.continue_train:
-            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else 'epoch_%d' % opt.epoch  # epoch can be str:'latest' or epoch_#
-            self.load_networks(load_suffix)
+            load_prefix = opt.load_epoch
+            self.load_networks(load_prefix)
         self.print_networks(opt.verbose)
 
     def eval(self):
@@ -144,20 +144,19 @@ class BaseModel(ABC):
                 errors_ret[name] = float(getattr(self, 'loss_' + name)) # float(...) works for both scalar tensor and float number
         return errors_ret
 
-    def save_networks(self, epoch):
+    def save_networks(self, identification):
         """Save all the networks to the disk.
 
         Parameters:
-            epoch (int) -- current epoch; used in the file name '%s_net_%s.pth' % (epoch, name)
+            identification   used in the file name '%s_net_%s.pth' % (identification, name)
 
             maybe:
-                epoch_100    ->  epoch_100_net_G.pth
-                iter_100000  ->  iter_100000_net_G.pth
-                latest       ->  latest_net_G.pth
+                'epoch_100'    ->  epoch_100_net_G.pth
+                'latest'       ->  latest_net_G.pth
         """
         for name in self.model_names:
             if isinstance(name, str):
-                save_filename = '%s_net_%s.pth' % (epoch, name)
+                save_filename = '%s_net_%s.pth' % (identification, name)
                 save_path = os.path.join(self.save_dir, save_filename)
                 net = getattr(self, 'net' + name)
 
@@ -181,15 +180,20 @@ class BaseModel(ABC):
         else:
             self.__patch_instance_norm_state_dict(state_dict, getattr(module, key), keys, i + 1)
 
-    def load_networks(self, epoch):
+    def load_networks(self, identification):
         """Load all the networks from the disk.
 
         Parameters:
-            epoch (int) -- current epoch; used in the file name '%s_net_%s.pth' % (epoch, name)
+            identification(str)    used in the file name '%s_net_%s.pth' % (identification, name)
+
+        identification may be:
+            [latest | epoch_x | others up to you]
+            latest and epoch_xxx are produced by this project under normal circumstances.
+            you can also use other name up to you, but should make sure the net_name corresponding to model.model_names
         """
         for name in self.model_names:
             if isinstance(name, str):
-                load_filename = '%s_net_%s.pth' % (epoch, name)
+                load_filename = '%s_net_%s.pth' % (identification, name)
                 load_path = os.path.join(self.save_dir, load_filename)
                 net = getattr(self, 'net' + name)
                 if isinstance(net, torch.nn.DataParallel):

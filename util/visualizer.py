@@ -49,9 +49,9 @@ class Visualizer():
             self.join_str = "   "
             self.iqa_results = []
 
-            load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
+            load_prefix = opt.load_epoch
             test_dataset_name = os.path.basename(self.opt.dataroot)
-            self.img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_suffix)
+            self.img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_prefix)
             self.img_dir = os.path.join(opt.results_dir, opt.name, self.img_dir_name)
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, self.img_dir_name+"_results.txt")
         elif opt.phase == "train":
@@ -60,24 +60,25 @@ class Visualizer():
             self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
 
             # some checks for better visualize
-            assert opt.display_freq % opt.batch_size == 0 and opt.print_freq % opt.batch_size == 0 and \
-                   opt.save_latest_freq % opt.batch_size == 0, 'please make sure them % batchsize =0 for ' \
-                                                                'better understanding of iter(one sample),' \
-                                                               'iteration(one batchsize) and epoch(all sample)'
+            assert opt.display_freq % opt.batch_size == 0 and opt.print_freq % opt.batch_size == 0, \
+                'please make sure them % batchsize =0 for better understanding of iter(one sample),' \
+                'iteration(one batchsize) and epoch(all sample)'
 
-            total_iters = (opt.n_epochs + opt.n_epochs_decay) * dataset_size
+            total_epochs = (opt.n_epochs + opt.n_epochs_decay)
+            total_iters = total_epochs * dataset_size
             print("total_iters : {}".format(total_iters))
             assert total_iters / opt.display_freq < 1e4, 'please set opt.display_freq larger, otherwise too many ' \
                                                          'display/save result'
 
             assert total_iters / opt.print_freq < 1e5, 'please set opt.print_freq larger, otherwise too many loss log'
 
-            assert total_iters / opt.save_latest_freq < 1e2, 'please set opt.save_latest_freq larger, otherwise too ' \
+            assert total_epochs / opt.save_epoch_freq < 1e2, 'please set opt.save_epoch_freq larger, otherwise too ' \
                                                              'many times save models'
 
-            assert opt.save_latest_freq > opt.print_freq
+            assert opt.save_epoch_freq * dataset_size > opt.print_freq
 
             # save a help doc
+
 
         else:
             raise NotImplementedError("unknown opt.phase")
@@ -217,8 +218,8 @@ class Visualizer():
         with open(self.log_name, "a") as log_file:
             log_file.write('%s\n' % message)  # save the message
 
-    def save_loss_image(self, epoch, moving_average=(10, 100)):
-        save_filename = '%s_loss_moving_average_' % epoch  # epoch is iter_100 or latest or epoch_100
+    def save_loss_image(self, save_prefix, moving_average=(10, 100)):
+        save_filename = '%s_loss_moving_average_' % save_prefix  # save_prefix is latest or epoch_100
         assert hasattr(self, 'plot_data')
 
         # do moving_average
