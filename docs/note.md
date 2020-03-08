@@ -18,7 +18,7 @@ todolist:
 
 * dataloader 加速！
 
-
+* bug : test的时候打印options没有hard code的内容 思考如何修改
 
 
 ## help

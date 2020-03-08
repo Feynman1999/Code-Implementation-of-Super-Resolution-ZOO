@@ -65,16 +65,17 @@ def save_image(image_numpy, image_path, factor=1, inverse=False):
     image_pil.save(image_path)
 
 
-def save_video(video_frames_list, video_path, factor=1, fps=2, inverse=True):
+def save_video(video, video_path, factor=1, fps=2, inverse=True):
     '''
-        Save a numpy image list (video) to the disk
+        Save a numpy video to the disk  [b,h,w,c]
     :param video_frames_list:  rgb numpy image list
     :param video_path:
     :param SR_factor:
     :param fps:
     :return:  none
     '''
-    h, w, _ = video_frames_list[0].shape
+    length = video.shape[0]
+    h, w, _ = video[0].shape
     # notice that in general task, idx 0 is all black...
     # print_numpy(video_frames_list[1])
 
@@ -83,14 +84,15 @@ def save_video(video_frames_list, video_path, factor=1, fps=2, inverse=True):
     if factor > 1:
         if inverse:
             assert w % factor == 0 and h % factor == 0, "w,h should % SR_factor=0"
-            for i in range(len(video_frames_list)):
-                video_frames_list[i] = cv2.resize(video_frames_list[i], (w//factor, h//factor), interpolation=cv2.INTER_CUBIC)
+            for i in range(length):
+                video[i] = cv2.resize(video[i], (w//factor, h//factor), interpolation=cv2.INTER_CUBIC)
         else:
-            for i in range(len(video_frames_list)):
-                video_frames_list[i] = cv2.resize(video_frames_list[i], (int(w*factor), int(h*factor)), interpolation=cv2.INTER_CUBIC)
+            for i in range(length):
+                video[i] = cv2.resize(video[i], (int(w*factor), int(h*factor)), interpolation=cv2.INTER_CUBIC)
 
     out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
-    for frame in video_frames_list:
+    for i in range(length):
+        frame = video[i]
         out.write(frame[..., ::-1])
     out.release()
 
@@ -152,6 +154,23 @@ def print_numpy(x, val=True, shp=True):
         print('mean = %3.3f, min = %3.3f, max = %3.3f, median = %3.3f, std=%3.3f' % (
             np.mean(x), np.min(x), np.max(x), np.median(x), np.std(x)))
 
+
+def moving_average(x, ma):
+    """
+    do moving average for x
+    :param x: 2d ndarray , [:,0], [:,1], ... is the data
+    :param ma: average num e.g. every 10
+    :return: 2d ndarray
+    """
+    assert len(x.shape) == 2
+    m, n = x.shape
+    if ma > m:
+        print('moving average size too large, change to m:{}'.format(m))
+        ma = m
+    result = np.zeros((m-ma+1, n))
+    for i in range(n):
+        result[:, i] = np.convolve(x[:, i], np.ones(ma), 'valid') / ma
+    return result
 
 def diagnose_network(net, name='network'):
     """Calculate and print the mean of average absolute(gradients)

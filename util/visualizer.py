@@ -1,10 +1,12 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import os
 import sys
 import time
 from . import util
 from iqa import find_function_using_name
 from subprocess import Popen, PIPE
+
 
 
 if sys.version_info[0] == 2:
@@ -15,11 +17,11 @@ else:
 
 class Visualizer():
     """This class includes several functions that can display/save images / videos and print/save logging information.
-
+    and do some checks when training for better visualize.
     It uses a Python library 'visdom' for display.
     """
 
-    def __init__(self, opt):
+    def __init__(self, opt, dataset_size=1):
         """Initialize the Visualizer class
 
         Parameters:
@@ -36,6 +38,7 @@ class Visualizer():
         self.rgb_std = list(map(float, opt.normalize_stds.split(',')))
         self.dis_save_times = 0
 
+
         if opt.phase == "test":
             self.factor = opt.factor
             self.iqa_name_list = opt.iqa_list.split(',')
@@ -49,11 +52,32 @@ class Visualizer():
             load_suffix = 'iter_%d' % opt.load_iter if opt.load_iter > 0 else opt.epoch
             test_dataset_name = os.path.basename(self.opt.dataroot)
             self.img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_suffix)
-            self.result_path = os.path.join(opt.results_dir, opt.name, self.img_dir_name+"_results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, self.img_dir_name)
+            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, self.img_dir_name+"_results.txt")
         elif opt.phase == "train":
             self.factor = 1
+            self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
             self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
+
+            # some checks for better visualize
+            assert opt.display_freq % opt.batch_size == 0 and opt.print_freq % opt.batch_size == 0 and \
+                   opt.save_latest_freq % opt.batch_size == 0, 'please make sure them % batchsize =0 for ' \
+                                                                'better understanding of iter(one sample),' \
+                                                               'iteration(one batchsize) and epoch(all sample)'
+
+            total_iters = (opt.n_epochs + opt.n_epochs_decay) * dataset_size
+            print("total_iters : {}".format(total_iters))
+            assert total_iters / opt.display_freq < 1e4, 'please set opt.display_freq larger, otherwise too many ' \
+                                                         'display/save result'
+
+            assert total_iters / opt.print_freq < 1e5, 'please set opt.print_freq larger, otherwise too many loss log'
+
+            assert total_iters / opt.save_latest_freq < 1e2, 'please set opt.save_latest_freq larger, otherwise too ' \
+                                                             'many times save models'
+
+            assert opt.save_latest_freq > opt.print_freq
+
+            # save a help doc
 
         else:
             raise NotImplementedError("unknown opt.phase")
@@ -88,7 +112,8 @@ class Visualizer():
         :param epoch: the current epoch for train and the file name for test
         :return: no return
         """
-        print("display and saving... the {}th visuals, epoch(train)_or_name(test): {}".format(self.dis_save_times+1, epoch))
+        identification = "epoch" if self.opt.phase == "train" else "filename"
+        print("display and saving the {}th visuals, {}: {}".format(self.dis_save_times+1, identification, epoch))
         len_dim = len(list(visuals.values())[0].shape)
         if len_dim == 5:  # video
             if self.display_id > 0:
@@ -101,6 +126,125 @@ class Visualizer():
         else:
             raise NotImplementedError('visual dim length %d not implemented' % len_dim)
         self.dis_save_times += 1
+
+    def display_images(self, visuals, epoch, batch_idx=0):
+        '''
+            show each image in a separate visdom panel;
+        '''
+        idx = 1
+        try:
+            for label, image in visuals.items():
+                assert len(image.shape) == 4, 'image dims length should be 4'
+                image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
+                self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label+"_epoch_"+str(epoch)),
+                               win=self.display_id + idx)  # c,h,w
+                idx += 1
+        except VisdomExceptionBase:
+            self.create_visdom_connections()
+
+    def save_images(self, visuals, epoch_or_name, batch_idx=0, factor=1):
+        for label, image in visuals.items():
+            assert len(image.shape) == 4, 'image dims length should be 4'
+            image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
+            if self.opt.phase == "train":
+                img_path = os.path.join(self.img_dir, '%.6d_epoch%.6d_%s.png' % (self.dis_save_times+1, epoch_or_name, label))
+            elif self.opt.phase == "test":
+                img_path = os.path.join(self.img_dir, '%s_%s.png' % (epoch_or_name, label))
+            else:
+                raise NotImplementedError("unknown opt.phase")
+            util.save_image(image_numpy, img_path, factor=factor)
+
+    def display_videos(self, visuals, epoch, batch_idx=0):
+        '''
+            show each video in a separate visdom panel;
+        '''
+        pass
+
+    def save_videos(self, visuals, epoch_or_name, batch_idx=0, factor=1):
+        for label, video in visuals.items():
+            assert len(video.shape) == 5, 'video dims length should be 5'
+            video = util.tensor2im(video[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [b,h,w,c]
+            if self.opt.phase == "train":
+                vid_path = os.path.join(self.img_dir, '%.6d_epoch%.6d_%s.avi' % (self.dis_save_times+1, epoch_or_name, label))
+            elif self.opt.phase == "test":
+                vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
+            else:
+                raise NotImplementedError("unknown opt.phase")
+            util.save_video(video, vid_path, factor=factor)
+
+    def plot_current_losses(self, epoch, counter_ratio, losses):
+        """display the current losses on visdom display: dictionary of error labels and values
+
+        Parameters:
+            epoch (int)           -- current epoch
+            counter_ratio (float) -- progress (percentage) in the current epoch, between 0 to 1
+            losses (OrderedDict)  -- training losses stored in the format of (name, float) pairs
+        """
+        if not hasattr(self, 'plot_data'):
+            self.plot_data = {'X': [], 'Y': [], 'legend': list(losses.keys())}
+        self.plot_data['X'].append(epoch + counter_ratio)
+        self.plot_data['Y'].append([losses[k] for k in self.plot_data['legend']])
+        if self.opt.display_id > 0:
+            try:
+                self.vis.line(
+                    X=np.stack([np.array(self.plot_data['X'])] * len(self.plot_data['legend']), 1),
+                    Y=np.array(self.plot_data['Y']),
+                    opts={
+                        'title': self.name + ' loss over time',
+                        'legend': self.plot_data['legend'],
+                        'xlabel': 'epoch',
+                        'ylabel': 'loss'},
+                    win=self.display_id)
+            except VisdomExceptionBase:
+                self.create_visdom_connections()
+
+    # losses: same format as |losses| of plot_current_losses
+    def print_and_save_current_losses(self, epoch, iters, losses, t_comp, t_data):
+        """print current losses on console; also save the losses to the disk
+
+        Parameters:
+            epoch (int) -- current epoch
+            iters (int) -- current training iteration during this epoch (reset to 0 at the end of every epoch)
+            losses (OrderedDict) -- training losses stored in the format of (name, float) pairs  e.g.(loss_G_L1, 0.1111)
+            t_comp (float) -- computational time per data point (normalized by batch_size)
+            t_data (float) -- data loading time per data point (normalized by batch_size)
+        """
+        message = '(epoch: %d, iters: %d, time per data: %.3f, load per data: %.3f) ' % (epoch, iters, t_comp, t_data)
+        for k, v in losses.items():
+            message += '%s: %.3f ' % (k, v)
+
+        print(message)  # print the message
+        with open(self.log_name, "a") as log_file:
+            log_file.write('%s\n' % message)  # save the message
+
+    def save_loss_image(self, epoch, moving_average=(10, 100)):
+        save_filename = '%s_loss_moving_average_' % epoch  # epoch is iter_100 or latest or epoch_100
+        assert hasattr(self, 'plot_data')
+
+        # do moving_average
+        X = np.array(self.plot_data['X'])
+        Y = np.array(self.plot_data['Y'])
+        for ma in moving_average:
+            if ma >= Y.shape[0]:
+                print('moving average size too large, change to m:{}'.format(Y.shape[0]))
+                ma = max(1, Y.shape[0] - 1)
+            ma_Y = util.moving_average(Y, ma=ma)
+            X = np.linspace(X[0], X[-1], ma_Y.shape[0])
+            maxn = 1e4
+            gap = int(np.ceil(ma_Y.shape[0] / maxn))
+            title = "loss from epoch {:.2f} to epoch {:.2f}  moving_average: {}".format(X[0], X[-1], ma)
+            plt.figure(figsize=(len(X[::gap])/100+1, 8))
+            # 多个figure不好！
+            for i in range(ma_Y.shape[1]):
+                plt.plot(X[::gap], ma_Y[:, i][::gap], label=self.plot_data['legend'][i])  # promise that <= 10000
+            plt.title(title)
+            plt.xlabel('epochs')
+            plt.ylabel('Losses')
+            plt.legend()
+            fig = plt.gcf()
+            fig.savefig(os.path.join(self.save_dir, save_filename + str(ma) + '.svg'), dpi=600, bbox_inches='tight')
+            # plt.show()
+            plt.clf()
 
     def cal_iqa(self, visuals, file_name):
         """used in train and test.
@@ -128,7 +272,7 @@ class Visualizer():
             self.iqa_results.append(result)
             fmat ='*'*10 + ' '*10
             print("{}{}: {:.2f}{}".format(fmat, 'average '+self.iqa_name_list[i], result, fmat[::-1]))
-        with open(self.result_path, "w+") as log_file:
+        with open(self.iqa_result_path, "w+") as log_file:
             now = time.strftime("%c")
             content = '================ Result with {} ({}) ================\n\n'.format(" / ".join(self.iqa_name_list), now)
             content += " "*15
@@ -138,97 +282,3 @@ class Visualizer():
             for key in sorted(self.iqa_dict.keys()):
                 content += "{:^30}:   {}\n".format(key, self.iqa_dict[key])
             log_file.write(content)
-
-    def display_images(self, visuals, epoch, batch_idx=0):
-        '''
-            show each image in a separate visdom panel;
-        '''
-        idx = 1
-        try:
-            for label, image in visuals.items():
-                assert len(image.shape) == 4, 'image dims length should be 4'
-                image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
-                self.vis.image(image_numpy.transpose([2, 0, 1]), opts=dict(title=label+"_epoch_"+str(epoch)),
-                               win=self.display_id + idx)  # c,h,w
-                idx += 1
-        except VisdomExceptionBase:
-            self.create_visdom_connections()
-
-    def save_images(self, visuals, epoch_or_name, batch_idx=0, factor=1):
-        for label, image in visuals.items():
-            assert len(image.shape) == 4, 'image dims length should be 4'
-            image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
-            if self.opt.phase == "train":
-                img_path = os.path.join(self.img_dir, '%.4d_epoch%.4d_%s.png' % (self.dis_save_times+1, epoch_or_name, label))
-            elif self.opt.phase == "test":
-                img_path = os.path.join(self.img_dir, '%s_%s.png' % (epoch_or_name, label))
-            else:
-                raise NotImplementedError("unknown opt.phase")
-            util.save_image(image_numpy, img_path, factor=factor)
-
-    def display_videos(self, visuals, epoch, batch_idx=0):
-        '''
-            show each video in a separate visdom panel;
-        '''
-        pass
-
-    def save_videos(self, visuals, epoch_or_name, batch_idx=0, factor=1):
-        for label, video in visuals.items():
-            assert len(video.shape) == 5, 'video dims length should be 5'
-            video_frames_list = []
-            for i in range(video.shape[1]):
-                video_frames_list.append(util.tensor2im(video[batch_idx][i], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std))  # [h,w,c]
-            if self.opt.phase == "train":
-                vid_path = os.path.join(self.img_dir, '%.4d_epoch%.4d_%s.avi' % (self.dis_save_times+1, epoch_or_name, label))
-            elif self.opt.phase == "test":
-                vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
-            else:
-                raise NotImplementedError("unknown opt.phase")
-            util.save_video(video_frames_list, vid_path, factor=factor)
-
-    def plot_current_losses(self, epoch, counter_ratio, losses):
-        """display the current losses on visdom display: dictionary of error labels and values
-
-        Parameters:
-            epoch (int)           -- current epoch
-            counter_ratio (float) -- progress (percentage) in the current epoch, between 0 to 1
-            losses (OrderedDict)  -- training losses stored in the format of (name, float) pairs
-        """
-        if not hasattr(self, 'plot_data'):
-            self.plot_data = {'X': [], 'Y': [], 'legend': list(losses.keys())}
-        self.plot_data['X'].append(epoch + counter_ratio)
-        self.plot_data['Y'].append([losses[k] for k in self.plot_data['legend']])
-        try:
-            self.vis.line(
-                X=np.stack([np.array(self.plot_data['X'])] * len(self.plot_data['legend']), 1),
-                Y=np.array(self.plot_data['Y']),
-                opts={
-                    'title': self.name + ' loss over time',
-                    'legend': self.plot_data['legend'],
-                    'xlabel': 'epoch',
-                    'ylabel': 'loss'},
-                win=self.display_id)
-        except VisdomExceptionBase:
-            self.create_visdom_connections()
-
-    # losses: same format as |losses| of plot_current_losses
-    def print_and_save_current_losses(self, epoch, iters, losses, t_comp, t_data):
-        """print current losses on console; also save the losses to the disk
-
-        Parameters:
-            epoch (int) -- current epoch
-            iters (int) -- current training iteration during this epoch (reset to 0 at the end of every epoch)
-            losses (OrderedDict) -- training losses stored in the format of (name, float) pairs  e.g.(loss_G_L1, 0.1111)
-            t_comp (float) -- computational time per data point (normalized by batch_size)
-            t_data (float) -- data loading time per data point (normalized by batch_size)
-        """
-        message = '(epoch: %d, iters: %d, time per data: %.3f, load per data: %.3f) ' % (epoch, iters, t_comp, t_data)
-        for k, v in losses.items():
-            message += '%s: %.3f ' % (k, v)
-
-        print(message)  # print the message
-        with open(self.log_name, "a") as log_file:
-            log_file.write('%s\n' % message)  # save the message
-
-    def save_loss_json(self):
-        pass

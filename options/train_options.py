@@ -5,20 +5,24 @@ class TrainOptions(BaseOptions):
     """This class includes training options.
 
     It also includes shared options defined in BaseOptions.
+    important:
+        --display_freq
+        --print_freq
+        --save_latest_freq
+        please make sure them % batchsize =0 for better understanding of iter(one sample),iteration(one batchsize) and epoch(all sample)
     """
-
     def initialize(self, parser):
         parser = BaseOptions.initialize(self, parser)
         # visdom visualization parameters
-        parser.add_argument('--display_freq', type=int, default=4000, help='frequency of showing training results on visdom and save to disk, please make sure freq%batchsize =0 ')
+        parser.add_argument('--display_freq', type=int, default=6400, help='frequency of showing training results on visdom and save to disk, please make sure freq%batchsize =0 ')
         parser.add_argument('--display_id', type=int, default=1, help='window id of the visdom web display')
         parser.add_argument('--display_server', type=str, default="http://localhost", help='visdom server of the web display')
         parser.add_argument('--display_env', type=str, default='main', help='visdom display environment name (default is "main")')
         parser.add_argument('--display_port', type=int, default=8097, help='visdom port of the web display')
-        parser.add_argument('--print_freq', type=int, default=400, help='frequency of showing training results on console, please make sure freq%batchsize =0')
+        parser.add_argument('--print_freq', type=int, default=6400, help='frequency of showing training results on console, please make sure freq%batchsize =0')
         # network saving and loading parameters
         parser.add_argument('--save_by_iter', action='store_true', help='whether saves model by iteration, if true, will save many intermediate models, notice your disk memory')
-        parser.add_argument('--save_latest_freq', type=int, default=1000000, help='frequency of saving the latest results')
+        parser.add_argument('--save_latest_freq', type=int, default=1000000, help='frequency of saving the latest results, please make sure freq%batchsize =0')
         parser.add_argument('--save_epoch_freq', type=int, default=1000000, help='frequency of saving models at the end of epochs')
         parser.add_argument('--continue_train', action='store_true', help='continue training: load the latest model')
         parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count, we save the model by <epoch_count>, <epoch_count>+<save_latest_freq>, ...')
