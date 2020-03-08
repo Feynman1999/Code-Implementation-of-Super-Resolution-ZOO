@@ -38,24 +38,23 @@ class Visualizer():
         self.rgb_std = list(map(float, opt.normalize_stds.split(',')))
         self.dis_save_times = 0
 
-
         if opt.phase == "test":
-            self.factor = opt.factor
+            self.output_factor = opt.factor
             self.iqa_name_list = opt.iqa_list.split(',')
             self.iqa_values = []  # list in list
             for i in range(len(self.iqa_name_list)):
                 self.iqa_values.append([])
             self.iqa_dict = dict()
-            self.join_str = "   "
             self.iqa_results = []
 
             load_prefix = opt.load_epoch
             test_dataset_name = os.path.basename(self.opt.dataroot)
-            self.img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_prefix)
-            self.img_dir = os.path.join(opt.results_dir, opt.name, self.img_dir_name)
-            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, self.img_dir_name+"_results.txt")
+            img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_prefix)
+            self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
+            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
+
         elif opt.phase == "train":
-            self.factor = 1
+            self.output_factor = 1
             self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
             self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
 
@@ -66,7 +65,7 @@ class Visualizer():
 
             total_epochs = (opt.n_epochs + opt.n_epochs_decay)
             total_iters = total_epochs * dataset_size
-            print("total_iters : {}".format(total_iters))
+
             assert total_iters / opt.display_freq < 1e4, 'please set opt.display_freq larger, otherwise too many ' \
                                                          'display/save result'
 
@@ -77,11 +76,26 @@ class Visualizer():
 
             assert opt.save_epoch_freq * dataset_size > opt.print_freq
 
+            print('-----------some training information-----------')
+            print("total samples(iters) : {} in this training".format(total_iters))
+            print('-----------------------------------------------')
+
             # save a help doc
 
+            # create a logging file to store training losses
+            self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
+            with open(self.log_name, "a") as log_file:
+                now = time.strftime("%c")
+                log_file.write('================ Training Loss (%s) ================\n' % now)
 
         else:
             raise NotImplementedError("unknown opt.phase")
+
+
+        print('-----------------------------------------------')
+        print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
+        print('-----------------------------------------------')
+        util.mkdirs([self.img_dir])
 
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom
@@ -89,15 +103,6 @@ class Visualizer():
             if not self.vis.check_connection():
                 self.create_visdom_connections()
 
-        print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
-        util.mkdirs([self.img_dir])
-
-        # create a logging file to store training losses
-        if opt.phase == "train":
-            self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
-            with open(self.log_name, "a") as log_file:
-                now = time.strftime("%c")
-                log_file.write('================ Training Loss (%s) ================\n' % now)
 
     def create_visdom_connections(self):
         """If the program could not connect to Visdom server, this function will start a new server at port < self.port > """
@@ -119,11 +124,11 @@ class Visualizer():
         if len_dim == 5:  # video
             if self.display_id > 0:
                 self.display_videos(visuals, epoch)
-            self.save_videos(visuals, epoch, factor=self.factor)
+            self.save_videos(visuals, epoch, factor=self.output_factor)
         elif len_dim == 4:  # image
             if self.display_id > 0:
                 self.display_images(visuals, epoch)
-            self.save_images(visuals, epoch, factor=self.factor)
+            self.save_images(visuals, epoch, factor=self.output_factor)
         else:
             raise NotImplementedError('visual dim length %d not implemented' % len_dim)
         self.dis_save_times += 1
@@ -185,6 +190,7 @@ class Visualizer():
             self.plot_data = {'X': [], 'Y': [], 'legend': list(losses.keys())}
         self.plot_data['X'].append(epoch + counter_ratio)
         self.plot_data['Y'].append([losses[k] for k in self.plot_data['legend']])
+
         if self.opt.display_id > 0:
             try:
                 self.vis.line(
@@ -227,7 +233,8 @@ class Visualizer():
         Y = np.array(self.plot_data['Y'])
         for ma in moving_average:
             if ma >= Y.shape[0]:
-                print('moving average size too large, change to m:{}'.format(Y.shape[0]))
+                if self.opt.verbose:
+                    print('moving average size{} too large, change to m:{}'.format(ma, max(1, Y.shape[0] - 1)))
                 ma = max(1, Y.shape[0] - 1)
             ma_Y = util.moving_average(Y, ma=ma)
             X = np.linspace(X[0], X[-1], ma_Y.shape[0])
@@ -265,7 +272,7 @@ class Visualizer():
             val = func(HR_G, HR_GroundTruth, only_Luminance=True, crop=self.opt.SR_factor)
             self.iqa_values[i].append(val)
             temp_list.append("{}: {:.2f}".format(self.iqa_name_list[i], val))
-        self.iqa_dict[file_name] = self.join_str.join(temp_list)
+        self.iqa_dict[file_name] = "   ".join(temp_list)
 
     def summary_iqa(self):
         for i in range(len(self.iqa_name_list)):

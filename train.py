@@ -67,7 +67,9 @@ if __name__ == '__main__':
 
         '''save model by epoch'''
         if epoch % opt.save_epoch_freq == 0:              # cache our model every <save_epoch_freq> epochs
+            print('-----------------------------------------------------------------')
             print('saving the model at the end of epoch: %d,  now total iters: %d' % (epoch, total_iters))
+            print('-----------------------------------------------------------------')
             save_prefix = 'epoch_%d' % epoch
             model.save_networks(save_prefix)
             visualizer.save_loss_image(save_prefix)
