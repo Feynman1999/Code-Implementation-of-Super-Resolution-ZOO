@@ -39,11 +39,11 @@ class BaseOptions():
 
         parser.add_argument('--init_type', type=str, default='normal', help='network initialization [normal | msra | xavier | kaiming | orthogonal]')
         parser.add_argument('--init_gain', type=float, default=0.02, help='scaling factor for normal, xavier and orthogonal.')
-        parser.add_argument('--no_dropout', action='store_true', help='no dropout for the generator')
+        parser.add_argument('--no_dropout', type=bool, default=False, help='no dropout for the generator')
         # dataset parameters
         parser.add_argument('--dataset_mode', type=str, default='aligned', help='chooses how datasets are loaded. [unaligned | aligned | aligned_video | single ]')
         parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
-        parser.add_argument('--serial_batches', action='store_true', help='if true, takes images in order to make batches, otherwise takes them randomly')
+        parser.add_argument('--serial_batches', type=bool, default=False, help='if true, takes images in order to make batches, otherwise takes them randomly')
         parser.add_argument('--num_threads', default=4, type=int, help='# threads for loading data')
         parser.add_argument('--batch_size', type=int, default=1, help='input batch size')
         parser.add_argument('--load_size', type=int, default=286, help='scale images to this size')
@@ -53,16 +53,16 @@ class BaseOptions():
         parser.add_argument('--preprocess', type=str, default='crop', help='scaling and cropping of images at load time [resize | scale_width | crop | resize_and_crop | scale_width_and_crop | none]')
         parser.add_argument('--normalize_means', type=str, default='0.5,0.5,0.5', help='normalize means in r,g,b  Please separate with comma. Set to zeros do not normalize.')
         parser.add_argument('--normalize_stds', type=str, default='1.0,1.0,1.0', help='normalize stds in r,g,b  Please separate with comma.')
-        parser.add_argument('--no_flip', action='store_true', help='if specified, do not flip the images for data augmentation')
+        parser.add_argument('--no_flip', type=bool, default=False, help='if specified, do not flip the images for data augmentation')
         parser.add_argument('--multi_base', type=int, default=0, help='if preprocess is none , make sure image width/height is multi of base, but default is 0, you can set in model, e.g. 4')
 
         # additional parameters
         parser.add_argument('--load_epoch', type=str, default='latest', help='which epoch to load? [latest | epoch_x | others up to you]')
-        parser.add_argument('--verbose', action='store_true', help='if specified, print more debugging information')
+        parser.add_argument('--verbose', type=bool, default=False, help='if specified, print more debugging information')
         parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netG}_size{load_size}')
 
         # only have HR data
-        parser.add_argument('--only_HR', action='store_true', help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
+        parser.add_argument('--only_HR', type=bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
         self.initialized = True
         return parser
 

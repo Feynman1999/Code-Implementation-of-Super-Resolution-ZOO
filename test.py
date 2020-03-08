@@ -53,8 +53,7 @@ if __name__ == '__main__':
         A_paths, B_paths = model.get_image_paths()  # get image/video paths
         file_name = get_file_name(A_paths[0])
         visualizer.display_and_save(visuals, file_name)
-        if opt.iqa:
-            visualizer.cal_iqa(visuals, file_name)
+        visualizer.cal_iqa(visuals, file_name)
 
     if opt.iqa:
         visualizer.summary_iqa()

@@ -13,10 +13,9 @@ class TestOptions(BaseOptions):
         parser.add_argument('--factor', type=int, default=1, help='scale factor of result images/videos')
         parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
         # Dropout and Batchnorm has different behavioir during training and test.
-        parser.add_argument('--eval', action='store_true', help='use eval mode during test time.')
+        parser.add_argument('--eval', type=bool, default=False, help='use eval mode during test time.')
         parser.add_argument('--num_test', type=int, default=1000000, help='how many test images to run')
-        # iqa
-        parser.add_argument('--iqa', action='store_true', help='do Image Quality Assessment')
-        parser.add_argument('--iqa_list', type=str, default='psnr,ssim', help='if --iqa, then do the method in the iqa_list')
+        # Image Quality Assessment
+        parser.add_argument('--iqa_list', type=str, default='psnr,ssim', help='do the method in the iqa_list')
         self.isTrain = False
         return parser

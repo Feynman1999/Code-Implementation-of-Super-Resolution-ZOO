@@ -36,7 +36,7 @@ class TECOGANModel(BaseModel):
         parser.set_defaults(beta1='0.9')
         parser.set_defaults(lr=0.0001)
         parser.set_defaults(init_type='xavier')
-        parser.add_argument('--no_pingpong', action='store_true', help='if specified, do not use the pingpong loss for data augmentation')
+        parser.add_argument('--no_pingpong', type=bool, default=False, help='if specified, do not use the pingpong loss for data augmentation')
         parser.add_argument('--resblock_num', type=int, default=10, help='the number of ResidualBlock, 10 / 16 in paper')
         parser.add_argument('--maxvel', type=float, default=24.0, help='scales the flow network output to the normal velocity range')
         if is_train:

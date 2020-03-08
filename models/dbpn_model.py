@@ -1,19 +1,21 @@
 """
 training:
     AB:
-        python train.py --dataroot ./datasets/DIV2K --name DIV2K_dbpn --model dbpn
+        python train.py --dataroot ./datasets/DIV2K --name DIV2K_dbpn --model dbpn  --n_epochs 20000
 
     only HR:
         python train.py --dataroot ./datasets/DIV2K/train/B --name DIV2K_dbpn --model dbpn --only_HR
 
     BitaHub:
-    python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/bitahub/DIV2K/DIV2K_train_HR
-    --name DIV2K_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints --only_HR  --batch_size 16
+        python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/bitahub/DIV2K/DIV2K_train_HR
+        --name DIV2K_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints --only_HR  --batch_size 16
 
 test:
     AB:
         python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --epoch 1e6_iters --iqa --iqa_list psnr
     only HR:
+
+    only LR:
 
 """
 
@@ -57,7 +59,6 @@ class DBPNModel(BaseModel):
         parser.set_defaults(netD='n_layers')
         parser.set_defaults(n_layers_D=2)
         parser.set_defaults(lr=0.0001)
-        parser.set_defaults(n_epochs=20000)
         parser.set_defaults(n_epochs_decay=0)
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=10000)
