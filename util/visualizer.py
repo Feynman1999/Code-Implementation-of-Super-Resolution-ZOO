@@ -66,7 +66,7 @@ class Visualizer():
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
         elif opt.phase == "apply":
-            img_dir_name = 'apply_{}_{}'.format(os.path.basename(self.opt.dataroot), opt.load_epoch)
+            img_dir_name = 'apply_{}_{}_blocksz_{}'.format(os.path.basename(self.opt.dataroot), opt.load_epoch, opt.block_size)
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
             self.now_deal_file_name_with_suffix = None

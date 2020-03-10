@@ -21,7 +21,7 @@ class SingleDataset(BaseDataset):
         self.SR_factor = opt.SR_factor
         self.gap = opt.block_size
 
-        assert util.check_whether_last_dir(opt.dataroot), 'when apply, opt.dataroot:{} should be dir and contains only image files'.format(opt.dataroot)
+        # assert util.check_whether_last_dir(opt.dataroot), 'when apply, opt.dataroot:{} should be dir and contains only image files'.format(opt.dataroot)
         self.dir_A = opt.dataroot
         self.A_paths = sorted(make_images_dataset(self.dir_A, opt.max_dataset_size))  # get image paths
         self.A_sizes = get_images_size(self.A_paths)
