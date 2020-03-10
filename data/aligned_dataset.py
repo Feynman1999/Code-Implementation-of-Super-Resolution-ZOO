@@ -3,6 +3,7 @@ from data.base_dataset import BaseDataset, get_params, get_transform
 from data.image_folder import make_images_dataset
 from PIL import Image
 from util import util
+from data.base_dataset import make_power_2
 
 
 class AlignedDataset(BaseDataset):
@@ -66,7 +67,8 @@ class AlignedDataset(BaseDataset):
             A_path = B_path
             B = Image.open(B_path).convert('RGB')
             w, h = B.size
-            assert w % self.SR_factor == 0 and h % self.SR_factor == 0, "w,h should % SR_factor=0"
+            # B = make_power_2(B, self.opt.multi_base) for some train/test dataset if can't % =0 how to deal?
+            assert w % self.SR_factor == 0 and h % self.SR_factor == 0, "file:{} w,h should % SR_factor=0".format(B_path)
             A = B.resize((w//self.SR_factor, h//self.SR_factor), resample=Image.BICUBIC)
 
         if self.opt.direction == 'BtoA' and (not self.only_HR):

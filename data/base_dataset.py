@@ -85,7 +85,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
 
     :param opt:
     :param params:
-    :param grayscale:
+    :param grayscale: whether to grayscale
     :param method:
     :param crop_size_scale: if you do crop, you can set bigger crop through this param factor
     :return: transforms.Compose(transform_list)
@@ -115,7 +115,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
 
     # if none preprocess , make sure size some multiple of base. e.g. 4
     if opt.preprocess.lower() == 'none' and opt.multi_base > 0:
-        transform_list.append(transforms.Lambda(lambda img: __make_power_2(img, base=opt.multi_base, method=method)))
+        transform_list.append(transforms.Lambda(lambda img: make_power_2(img, base=opt.multi_base, method=method)))
 
     if not opt.no_flip:
         if params is None:
@@ -132,7 +132,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
     return transforms.Compose(transform_list)
 
 
-def __make_power_2(img, base, method=Image.BICUBIC):
+def make_power_2(img, base, method=Image.BICUBIC):
     ow, oh = img.size
     h = int(round(oh / base) * base)
     w = int(round(ow / base) * base)

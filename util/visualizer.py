@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 import matplotlib.pyplot as plt
 import os
 import sys
@@ -6,7 +7,7 @@ import time
 from . import util
 from iqa import find_function_using_name
 from subprocess import Popen, PIPE
-
+from collections import OrderedDict
 
 
 if sys.version_info[0] == 2:
@@ -37,50 +38,14 @@ class Visualizer():
         self.rgb_mean = list(map(float, opt.normalize_means.split(',')))
         self.rgb_std = list(map(float, opt.normalize_stds.split(',')))
         self.dis_save_times = 0
+        self.output_factor = opt.factor
+        self.dataset_size = dataset_size
 
-        if opt.phase == "test":
-            self.output_factor = opt.factor
-            self.iqa_name_list = opt.iqa_list.split(',')
-            self.iqa_values = []  # list in list
-            for i in range(len(self.iqa_name_list)):
-                self.iqa_values.append([])
-            self.iqa_dict = dict()
-            self.iqa_results = []
-
-            load_prefix = opt.load_epoch
-            test_dataset_name = os.path.basename(self.opt.dataroot)
-            img_dir_name = 'test_{}_{}'.format(test_dataset_name, load_prefix)
-            self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
-            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
-
-        elif opt.phase == "train":
-            self.output_factor = 1
+        if opt.phase == "train":
             self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
             self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
 
-            # some checks for better visualize
-            assert opt.display_freq % opt.batch_size == 0 and opt.print_freq % opt.batch_size == 0, \
-                'please make sure them % batchsize =0 for better understanding of iter(one sample),' \
-                'iteration(one batchsize) and epoch(all sample)'
-
-            total_epochs = (opt.n_epochs + opt.n_epochs_decay)
-            total_iters = total_epochs * dataset_size
-
-            assert total_iters / opt.display_freq < 1e4, 'please set opt.display_freq larger, otherwise too many ' \
-                                                         'display/save result'
-
-            assert total_iters / opt.print_freq < 1e5, 'please set opt.print_freq larger, otherwise too many loss log'
-
-            assert total_epochs / opt.save_epoch_freq < 1e2, 'please set opt.save_epoch_freq larger, otherwise too ' \
-                                                             'many times save models'
-
-            assert opt.save_epoch_freq * dataset_size > opt.print_freq
-
-            print('-----------some training information-----------')
-            print("total samples(iters) : {} in this training".format(total_iters))
-            print('-----------------------------------------------')
-
-            # save a help doc
+            self.do_some_checks_for_training()
 
             # create a logging file to store training losses
             self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
@@ -88,6 +53,24 @@ class Visualizer():
                 now = time.strftime("%c")
                 log_file.write('================ Training Loss (%s) ================\n' % now)
 
+        elif opt.phase == "test":
+            self.iqa_name_list = opt.iqa_list.split(',')
+            self.iqa_values = []  # list in list
+            for i in range(len(self.iqa_name_list)):
+                self.iqa_values.append([])
+            self.iqa_dict = dict()
+            self.iqa_results = []
+
+            img_dir_name = 'test_{}_{}'.format(os.path.basename(self.opt.dataroot), opt.load_epoch)
+            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
+            self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
+
+        elif opt.phase == "apply":
+            img_dir_name = 'apply_{}_{}'.format(os.path.basename(self.opt.dataroot), opt.load_epoch)
+            self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
+
+            self.now_deal_file_name_with_suffix = None
+            self.last_deal_x = -1
         else:
             raise NotImplementedError("unknown opt.phase")
 
@@ -103,6 +86,39 @@ class Visualizer():
             if not self.vis.check_connection():
                 self.create_visdom_connections()
 
+    def do_some_checks_for_training(self):
+        # some checks for better visualize
+        opt = self.opt
+        assert opt.display_freq % opt.batch_size == 0 and opt.print_freq % opt.batch_size == 0, \
+            'please make sure them % batchsize =0 for better understanding of iter(one sample),' \
+            'iteration(one batchsize) and epoch(all sample)'
+
+        pre_trained_epochs = opt.epoch_count - 1
+        total_epochs = (opt.n_epochs + opt.n_epochs_decay)
+        will_train_epochs = total_epochs - pre_trained_epochs
+
+        total_iters = total_epochs * self.dataset_size
+        will_train_iters = will_train_epochs * self.dataset_size
+
+        assert will_train_iters / opt.display_freq < 1e4, 'please set opt.display_freq larger, otherwise too many ' \
+                                                     'display/save result'
+
+        assert will_train_iters / opt.print_freq < 1e5, 'please set opt.print_freq larger, otherwise too many loss log'
+
+        assert will_train_epochs / opt.save_epoch_freq < 1e2, 'please set opt.save_epoch_freq larger, otherwise too ' \
+                                                         'many times save models'
+
+        assert opt.save_epoch_freq * self.dataset_size > opt.print_freq, 'please make sure opt.save_epoch_freq * ' \
+                                                                         'self.dataset_size > opt.print_freq, so that when' \
+                                                                         'save loss image we have loss data'
+
+        print('-----------some training information-----------')
+        print("total samples(iters) : {}    epoch:{}  for this model".format(total_iters, total_epochs))
+        print("pre-trained epoch:{}".format(pre_trained_epochs))
+        print("will train epoch:{}  for this time training".format(will_train_epochs))
+        print('-----------------------------------------------')
+
+        # save a help doc
 
     def create_visdom_connections(self):
         """If the program could not connect to Visdom server, this function will start a new server at port < self.port > """
@@ -112,10 +128,10 @@ class Visualizer():
         Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
     def display_and_save(self, visuals, epoch):
-        """Display current image or video results on visdom.used both in train and test.
+        """Display current image or video results on visdom and save. used in train, test and apply.
 
         :param visuals: dictionary of images to display and save
-        :param epoch: the current epoch for train and the file name for test
+        :param epoch: the current epoch for train and the file name for test or apply
         :return: no return
         """
         identification = "epoch" if self.opt.phase == "train" else "filename"
@@ -132,6 +148,70 @@ class Visualizer():
         else:
             raise NotImplementedError('visual dim length %d not implemented' % len_dim)
         self.dis_save_times += 1
+
+    def save_for_apply(self, visuals, file_name_with_suffix, idx):
+        """
+        only support one thread now
+        :param visuals:
+        :param file_name_with_suffix:  xxxxxx__0__1.jpg
+        :return:
+        """
+        def add_block_to_queue():
+            for i, (label, image) in enumerate(visuals.items()):
+                self.row_queue[i].append(image)
+
+        def blocks_pop_queue():
+            for i, item in enumerate(visuals.keys()):
+                self.row_list[i].append(torch.cat(self.row_queue[i], dim=-1))
+                self.row_queue[i] = []
+
+        def init_lists():
+            self.row_list = []  # cat on column at last
+            self.row_queue = []  # cat on row to form a row and append to row_list
+            for name in visuals.keys():
+                self.row_list.append([])
+                self.row_queue.append([])
+
+        def make_result():
+            blocks_pop_queue()
+            visual_ret = OrderedDict()
+            for i, name in enumerate(visuals.keys()):
+                result = torch.cat(self.row_list[i], dim=-2)
+                self.row_list[i] = []
+                visual_ret[name] = result
+            file_name = os.path.splitext(self.now_deal_file_name_with_suffix)[0]
+            self.display_and_save(visuals=visual_ret, epoch=file_name)
+
+        len_dim = len(list(visuals.values())[0].shape)
+        if len_dim == 5:  # video
+            pass
+        elif len_dim == 4:  # image
+            file_name = os.path.splitext(file_name_with_suffix)[0]
+            suffix = os.path.splitext(file_name_with_suffix)[1]   # e.g.    .jpg
+            file_name_split_by__list = file_name.split("__")
+            x = int(file_name_split_by__list[-2])
+            y = int(file_name_split_by__list[-1])
+            origin_file_name_with_suffix = "__".join(file_name_split_by__list[:-2]) + suffix
+            if origin_file_name_with_suffix != self.now_deal_file_name_with_suffix:  # change image, create list in list
+                assert x == 0 and y == 0
+                if self.now_deal_file_name_with_suffix is None:  # this time is the first block on this apply task
+                    pass
+                else:  # tail deal
+                    make_result()
+                init_lists()
+                add_block_to_queue()
+            else:
+                if x != self.last_deal_x:  # change row
+                    blocks_pop_queue()
+                    add_block_to_queue()
+                else:  # do not change row
+                    add_block_to_queue()
+            self.last_deal_x = x
+            self.now_deal_file_name_with_suffix = origin_file_name_with_suffix
+            if idx+1 == self.dataset_size:
+                make_result()  # for the last image
+        else:
+            raise NotImplementedError('visual dim length %d not implemented' % len_dim)
 
     def display_images(self, visuals, epoch, batch_idx=0):
         '''
@@ -154,7 +234,7 @@ class Visualizer():
             image_numpy = util.tensor2im(image[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c]
             if self.opt.phase == "train":
                 img_path = os.path.join(self.img_dir, '%.6d_epoch%.6d_%s.png' % (self.dis_save_times+1, epoch_or_name, label))
-            elif self.opt.phase == "test":
+            elif self.opt.phase in ("test", "apply"):
                 img_path = os.path.join(self.img_dir, '%s_%s.png' % (epoch_or_name, label))
             else:
                 raise NotImplementedError("unknown opt.phase")
@@ -172,7 +252,7 @@ class Visualizer():
             video = util.tensor2im(video[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [b,h,w,c]
             if self.opt.phase == "train":
                 vid_path = os.path.join(self.img_dir, '%.6d_epoch%.6d_%s.avi' % (self.dis_save_times+1, epoch_or_name, label))
-            elif self.opt.phase == "test":
+            elif self.opt.phase in ("test", "apply"):
                 vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
             else:
                 raise NotImplementedError("unknown opt.phase")

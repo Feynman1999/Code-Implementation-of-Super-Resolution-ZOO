@@ -1,8 +1,5 @@
 """
 python train.py --dataroot ./datasets/youku --name youku_frvsr --model frvsr
-
-BitaHub:
-python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/feynman1999/Vid4/vid4 --name vid4_frvsr --model frvsr  --display_id 0 --checkpoints_dir /output/checkpoints
 """
 import torch
 from .base_model import BaseModel

@@ -55,5 +55,4 @@ if __name__ == '__main__':
         visualizer.display_and_save(visuals, file_name)
         visualizer.cal_iqa(visuals, file_name)
 
-    if opt.iqa:
-        visualizer.summary_iqa()
+    visualizer.summary_iqa()

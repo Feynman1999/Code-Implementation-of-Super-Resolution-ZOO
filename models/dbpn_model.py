@@ -4,18 +4,25 @@ training:
         python train.py --dataroot ./datasets/DIV2K --name DIV2K_dbpn --model dbpn  --n_epochs 20000
 
     only HR:
-        python train.py --dataroot ./datasets/DIV2K/train/B --name DIV2K_dbpn --model dbpn --only_HR
+        python train.py --dataroot ./datasets/DIV2K/train/B --name DIV2K_dbpn --model dbpn --only_HR True
 
-    BitaHub:
-        python /code/Code-Implementation-of-Super-Resolution-ZOO-master/train.py --dataroot /data/bitahub/DIV2K/DIV2K_train_HR
-        --name DIV2K_dbpn --model dbpn  --display_id 0 --checkpoints_dir /output/checkpoints --only_HR  --batch_size 16
+    AIMAX:
+        gpu:
+            python3 train.py
+            --dataroot /opt/data/private/datasets/DIV2K/DIV2K_train_HR
+            --name DIV2K_dbpn --model dbpn --batch_size 16
+            --display_freq 80000  --print_freq 8000  --save_epoch_freq 2000
+            --continue_train True  --epoch_count 5001 --n_epochs 20000  --load_epoch epoch_5000
+            --only_HR True
 
 test:
     AB:
-        python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --epoch 1e6_iters --iqa --iqa_list psnr
+        python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000
     only HR:
+        python test.py --dataroot ./datasets/Set5/test/B  --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000 --only_HR True
 
-    only LR:
+apply:
+    python apply.py --dataroot  C:/Users/76397/Desktop/hahah   --name DIV2k_dbpn   --model dbpn  --load_epoch epoch_8000
 
 """
 
@@ -90,7 +97,7 @@ class DBPNModel(BaseModel):
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>
         if self.isTrain:
             self.model_names = ['G']
-        else:  # during test time, only load G
+        else:  # during test and apply, only load G
             self.model_names = ['G']
 
         self.netG = dbpn_networks.define_dbpn_net(opt)
@@ -118,9 +125,8 @@ class DBPNModel(BaseModel):
         The option 'direction' can be used to swap images in domain A and domain B.
         """
         self.LR = input['A'].to(self.device)
-        self.HR_GroundTruth = input['B'].to(self.device)
-        # print(self.LR.shape, self.HR_GroundTruth.shape)
         self.A_paths = input['A_paths']  # list len = batchsize
+        self.HR_GroundTruth = input['B'].to(self.device)
         self.B_paths = input['B_paths']
 
     def forward(self):

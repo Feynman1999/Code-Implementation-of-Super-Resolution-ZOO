@@ -21,48 +21,50 @@ class BaseOptions():
         """Define the common options that are used in both training and test."""
         # basic parameters
         parser.add_argument('--SR_factor', type=int, default=1, help='super resolution X? task e.g. X4')
-        parser.add_argument('--dataroot', required=True, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
+        parser.add_argument('--dataroot', required=True, help='path to images (should have subfolders train,  etc)')
         parser.add_argument('--name', type=str, default='experiment_name', help='name of the experiment. It decides where to store samples and models')
-        parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
+        parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
+
         # model parameters
         parser.add_argument('--model', type=str, default='frvsr', help='chooses which model to use. [frvsr | cycle_gan | pix2pix | test | colorization]')
         parser.add_argument('--input_nc', type=int, default=3, help='# of input image channels: 3 for RGB and 1 for grayscale')
         parser.add_argument('--output_nc', type=int, default=3, help='# of output image channels: 3 for RGB and 1 for grayscale')
+        parser.add_argument('--init_type', type=str, default='normal', help='network initialization [normal | msra | xavier | kaiming | orthogonal]')
+        parser.add_argument('--init_gain', type=float, default=0.02, help='scaling factor for normal, xavier and orthogonal.')
+        parser.add_argument('--load_epoch', type=str, default='latest', help='which epoch to load? [latest | epoch_x | others up to you]')
+
+        # dataset parameters
+        parser.add_argument('--dataset_mode', type=str, default='aligned', help='chooses how datasets are loaded. [unaligned | aligned | aligned_video | single ]')
+        parser.add_argument('--batch_size', type=int, default=1, help='input batch size')
+        parser.add_argument('--preprocess', type=str, default='crop', help='scaling and cropping of images at load time [resize | scale_width | crop | resize_and_crop | scale_width_and_crop | none]')
+        parser.add_argument('--load_size', type=int, default=286, help='scale images to this size')
+        parser.add_argument('--crop_size', type=int, default=128, help='then crop to this size')
+        parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
+        parser.add_argument('--serial_batches', type=bool, default=False, help='if true, takes images in order to make batches, otherwise takes them randomly')
+        parser.add_argument('--num_threads', default=4, type=int, help='# threads for loading data')
+        parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
+        parser.add_argument('--normalize_means', type=str, default='0.5,0.5,0.5', help='normalize means in r,g,b  Please separate with comma. Set to zeros do not normalize.')
+        parser.add_argument('--normalize_stds', type=str, default='1.0,1.0,1.0', help='normalize stds in r,g,b  Please separate with comma.')
+        parser.add_argument('--no_flip', type=bool, default=False, help='if specified, do not flip the images for data augmentation')
+        parser.add_argument('--multi_base', type=int, default=0, help='if preprocess is none , make sure image width/height is multi of base, but default is 0, you can set in model, e.g. 4')
+        parser.add_argument('--factor', type=int, default=1, help='scale factor of save images/videos')
+
+        # only have HR data
+        parser.add_argument('--only_HR', type=bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
+
+        # additional parameters
+        parser.add_argument('--verbose', type=bool, default=False, help='if specified, print more debugging information')
+        parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netG}_size{load_size}')
+
         # if you use base_networks, notice paras below
+        parser.add_argument('--no_dropout', type=bool, default=False, help='no dropout for the generator')
         parser.add_argument('--ngf', type=int, default=64, help='# of gen filters in the last conv layer')
         parser.add_argument('--ndf', type=int, default=64, help='# of discrim filters in the first conv layer')
         parser.add_argument('--netD', type=str, default='basic', help='specify discriminator architecture [basic | n_layers | pixel]. The basic model is a 70x70 PatchGAN. n_layers allows you to specify the layers in the discriminator')
         parser.add_argument('--netG', type=str, default='resnet_9blocks', help='specify generator architecture [resnet_9blocks | resnet_6blocks | unet_256 | unet_128]')
         parser.add_argument('--n_layers_D', type=int, default=3, help='only used if netD==n_layers')
         parser.add_argument('--norm', type=str, default='none', help='instance normalization or batch normalization [instance | batch | none]')
-
-        parser.add_argument('--init_type', type=str, default='normal', help='network initialization [normal | msra | xavier | kaiming | orthogonal]')
-        parser.add_argument('--init_gain', type=float, default=0.02, help='scaling factor for normal, xavier and orthogonal.')
-        parser.add_argument('--no_dropout', type=bool, default=False, help='no dropout for the generator')
-        # dataset parameters
-        parser.add_argument('--dataset_mode', type=str, default='aligned', help='chooses how datasets are loaded. [unaligned | aligned | aligned_video | single ]')
-        parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
-        parser.add_argument('--serial_batches', type=bool, default=False, help='if true, takes images in order to make batches, otherwise takes them randomly')
-        parser.add_argument('--num_threads', default=4, type=int, help='# threads for loading data')
-        parser.add_argument('--batch_size', type=int, default=1, help='input batch size')
-        parser.add_argument('--load_size', type=int, default=286, help='scale images to this size')
-        parser.add_argument('--crop_size', type=int, default=128, help='then crop to this size')
-
-        parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
-        parser.add_argument('--preprocess', type=str, default='crop', help='scaling and cropping of images at load time [resize | scale_width | crop | resize_and_crop | scale_width_and_crop | none]')
-        parser.add_argument('--normalize_means', type=str, default='0.5,0.5,0.5', help='normalize means in r,g,b  Please separate with comma. Set to zeros do not normalize.')
-        parser.add_argument('--normalize_stds', type=str, default='1.0,1.0,1.0', help='normalize stds in r,g,b  Please separate with comma.')
-        parser.add_argument('--no_flip', type=bool, default=False, help='if specified, do not flip the images for data augmentation')
-        parser.add_argument('--multi_base', type=int, default=0, help='if preprocess is none , make sure image width/height is multi of base, but default is 0, you can set in model, e.g. 4')
-
-        # additional parameters
-        parser.add_argument('--load_epoch', type=str, default='latest', help='which epoch to load? [latest | epoch_x | others up to you]')
-        parser.add_argument('--verbose', type=bool, default=False, help='if specified, print more debugging information')
-        parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netG}_size{load_size}')
-
-        # only have HR data
-        parser.add_argument('--only_HR', type=bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
         self.initialized = True
         return parser
 
@@ -78,6 +80,8 @@ class BaseOptions():
 
         # get the basic options
         opt, _ = parser.parse_known_args()
+        assert opt.phase in ("train", "test", "apply")
+        self.isTrain = (opt.phase == "train")
 
         # modify model-related parser options
         model_name = opt.model
@@ -122,7 +126,6 @@ class BaseOptions():
     def parse(self):
         """Parse our options, create checkpoints directory suffix, and set up gpu device."""
         opt = self.gather_options()
-        opt.isTrain = self.isTrain   # train or test
 
         # process opt.suffix
         if opt.suffix:
