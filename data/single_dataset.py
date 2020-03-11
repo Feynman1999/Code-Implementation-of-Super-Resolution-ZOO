@@ -1,6 +1,5 @@
 """
-for apply.py
-
+for image apply
 """
 from data.base_dataset import BaseDataset, get_transform
 from data.image_folder import make_images_dataset, get_images_size
@@ -21,7 +20,7 @@ class SingleDataset(BaseDataset):
         self.SR_factor = opt.SR_factor
         self.gap = opt.block_size
 
-        # assert util.check_whether_last_dir(opt.dataroot), 'when apply, opt.dataroot:{} should be dir and contains only image files'.format(opt.dataroot)
+        assert util.check_whether_last_dir(opt.dataroot), 'when apply, opt.dataroot:{} should be dir and contains only image files'.format(opt.dataroot)
         self.dir_A = opt.dataroot
         self.A_paths = sorted(make_images_dataset(self.dir_A, opt.max_dataset_size))  # get image paths
         self.A_sizes = get_images_size(self.A_paths)
@@ -79,8 +78,6 @@ class SingleDataset(BaseDataset):
         assert ow == A_img.size[0] and oh == A_img.size[1]
 
         A = self.transform(A_img)
-        B = self.transform(A_img.resize((ow*self.SR_factor, oh*self.SR_factor), resample=Image.BICUBIC))
-
 
         file_name = util_dataset.get_file_name(A_path)
         dir_name = os.path.dirname(A_path)
@@ -91,7 +88,7 @@ class SingleDataset(BaseDataset):
         self.bucket[self.now_do_id] += 1
         if self.bucket[self.now_do_id] == self.bucket_expect[self.now_do_id]:
             self.now_do_id += 1
-        return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': A_path}
+        return {'A': A, 'A_paths': A_path}
 
     def __len__(self):
         """Return the total number of images in the dataset."""

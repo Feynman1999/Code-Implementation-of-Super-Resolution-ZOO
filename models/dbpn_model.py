@@ -22,7 +22,7 @@ test:
         python test.py --dataroot ./datasets/Set5/test/B  --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000 --only_HR True
 
 apply:
-    python apply.py --dataroot  C:/Users/76397/Desktop/hahah   --name DIV2k_dbpn   --model dbpn  --load_epoch epoch_8000
+    python apply.py --dataroot  C:/Users/76397/Desktop/someimages   --name DIV2k_dbpn   --model dbpn  --load_epoch epoch_8000
 
 """
 
@@ -92,7 +92,10 @@ class DBPNModel(BaseModel):
         self.loss_names = ['G_L1']  # please use loss_G_L1 below
 
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
-        self.visual_names = ['LR', 'HR_GroundTruth', 'HR_G']
+        if self.opt.phase == "apply":
+            self.visual_names = ['LR', 'HR_Bicubic', 'HR_G']
+        else:
+            self.visual_names = ['LR', 'HR_Bicubic', 'HR_GroundTruth', 'HR_G']
 
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>
         if self.isTrain:
@@ -125,15 +128,19 @@ class DBPNModel(BaseModel):
         The option 'direction' can be used to swap images in domain A and domain B.
         """
         self.LR = input['A'].to(self.device)
-        self.A_paths = input['A_paths']  # list len = batchsize
-        self.HR_GroundTruth = input['B'].to(self.device)
-        self.B_paths = input['B_paths']
+        self.A_paths = input['A_paths']  # list       len = batchsize
+        if self.opt.phase in ("train", "test"):
+            self.HR_GroundTruth = input['B'].to(self.device)
+            self.B_paths = input['B_paths']
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
         self.HR_G = self.netG(self.LR)  # G(A)
         # self.HR_copy = nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bilinear')
         # assert self.HR_G.shape == self.HR_copy.shape
+
+    def compute_visuals(self):
+        self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)
 
     def backward_G(self):
         """Calculate loss for the LWSR/G"""

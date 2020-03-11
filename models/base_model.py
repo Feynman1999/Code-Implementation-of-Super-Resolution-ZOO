@@ -80,6 +80,11 @@ class BaseModel(ABC):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         pass
 
+    @abstractmethod
+    def compute_visuals(self):
+        """Calculate additional output images for visualization"""
+        pass
+
     def setup(self, opt):
         """Load and print networks; create schedulers
 
@@ -109,10 +114,6 @@ class BaseModel(ABC):
         with torch.no_grad():
             self.forward()
             self.compute_visuals()
-
-    def compute_visuals(self):
-        """Calculate additional output images for visdom and HTML visualization"""
-        pass
 
     def get_image_paths(self):
         """ Return image paths that are used to load current data"""
