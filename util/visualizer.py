@@ -40,18 +40,24 @@ class Visualizer():
         self.dis_save_times = 0
         self.output_factor = opt.factor
         self.dataset_size = dataset_size
+        self.droped_data = dataset_size % opt.batch_size
+        self.dataset_size = self.dataset_size - self.droped_data  # drop last
 
         if opt.phase == "train":
             self.save_dir = os.path.join(opt.checkpoints_dir, opt.name)
             self.img_dir = os.path.join(opt.checkpoints_dir, opt.name, 'images')
-
-            self.do_some_checks_for_training()
 
             # create a logging file to store training losses
             self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
             with open(self.log_name, "a") as log_file:
                 now = time.strftime("%c")
                 log_file.write('================ Training Loss (%s) ================\n' % now)
+            # create a help file to store some help information
+            self.help_name = os.path.join(opt.checkpoints_dir, opt.name, 'help_log.txt')
+            with open(self.help_name, "a") as help_file:
+                now = time.strftime("%c")
+                help_file.write('================ HELP Information (%s) ================\n' % now)
+            self.do_some_checks_for_training_and_print_save_help_info()
 
         elif opt.phase == "test":
             self.iqa_name_list = opt.iqa_list.split(',')
@@ -75,9 +81,7 @@ class Visualizer():
             raise NotImplementedError("unknown opt.phase")
 
 
-        print('-----------------------------------------------')
         print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
-        print('-----------------------------------------------')
         util.mkdirs([self.img_dir])
 
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
@@ -86,7 +90,7 @@ class Visualizer():
             if not self.vis.check_connection():
                 self.create_visdom_connections()
 
-    def do_some_checks_for_training(self):
+    def do_some_checks_for_training_and_print_save_help_info(self):
         # some checks for better visualize
         opt = self.opt
         assert opt.display_freq % opt.batch_size == 0 and opt.print_freq % opt.batch_size == 0, \
@@ -112,13 +116,20 @@ class Visualizer():
                                                                          'self.dataset_size > opt.print_freq, so that when' \
                                                                          'save loss image we have loss data'
 
-        print('-----------some training information-----------')
-        print("total samples(iters) : {}    epoch:{}  for this model".format(total_iters, total_epochs))
-        print("pre-trained epoch:{}".format(pre_trained_epochs))
-        print("will train epoch:{}  for this time training".format(will_train_epochs))
-        print('-----------------------------------------------')
+        content = ['\n-----------some training information-----------']
+        content.append("training dataset size: {} samples(iters), have droped {} iters".format(self.dataset_size, self.droped_data))
+        content.append("total {} samples(iters)  and  {} epoch for this model".format(total_iters, total_epochs))
+        content.append("pre-trained {} epochs, will train {} epochs for this time training".format(pre_trained_epochs, will_train_epochs))
+        content.append("{:^50}: {} iters and {:.3f} epochs".format("display and save frequency", opt.display_freq, opt.display_freq / self.dataset_size))
+        content.append("{:^50}: {} iters and {:.3f} epochs".format("print loss frequency", opt.print_freq, opt.print_freq / self.dataset_size))
+        content.append("{:^50}: {} epochs".format("save model frequency", opt.save_epoch_freq))
+        content.append('-----------------------------------------------\n')
 
         # save a help doc
+        with open(self.help_name, "a") as help_file:
+            help_file.write('%s\n' % "\n".join(content))  # save the message
+
+        print("\n".join(content))
 
     def create_visdom_connections(self):
         """If the program could not connect to Visdom server, this function will start a new server at port < self.port > """
