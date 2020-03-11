@@ -24,6 +24,8 @@ todolist:
 
 * 分布式训练
 
+* continue_train   adam?
+
 ## help
 
 first run 

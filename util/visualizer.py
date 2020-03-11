@@ -117,7 +117,7 @@ class Visualizer():
                                                                          'save loss image we have loss data'
 
         content = ['\n-----------some training information-----------']
-        content.append("training dataset size: {} samples(iters), have droped {} iters".format(self.dataset_size, self.droped_data))
+        content.append("training dataset size: {} samples(iters), have droped {} iters. batchsize: {} iters.".format(self.dataset_size, self.droped_data, opt.batch_size))
         content.append("total {} samples(iters)  and  {} epoch for this model".format(total_iters, total_epochs))
         content.append("pre-trained {} epochs, will train {} epochs for this time training".format(pre_trained_epochs, will_train_epochs))
         content.append("{:^50}: {} iters and {:.3f} epochs".format("display and save frequency", opt.display_freq, opt.display_freq / self.dataset_size))
@@ -316,8 +316,13 @@ class Visualizer():
             log_file.write('%s\n' % message)  # save the message
 
     def save_loss_image(self, save_prefix, moving_average=(10, 100)):
-        save_filename = '%s_loss_moving_average_' % save_prefix  # save_prefix is latest or epoch_100
-        assert hasattr(self, 'plot_data')
+        """
+        :param save_prefix: save_prefix is "latest" or "epoch_100"
+        :param moving_average: do moving average
+        :return:
+        """
+        save_filename = '%s_loss_moving_average_' % save_prefix  #
+        assert hasattr(self, 'plot_data'), 'please make sure already have loss data when save loss image'
 
         # do moving_average
         X = np.array(self.plot_data['X'])
@@ -333,7 +338,6 @@ class Visualizer():
             gap = int(np.ceil(ma_Y.shape[0] / maxn))
             title = "loss from epoch {:.2f} to epoch {:.2f}  moving_average: {}".format(X[0], X[-1], ma)
             plt.figure(figsize=(len(X[::gap])/100+1, 8))
-            # 多个figure不好！
             for i in range(ma_Y.shape[1]):
                 plt.plot(X[::gap], ma_Y[:, i][::gap], label=self.plot_data['legend'][i])  # promise that <= 10000
             plt.title(title)
@@ -344,6 +348,7 @@ class Visualizer():
             fig.savefig(os.path.join(self.save_dir, save_filename + str(ma) + '.svg'), dpi=600, bbox_inches='tight')
             # plt.show()
             plt.clf()
+            plt.close()
 
     def cal_iqa(self, visuals, file_name):
         """used in train and test.

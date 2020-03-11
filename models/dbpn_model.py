@@ -12,7 +12,7 @@ training:
             --dataroot /opt/data/private/datasets/DIV2K/DIV2K_train_HR
             --name DIV2K_dbpn --model dbpn --batch_size 16
             --display_freq 80000  --print_freq 8000  --save_epoch_freq 2000
-            --continue_train True  --n_epochs 20000  --load_epoch epoch_5000  --epoch_count 5001
+            --continue_train True  --n_epochs 20000  --load_epoch epoch_10000  --epoch_count 10001
             --only_HR True
 
 test:
