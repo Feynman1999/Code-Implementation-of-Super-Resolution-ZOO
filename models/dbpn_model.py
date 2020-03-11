@@ -12,7 +12,7 @@ training:
             --dataroot /opt/data/private/datasets/DIV2K/DIV2K_train_HR
             --name DIV2K_dbpn --model dbpn --batch_size 16
             --display_freq 80000  --print_freq 8000  --save_epoch_freq 2000
-            --continue_train True  --epoch_count 5001 --n_epochs 20000  --load_epoch epoch_5000
+            --continue_train True  --n_epochs 20000  --load_epoch epoch_5000  --epoch_count 5001
             --only_HR True
 
 test:
@@ -66,7 +66,6 @@ class DBPNModel(BaseModel):
         parser.set_defaults(netD='n_layers')
         parser.set_defaults(n_layers_D=2)
         parser.set_defaults(lr=0.0001)
-        parser.set_defaults(n_epochs_decay=0)
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=10000)
         parser.set_defaults(init_type='msra')

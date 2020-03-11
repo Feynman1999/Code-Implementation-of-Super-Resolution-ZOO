@@ -20,6 +20,9 @@ todolist:
 
 * bug : test的时候打印options没有hard code的内容 思考如何修改
 
+* 仔细思考 Options   四个部分整理一下
+
+* 分布式训练
 
 ## help
 

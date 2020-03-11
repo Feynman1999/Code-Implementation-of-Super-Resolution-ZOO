@@ -119,7 +119,7 @@ class BaseModel(ABC):
         """ Return image paths that are used to load current data"""
         return self.A_paths, self.B_paths
 
-    def update_learning_rate(self):
+    def update_learning_rate(self, verbose_flag=True):
         """Update learning rates for all the networks; called at the end of every epoch"""
         for scheduler in self.schedulers:
             if self.opt.lr_policy == 'plateau':
@@ -127,8 +127,10 @@ class BaseModel(ABC):
             else:
                 scheduler.step()
 
-        lr = self.optimizers[0].param_groups[0]['lr']
-        print('updated learning rate = %.7f\n' % lr)
+        if verbose_flag:
+            lr_list = [item.param_groups[0]['lr'] for item in self.optimizers]
+            for i, lr in enumerate(lr_list):
+                print('updated learning rate_{} = {:.7f}\n'.format(i+1, lr))
 
     def get_current_visuals(self):
         """Return visualization images / videos. train.py will display these images / videos with visdom"""
