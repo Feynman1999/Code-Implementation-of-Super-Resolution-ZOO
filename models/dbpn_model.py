@@ -57,7 +57,6 @@ class DBPNModel(BaseModel):
         """
         parser.set_defaults(dataset_mode='aligned')
         parser.set_defaults(batch_size=4)
-        parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(normalize_means='0.5,0.5,0.5')
         parser.set_defaults(crop_size=40)

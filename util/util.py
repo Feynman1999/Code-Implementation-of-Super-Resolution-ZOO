@@ -40,18 +40,24 @@ def tensor2im(input_image, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)
     return image_tensor.numpy()
 
 
-def save_image(image_numpy, image_path, factor=1, inverse=False):
-    """Save a numpy image to the disk
+def save_image(image, image_path, factor=1, inverse=False):
+    """Save a numpy(or PIL.image) image to the disk
 
     Parameters:
-        image_numpy (numpy array) -- input numpy array
+        image                     -- input numpy array or PIL.image
         image_path (str)          -- the path of the image
         factor                    -- factor for resize
         inverse                   -- if True down sample otherwise up sample
     """
+    if isinstance(image, np.ndarray):
+        assert len(image.shape) == 3
+        image_pil = Image.fromarray(image)
+    elif isinstance(image, Image.Image):
+        image_pil = image
+    else:
+        raise TypeError('image must be PIL.Image.Image or 3d np.ndarray!')
 
-    image_pil = Image.fromarray(image_numpy)
-    h, w, _ = image_numpy.shape
+    w,h = image_pil.size
 
     assert factor >= 1, "factor should >=1"
 
@@ -67,14 +73,25 @@ def save_image(image_numpy, image_path, factor=1, inverse=False):
 
 def save_video(video, video_path, factor=1, fps=2, inverse=True):
     '''
-        Save a numpy video to the disk  [b,h,w,c]
-    :param video_frames_list:  rgb numpy image list
-    :param video_path:
+        Save a numpy video to the disk
+    :param video_frames_list:  rgb numpy image(or PIL.image) list [..., [h,w,c], ...]  or single 4d ndarray [b,h,w,c]
+    :param video_path: dst path
     :param SR_factor:
     :param fps:
     :return:  none
     '''
-    length = video.shape[0]
+    if isinstance(video, list):
+        for i in range(len(video)):
+            if isinstance(video[i], np.ndarray):
+                assert len(video[i].shape) == 3, 'not video!'
+            elif isinstance(video[i], Image.Image):
+                video[i] = np.array(video[i])
+                assert len(video[i].shape) == 3, 'not video!'
+        length = len(video)
+    elif isinstance(video, np.ndarray):
+        assert len(video.shape) == 4, 'not video!'
+        length = video.shape[0]
+
     h, w, _ = video[0].shape
     # notice that in general task, idx 0 is all black...
     # print_numpy(video_frames_list[1])

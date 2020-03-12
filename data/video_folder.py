@@ -50,14 +50,15 @@ def process_y4m_frame(frame):
     dst = cv2.merge([img_y, enlarge_u, enlarge_v])
     bgr = cv2.cvtColor(dst, cv2.COLOR_YUV2BGR)
 
-    y4m_frames.append(Image.fromarray(bgr[..., ::-1]))
+    y4m_frames.append(bgr[..., ::-1])
 
 
-def read_video(videopath):
+def read_video(videopath, PIL_Image_flag=True):
     """
 
     :param videopath: the path to the video
-    :return: PIL.image frames list
+    :param PIL_Image_flag: whether return PIL.Image.Image list
+    :return: PIL.image frames list or numpy.ndarray list
     """
     if videopath.endswith(".y4m"):
         global y4m_frames
@@ -71,7 +72,10 @@ def read_video(videopath):
                 if not data:
                     break
                 parser.decode(data)
-        return y4m_frames
+        if PIL_Image_flag:
+            return [Image.fromarray(f) for f in y4m_frames]
+        else:
+            return y4m_frames
 
     else:
         cap = cv2.VideoCapture(videopath)
@@ -87,7 +91,10 @@ def read_video(videopath):
         cap.release()  # close vapture
 
         for i, bgr in enumerate(frames):
-            frames[i] = Image.fromarray(bgr[..., ::-1])
+            frames[i] = bgr[..., ::-1]
 
-        return frames
+        if PIL_Image_flag:
+            return [Image.fromarray(f) for f in frames]
+        else:
+            return frames
         # cv2.destroyAllWindows()

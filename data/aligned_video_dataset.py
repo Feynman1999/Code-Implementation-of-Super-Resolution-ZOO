@@ -3,8 +3,8 @@ import random
 from data.base_dataset import BaseDataset, get_params, get_transform
 from data.video_folder import make_videos_dataset, read_video
 import torch
-from PIL import Image
-import numpy as np
+from util import util, util_dataset
+
 
 class AlignedVideoDataset(BaseDataset):
     """A dataset class for paired video dataset.
@@ -23,9 +23,26 @@ class AlignedVideoDataset(BaseDataset):
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
-        self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
-        self.dir_A = os.path.join(self.dir_AB, 'A')
-        self.dir_B = os.path.join(self.dir_AB, 'B')
+        self.only_HR = opt.only_HR
+        self.SR_factor = opt.SR_factor
+
+        if self.only_HR:  # different from image, we create A/B dataset first (for saving time)
+            assert util.check_whether_last_dir(opt.dataroot), 'when only HR, opt.dataroot should be dir and contains only video files'
+            assert opt.direction == 'AtoB', 'please make sure direction is AtoB when set only_HR true'
+            print("warning! different from image, we generate LR video and save to disk first, otherwise will cost much time on preprocessing!")
+            print("please make sure your disk have enough space!")
+            print("High Rosolution videos path: {}".format(opt.dataroot))
+            dir_path = os.path.dirname(opt.dataroot)
+            self.dir_AB = os.path.join(dir_path, opt.phase)  #  e.g.  ./dir_path/train/
+            self.dir_A = os.path.join(self.dir_AB, 'A')
+            self.dir_B = os.path.join(self.dir_AB, 'B')
+            print("will create {} for LR and {} for HR".format(self.dir_A, self.dir_B))
+            util_dataset.video_dataset_HR2AB(HRpath=opt.dataroot, Apath=self.dir_A, Bpath=self.dir_B)
+        else:
+            self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
+            self.dir_A = os.path.join(self.dir_AB, 'A')
+            self.dir_B = os.path.join(self.dir_AB, 'B')
+
         self.A_paths = sorted(make_videos_dataset(self.dir_A, opt.max_dataset_size))
         self.B_paths = sorted(make_videos_dataset(self.dir_B, opt.max_dataset_size))  # get video paths
         assert (len(self.A_paths) == len(self.B_paths))
@@ -46,7 +63,6 @@ class AlignedVideoDataset(BaseDataset):
             A_paths (str) - - video paths
             B_paths (str) - - video paths
         """
-        # print("I'am in! index:{}".format(index))
         # read a video given a random integer index
         A_path = self.A_paths[index]
         B_path = self.B_paths[index]
