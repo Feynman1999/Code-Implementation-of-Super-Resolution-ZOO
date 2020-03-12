@@ -37,7 +37,7 @@ class AlignedVideoDataset(BaseDataset):
             self.dir_A = os.path.join(self.dir_AB, 'A')
             self.dir_B = os.path.join(self.dir_AB, 'B')
             print("will create {} for LR and {} for HR".format(self.dir_A, self.dir_B))
-            util_dataset.video_dataset_HR2AB(HRpath=opt.dataroot, Apath=self.dir_A, Bpath=self.dir_B)
+            util_dataset.video_dataset_HR2AB(HRpath=opt.dataroot, Apath=self.dir_A, Bpath=self.dir_B, factor=opt.SR_factor, fps=1)
         else:
             self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
             self.dir_A = os.path.join(self.dir_AB, 'A')

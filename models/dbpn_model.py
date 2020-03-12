@@ -125,10 +125,10 @@ class DBPNModel(BaseModel):
 
         The option 'direction' can be used to swap images in domain A and domain B.
         """
-        self.LR = input['A'].to(self.device)
+        self.LR = input['A'].to(self.device, non_blocking=True)
         self.A_paths = input['A_paths']  # list       len = batchsize
         if self.opt.phase in ("train", "test"):
-            self.HR_GroundTruth = input['B'].to(self.device)
+            self.HR_GroundTruth = input['B'].to(self.device, non_blocking=True)
             self.B_paths = input['B_paths']
 
     def forward(self):
