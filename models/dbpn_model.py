@@ -20,7 +20,8 @@ test:
         python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000
     only HR:
         python test.py --dataroot ./datasets/Set5/test/B  --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000 --only_HR True
-
+    AIMAX:
+        python3 test.py --dataroot /opt/data/private/datasets/Set5 --name DIV2K_dbpn --model dbpn --load_epoch epoch_12000 --only_HR True
 apply:
     python apply.py --dataroot  C:/Users/76397/Desktop/someimages   --name DIV2k_dbpn   --model dbpn  --load_epoch epoch_8000
 

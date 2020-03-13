@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import time
-from . import util
+from . import util, util_dataset
 from iqa import find_function_using_name
 from subprocess import Popen, PIPE
 from collections import OrderedDict
@@ -67,12 +67,12 @@ class Visualizer():
             self.iqa_dict = dict()
             self.iqa_results = []
 
-            img_dir_name = 'test_{}_{}'.format(os.path.basename(self.opt.dataroot), opt.load_epoch)
+            img_dir_name = 'test_{}_{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch)
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
         elif opt.phase == "apply":
-            img_dir_name = 'apply_{}_{}_blocksz_{}'.format(os.path.basename(self.opt.dataroot), opt.load_epoch, opt.block_size)
+            img_dir_name = 'apply_{}_{}_blocksz_{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch, opt.block_size)
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
             self.now_deal_file_name_with_suffix = None

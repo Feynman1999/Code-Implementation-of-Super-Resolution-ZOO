@@ -82,6 +82,13 @@ def video_dataset_HR2AB(HRpath, Apath, Bpath, factor=4, suffix='.avi', fps=1):
         save_video(video=vid, video_path=os.path.join(Apath, vidname + suffix), factor=factor, inverse=True, fps=fps)
 
 
+def get_dataset_name(dataroot):
+    dataset_name = os.path.basename(dataroot)
+    if dataset_name == "":
+        dataset_name = os.path.basename(dataroot[:-1])
+    return dataset_name
+
+
 def get_file_name(path):
     '''
         datasets/div2k/train/A/0001.jpg  ->  0001
