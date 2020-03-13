@@ -19,7 +19,7 @@ test:
     AB:
         python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000
     only HR:
-        python test.py --dataroot ./datasets/Set5/test/B  --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000 --only_HR True
+        python test.py --dataroot ./datasets/Set5 --name DIV2K_dbpn --model dbpn --load_epoch epoch_8000 --only_HR True --ensemble True
     AIMAX:
         python3 test.py --dataroot /opt/data/private/datasets/Set5 --name DIV2K_dbpn --model dbpn --load_epoch epoch_12000 --only_HR True
 apply:
@@ -142,7 +142,7 @@ class DBPNModel(BaseModel):
         self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)
 
     def backward_G(self):
-        """Calculate loss for the LWSR/G"""
+        """Calculate loss for the G"""
         self.loss_G_L1 = self.criterionL1(self.HR_G, self.HR_GroundTruth) * self.opt.lambda_L1
         self.loss_G_L1.backward()
 

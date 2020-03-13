@@ -21,7 +21,9 @@ from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
 from util.util_dataset import get_file_name
-
+from util import ensemble
+import torch
+from tqdm import tqdm
 
 if __name__ == '__main__':
     opt = TestOptions().parse()  # get test options
@@ -44,12 +46,32 @@ if __name__ == '__main__':
     # For [pix2pix]: we use batchnorm and dropout in the original pix2pix. You can experiment it with and without eval() mode.
     if opt.eval:
         model.eval()
-    for i, data in enumerate(dataset):
+    for i, data in enumerate(dataset):  # data is a dict
         if i >= opt.num_test:
             break
-        model.set_input(data)  # unpack data from data loader
-        model.test()  # run inference
-        visuals = model.get_current_visuals()  # get image/video results
+        if opt.ensemble:
+            LR = data['A']
+            LR_list = ensemble.ensemble(LR)  # torch tensor, [1,C,H,W] for image and [1,F,C,H,W] for video
+            HR_list = []
+            for i in tqdm(range(len(LR_list))):
+                data['A'] = LR_list[i]
+                model.set_input(data)
+                model.test(compute_flag=(i == 0))
+                HR_list.append(model.HR_G)  # [1,C,H,W] for image and video
+            del LR_list
+            HR_list = ensemble.ensemble_inverse(HR_list)
+            HR = torch.cat(HR_list, dim=0)
+            del HR_list
+            HR = HR.mean(dim=0, keepdim=True)
+            visuals = model.get_current_visuals()  # get image/video results
+            visuals["HR_G"] = HR
+            visuals["LR"] = LR
+
+        else:
+            model.set_input(data)  # unpack data from data loader
+            model.test()  # run inference
+            visuals = model.get_current_visuals()  # get image/video results
+
         A_paths, B_paths = model.get_image_paths()  # get image/video paths
         file_name = get_file_name(A_paths[0])
         visualizer.display_and_save(visuals, file_name)

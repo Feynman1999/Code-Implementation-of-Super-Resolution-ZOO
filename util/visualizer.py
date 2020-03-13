@@ -68,6 +68,8 @@ class Visualizer():
             self.iqa_results = []
 
             img_dir_name = 'test_{}_{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch)
+            if opt.ensemble:
+                img_dir_name += "_ensemble"
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
@@ -363,7 +365,7 @@ class Visualizer():
         temp_list = []
         for i in range(len(self.iqa_name_list)):
             func = find_function_using_name(self.iqa_name_list[i])
-            HR_G = util.tensor2im(visuals['HR_G'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
+            HR_G = util.tensor2im(visuals['HR_Bicubic'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
             HR_GroundTruth = util.tensor2im(visuals['HR_GroundTruth'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)
             val = func(HR_G, HR_GroundTruth, only_Luminance=True, crop=self.opt.SR_factor)
             self.iqa_values[i].append(val)
