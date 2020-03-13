@@ -26,13 +26,13 @@ class AlignedVideoDataset(BaseDataset):
         self.only_HR = opt.only_HR
         self.SR_factor = opt.SR_factor
 
-        if self.only_HR:  # different from image, we create A/B dataset first (for saving time)
+        if self.only_HR:  # we create A/B dataset first (for saving time)
             assert util.check_whether_last_dir(opt.dataroot), 'when only HR, opt.dataroot should be dir and contains only video files'
             assert opt.direction == 'AtoB', 'please make sure direction is AtoB when set only_HR true'
-            print("warning! different from image, we generate LR video and save to disk first, otherwise will cost much time on preprocessing!")
+            print("warning! we generate LR video(Bicubic) and save to disk first, otherwise will cost much time on preprocessing!")
             print("please make sure your disk have enough space!")
             print("High Rosolution videos path: {}".format(opt.dataroot))
-            dir_path = os.path.dirname(opt.dataroot)
+            dir_path = util_dataset.get_dataset_dir(opt.dataroot)
             self.dir_AB = os.path.join(dir_path, opt.phase)  #  e.g.  ./dir_path/train/
             self.dir_A = os.path.join(self.dir_AB, 'A')
             self.dir_B = os.path.join(self.dir_AB, 'B')

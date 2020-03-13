@@ -32,24 +32,20 @@ def dataset_images2video(filepath, fps=2):
         # print("#######file list#######")
 
 
-def image_dataset_HR2AB(HRpath, path2datasets, datasetname, phase="train", factor=4):
+def image_dataset_HR2AB(HRpath, Apath, Bpath, factor=4):
     """
-    for bitahub:
-        HRpath = /data/bitahub/DIV2K/DIV2K_train_HR
-        path2datasets = /data/bitahub
-        datasetname = DIV2K
 
-
-    :param HRpath: the path to HR images
-    :param datasetname: datasetname, will create dir in datasets
-    :param SR_factor: down-sample factor
-    :param phase:  train or test
+    :param HRpath:
+    :param Apath:
+    :param Bpath:
+    :param factor:
     :return:
     """
+    assert (not os.path.exists(Apath)) and (not os.path.exists(Bpath)), "{} or {} already exist, if you want to " \
+                                                                        "generate new AB, please delete them " \
+                                                                        "first".format(Apath, Bpath)
     imagepath_list = make_images_dataset(HRpath)
-    Apath = os.path.join(path2datasets, datasetname, phase, "A")
     mkdir(Apath)
-    Bpath = os.path.join(path2datasets, datasetname, phase, "B")
     mkdir(Bpath)
     for i in tqdm(range(len(imagepath_list))):
         img = Image.open(imagepath_list[i])
@@ -69,10 +65,10 @@ def video_dataset_HR2AB(HRpath, Apath, Bpath, factor=4, suffix='.avi', fps=1):
     :param fps:
     :return:
     """
-    videopath_list = make_videos_dataset(HRpath)
     assert (not os.path.exists(Apath)) and (not os.path.exists(Bpath)), "{} or {} already exist, if you want to " \
                                                                         "generate new AB, please delete them " \
                                                                         "first".format(Apath, Bpath)
+    videopath_list = make_videos_dataset(HRpath)
     mkdir(Apath)
     mkdir(Bpath)
     for i in tqdm(range(len(videopath_list))):
@@ -82,9 +78,24 @@ def video_dataset_HR2AB(HRpath, Apath, Bpath, factor=4, suffix='.avi', fps=1):
         save_video(video=vid, video_path=os.path.join(Apath, vidname + suffix), factor=factor, inverse=True, fps=fps)
 
 
+def get_dataset_dir(dataroot):
+    """
+    :param dataroot:
+    :return:
+    """
+    dataset_dir = os.path.dirname(dataroot)
+    if dataroot.endswith("/") or dataroot.endswith("\\"):  # dataroot is ./xxxx/xxxxx/
+        dataset_dir = os.path.dirname(dataset_dir)  # again
+        dataroot = dataroot[:-1]
+
+    if os.path.basename(dataset_dir).lower() in ('datasets', 'dataset'):  # dataroot is ./xxx/datasets/Set5 for only HR
+        return dataroot
+    return dataset_dir  # dataroot is ./xxxxx/datasets/Set5/HR for only HR
+
+
 def get_dataset_name(dataroot):
     dataset_name = os.path.basename(dataroot)
-    if dataset_name == "":
+    if dataset_name == "":  # dataroot is ./xxxxx/xxxxx/
         dataset_name = os.path.basename(dataroot[:-1])
     return dataset_name
 

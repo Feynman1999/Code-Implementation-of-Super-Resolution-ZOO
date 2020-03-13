@@ -2,7 +2,7 @@ import os.path
 from data.base_dataset import BaseDataset, get_params, get_transform
 from data.image_folder import make_images_dataset
 from PIL import Image
-from util import util
+from util import util, util_dataset
 from data.base_dataset import make_power_2
 
 
@@ -25,23 +25,31 @@ class AlignedDataset(BaseDataset):
         BaseDataset.__init__(self, opt)
         self.only_HR = opt.only_HR
         self.SR_factor = opt.SR_factor
-        if not self.only_HR:
+
+        if self.only_HR:
+            assert util.check_whether_last_dir(opt.dataroot), 'when only HR, opt.dataroot should be dir and contains only image files'
+            assert opt.direction == 'AtoB', 'please make sure direction is AtoB when set only_HR true'
+            print("warning! we generate LR image(Bicubic) and save to disk first, otherwise will cost much time on preprocessing!")
+            print("High Rosolution images path: {}".format(opt.dataroot))
+            dir_path = util_dataset.get_dataset_dir(opt.dataroot)
+            self.dir_AB = os.path.join(dir_path, opt.phase)  # e.g.  ./dir_path/train/
+            self.dir_A = os.path.join(self.dir_AB, 'A')
+            self.dir_B = os.path.join(self.dir_AB, 'B')
+            print("will create {} for LR and {} for HR".format(self.dir_A, self.dir_B))
+            util_dataset.image_dataset_HR2AB(HRpath=opt.dataroot, Apath=self.dir_A, Bpath=self.dir_B, factor=self.SR_factor)
+        else:
             self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
             self.dir_A = os.path.join(self.dir_AB, 'A')
             self.dir_B = os.path.join(self.dir_AB, 'B')
-            self.A_paths = sorted(make_images_dataset(self.dir_A, opt.max_dataset_size))
-            self.B_paths = sorted(make_images_dataset(self.dir_B, opt.max_dataset_size))  # get image paths
-            assert (len(self.A_paths) == len(self.B_paths))
-            if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
-                assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
-            self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc  # The default is A->B
-            self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
-        else:
-            assert util.check_whether_last_dir(opt.dataroot), 'when only HR, opt.dataroot should be dir and contains only image files'
-            self.dir_B = opt.dataroot
-            self.B_paths = sorted(make_images_dataset(self.dir_B, opt.max_dataset_size))  # get image paths
-            self.input_nc = self.opt.input_nc
-            self.output_nc = self.opt.output_nc
+
+        self.A_paths = sorted(make_images_dataset(self.dir_A, opt.max_dataset_size))
+        self.B_paths = sorted(make_images_dataset(self.dir_B, opt.max_dataset_size))  # get image paths
+        assert (len(self.A_paths) == len(self.B_paths))
+        if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
+            assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
+        self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc  # The default is A->B
+        self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
+
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -55,22 +63,13 @@ class AlignedDataset(BaseDataset):
             A_paths (str) - - image paths
             B_paths (str) - - image paths
         """
-        if not self.only_HR:
-            # read a image given a random integer index
-            A_path = self.A_paths[index]
-            B_path = self.B_paths[index]
-            A = Image.open(A_path).convert('RGB')
-            B = Image.open(B_path).convert('RGB')
-        else:
-            B_path = self.B_paths[index]
-            A_path = B_path
-            B = Image.open(B_path).convert('RGB')
-            w, h = B.size
-            # B = make_power_2(B, self.opt.multi_base) for some train/test dataset if can't % =0 how to deal?
-            assert w % self.SR_factor == 0 and h % self.SR_factor == 0, "file:{} w,h should % SR_factor=0".format(B_path)
-            A = B.resize((w//self.SR_factor, h//self.SR_factor), resample=Image.BICUBIC)
+        # read a image given a random integer index
+        A_path = self.A_paths[index]
+        B_path = self.B_paths[index]
+        A = Image.open(A_path).convert('RGB')
+        B = Image.open(B_path).convert('RGB')
 
-        if self.opt.direction == 'BtoA' and (not self.only_HR):
+        if self.opt.direction == 'BtoA':
             A, B = B, A
             A_path, B_path = B_path, A_path
 
