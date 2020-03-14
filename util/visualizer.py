@@ -76,7 +76,7 @@ class Visualizer():
                 img_dir_name += "-only_Y_True"
             else:
                 img_dir_name += "-only_Y_False"
-            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
+            self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"-results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
         elif opt.phase == "apply":

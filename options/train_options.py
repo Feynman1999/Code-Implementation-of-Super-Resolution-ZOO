@@ -1,5 +1,5 @@
 from .base_options import BaseOptions
-
+from . import str2bool
 
 class TrainOptions(BaseOptions):
     """This class includes training options.
@@ -25,7 +25,7 @@ class TrainOptions(BaseOptions):
         parser.add_argument('--print_freq', type=int, default=6400, help='frequency of showing training results on console, please make sure freq%batchsize =0')
         # network saving and loading parameters
         parser.add_argument('--save_epoch_freq', type=int, default=2000, help='frequency of saving models at the end of epochs')
-        parser.add_argument('--continue_train', type=bool, default=False, help='continue training: load the trained model')
+        parser.add_argument('--continue_train', type=str2bool, default=False, help='continue training: load the trained model')
         parser.add_argument('--epoch_count', type=int, default=1, help='the starting epoch count, we save the model by <epoch_count>+<save_epoch_freq>, ...')
 
         # training parameters

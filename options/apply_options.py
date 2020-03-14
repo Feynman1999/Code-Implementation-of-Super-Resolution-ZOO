@@ -1,5 +1,5 @@
 from .base_options import BaseOptions
-
+from . import str2bool
 
 class ApplyOptions(BaseOptions):
     """This class includes apply options.
@@ -14,7 +14,7 @@ class ApplyOptions(BaseOptions):
         parser.add_argument('--block_size', type=int, default='160', help='for save memory, we make blocks by 120*120, set lower for poor performance machine!')
 
         # Dropout and Batchnorm has different behavioir during training and test.
-        parser.add_argument('--eval', type=bool, default=False, help='use eval mode during test time.')
+        parser.add_argument('--eval', type=str2bool, default=False, help='use eval mode during test time.')
         parser.add_argument('--num_test', type=int, default=10000, help='how many test images(divided blocks) to run (upper_bound)')
 
         return parser

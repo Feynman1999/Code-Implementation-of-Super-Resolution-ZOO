@@ -1,6 +1,7 @@
 import os
 import time
 
+# add parser
 
 def generate_test_sh_for_one_algorithm(model, name, load_auto_flag=False):
     """

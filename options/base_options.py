@@ -4,6 +4,7 @@ from util import util
 import torch
 import models
 import data
+from . import str2bool
 
 
 class BaseOptions():
@@ -41,24 +42,24 @@ class BaseOptions():
         parser.add_argument('--load_size', type=int, default=286, help='scale images to this size')
         parser.add_argument('--crop_size', type=int, default=128, help='then crop to this size')
         parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
-        parser.add_argument('--serial_batches', type=bool, default=False, help='if true, takes images in order to make batches, otherwise takes them randomly')
+        parser.add_argument('--serial_batches', type=str2bool, default=False, help='if true, takes images in order to make batches, otherwise takes them randomly')
         parser.add_argument('--num_threads', default=4, type=int, help='# threads for loading data')
         parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
         parser.add_argument('--normalize_means', type=str, default='0.5,0.5,0.5', help='normalize means in r,g,b  Please separate with comma. Set to zeros do not normalize.')
         parser.add_argument('--normalize_stds', type=str, default='1.0,1.0,1.0', help='normalize stds in r,g,b  Please separate with comma.')
-        parser.add_argument('--no_flip', type=bool, default=False, help='if specified, do not flip the images for data augmentation')
+        parser.add_argument('--no_flip', type=str2bool, default=False, help='if specified, do not flip the images for data augmentation')
         parser.add_argument('--multi_base', type=int, default=0, help='if preprocess is none , make sure image width/height is multi of base, but default is 0, you can set in model, e.g. 4')
         parser.add_argument('--factor', type=int, default=1, help='scale factor of save images/videos')
 
         # only have HR data
-        parser.add_argument('--only_HR', type=bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
+        parser.add_argument('--only_HR', type=str2bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
 
         # additional parameters
-        parser.add_argument('--verbose', type=bool, default=False, help='if specified, print more debugging information')
+        parser.add_argument('--verbose', type=str2bool, default=False, help='if specified, print more debugging information')
         parser.add_argument('--suffix', default='', type=str, help='customized suffix: opt.name = opt.name + suffix: e.g., {model}_{netG}_size{load_size}')
 
         # if you use base_networks, notice paras below
-        parser.add_argument('--no_dropout', type=bool, default=False, help='no dropout for the generator')
+        parser.add_argument('--no_dropout', type=str2bool, default=False, help='no dropout for the generator')
         parser.add_argument('--ngf', type=int, default=64, help='# of gen filters in the last conv layer')
         parser.add_argument('--ndf', type=int, default=64, help='# of discrim filters in the first conv layer')
         parser.add_argument('--netD', type=str, default='basic', help='specify discriminator architecture [basic | n_layers | pixel]. The basic model is a 70x70 PatchGAN. n_layers allows you to specify the layers in the discriminator')
