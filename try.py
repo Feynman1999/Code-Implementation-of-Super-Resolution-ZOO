@@ -1,31 +1,31 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from util import util
-import os
 
-plt.plot([1,2], [1,2])
-plt.show()
 
-# leg = ["test1", "test2", "test3"]
-# X = np.linspace(0, 1000, 1)
-# Y = np.random.normal(size=(1, 3))
-# moving_average = [10, 100]
-# for ma in moving_average:
-#     ma_Y = util.moving_average(Y, ma=ma)
-#     X = np.linspace(X[0], X[-1], ma_Y.shape[0])
-#     gap = int(np.ceil(ma_Y.shape[0] / 10000))
-#     # save svg
-#     title = "loss from epoch {:.2f} to epoch {:.2f}  moving_average: {}".format(X[0], X[-1], ma)
-#     plt.figure(figsize=(len(X[::gap]) / 100 + 1, 8))
-#     print(len(X[::gap]))
-#     for i in range(ma_Y.shape[1]):
-#         plt.plot(X[::gap], ma_Y[:, i][::gap], label=leg[i])  # promise that <= 10000
-#     plt.title(title)
-#     plt.xlabel('epochs')
-#     plt.ylabel('Losses')
-#     plt.legend()
-#     fig = plt.gcf()
-#     fig.savefig(os.path.join(".", str(ma) + '.svg'), dpi=600, bbox_inches='tight')
-#     # plt.show()
-#     plt.clf()
+def bgr2ycbcr(img, only_y=True):
+    """
+    bgr version of rgb2ycbcr
+    :param img: uint8, [0, 255]  or float, [0, 1],  [h,w,c] for image and [b,h,w,c] for video,  ndarray
+    :param only_y: only return Y channel
+    :return:
+    """
+    assert img.shape[-1] == 3
+    in_img_type = img.dtype
+    img.astype(np.float32)
+    if in_img_type != np.uint8:
+        img *= 255.
+    # convert
+    if only_y:
+        rlt = np.dot(img, [24.966, 128.553, 65.481]) / 255.0 + 16.0
+    else:
+        rlt = np.matmul(img, [[24.966, 112.0, -18.214], [128.553, -74.203, -93.786], [65.481, -37.797, 112.0]]) / 255.0 + [16, 128, 128]
+    if in_img_type == np.uint8:
+        rlt = rlt.round()
+    else:
+        rlt /= 255.
+    return rlt.astype(in_img_type)
 
+a = np.zeros((10, 100, 100, 3), dtype=np.uint8)
+
+print(bgr2ycbcr(a, only_y=True).shape)

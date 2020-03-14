@@ -57,7 +57,7 @@ def save_image(image, image_path, factor=1, inverse=False):
     else:
         raise TypeError('image must be PIL.Image.Image or 3d np.ndarray!')
 
-    w,h = image_pil.size
+    w, h = image_pil.size
 
     assert factor >= 1, "factor should >=1"
 

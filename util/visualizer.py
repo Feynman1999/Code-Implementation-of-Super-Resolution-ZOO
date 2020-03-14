@@ -67,9 +67,15 @@ class Visualizer():
             self.iqa_dict = dict()
             self.iqa_results = []
 
-            img_dir_name = 'test_{}_{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch)
+            img_dir_name = 'test-{}-{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch)
             if opt.ensemble:
-                img_dir_name += "_ensemble"
+                img_dir_name += "-ensemble_True"
+            else:
+                img_dir_name += "-ensemble_False"
+            if opt.only_Y:
+                img_dir_name += "-only_Y_True"
+            else:
+                img_dir_name += "-only_Y_False"
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"_results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
@@ -365,11 +371,11 @@ class Visualizer():
         temp_list = []
         for i in range(len(self.iqa_name_list)):
             func = find_function_using_name(self.iqa_name_list[i])
-            HR_G = util.tensor2im(visuals['HR_Bicubic'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
+            HR_G = util.tensor2im(visuals['HR_G'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
             HR_GroundTruth = util.tensor2im(visuals['HR_GroundTruth'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)
-            val = func(HR_G, HR_GroundTruth, only_Luminance=True, crop=self.opt.SR_factor)
+            val = func(HR_G, HR_GroundTruth, only_Luminance=self.opt.only_Y, crop=self.opt.SR_factor)
             self.iqa_values[i].append(val)
-            temp_list.append("{}: {:.2f}".format(self.iqa_name_list[i], val))
+            temp_list.append("{}: {:.4f}".format(self.iqa_name_list[i], val))
         self.iqa_dict[file_name] = "   ".join(temp_list)
 
     def summary_iqa(self):
@@ -377,13 +383,13 @@ class Visualizer():
             result = sum(self.iqa_values[i]) / len(self.iqa_values[i])
             self.iqa_results.append(result)
             fmat ='*'*10 + ' '*10
-            print("{}{}: {:.2f}{}".format(fmat, 'average '+self.iqa_name_list[i], result, fmat[::-1]))
+            print("{}{}: {:.4f}{}".format(fmat, 'average '+self.iqa_name_list[i], result, fmat[::-1]))
         with open(self.iqa_result_path, "w+") as log_file:
             now = time.strftime("%c")
             content = '================ Result with {} ({}) ================\n\n'.format(" / ".join(self.iqa_name_list), now)
             content += " "*15
             for i, res in enumerate(self.iqa_results):
-                content += "average {}:{:.2f}   ".format(self.iqa_name_list[i], res)
+                content += "average {}: {:.4f}   ".format(self.iqa_name_list[i], res)
             content += "\n\n"
             for key in sorted(self.iqa_dict.keys()):
                 content += "{:^30}:   {}\n".format(key, self.iqa_dict[key])
