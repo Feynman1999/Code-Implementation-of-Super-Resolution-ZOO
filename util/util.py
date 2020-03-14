@@ -8,11 +8,12 @@ import os
 import cv2
 
 
-def tensor2im(input_image, rgb_mean = (0.5, 0.5, 0.5), rgb_std = (1.0, 1.0, 1.0)):
-    """"Converts a Tensor array into a numpy image array. [h,w,c] or [b,h,w,c](video)
+def tensor2im(input_image, rgb_mean = (0., 0., 0.), rgb_std = (1.0, 1.0, 1.0)):
+    """"Converts a Tensor array into a numpy image array. [h,w,c] or [b,h,w,c](video)  [0,1]
 
     Parameters:
         input_image (tensor) --  the input image tensor array
+        return               --  unit8 ndarray
     """
     assert isinstance(input_image, torch.Tensor), 'the input tensor should be torch.Tensor'
     image_tensor = input_image.data

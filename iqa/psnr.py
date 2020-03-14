@@ -3,7 +3,7 @@ import math
 from PIL import Image
 
 
-def psnr(HR_G, HR_GroundTruth, only_Luminance=True, crop=0):
+def psnr(HR_G, HR_GroundTruth, only_Luminance=False, crop=0):
     """
     :param HR_G: [h,w,c] for image and [b,h,w,c] for video,  ndarray
     :param HR_GroundTruth:

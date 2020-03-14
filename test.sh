@@ -1,4 +1,4 @@
-# ================ test shell ( Sat Mar 14 14:25:15 2020 ) ================
+# ================ test shell ( Sat Mar 14 15:17:38 2020 ) ================
 python test.py --dataroot ./datasets\Set5  --name DIV2K_dbpn --model dbpn --load_epoch 3750 --ensemble True --only_Y True
 python test.py --dataroot ./datasets\Set5  --name DIV2K_dbpn --model dbpn --load_epoch 3750 --ensemble True --only_Y False
 python test.py --dataroot ./datasets\Set5  --name DIV2K_dbpn --model dbpn --load_epoch 3750 --ensemble False --only_Y True
