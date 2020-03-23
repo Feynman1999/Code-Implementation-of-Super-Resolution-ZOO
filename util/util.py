@@ -190,6 +190,7 @@ def moving_average(x, ma):
         result[:, i] = np.convolve(x[:, i], np.ones(ma), 'valid') / ma
     return result
 
+
 def diagnose_network(net, name='network'):
     """Calculate and print the mean of average absolute(gradients)
 

@@ -67,20 +67,14 @@ class Visualizer():
             self.iqa_dict = dict()
             self.iqa_results = []
 
-            img_dir_name = 'test-{}-{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch)
-            if opt.ensemble:
-                img_dir_name += "-ensemble_True"
-            else:
-                img_dir_name += "-ensemble_False"
-            if opt.only_Y:
-                img_dir_name += "-only_Y_True"
-            else:
-                img_dir_name += "-only_Y_False"
+            options = ('ensemble', 'only_Y')
+            img_dir_name = self.generate_filename_with_options(options)
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"-results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
         elif opt.phase == "apply":
-            img_dir_name = 'apply_{}_{}_blocksz_{}'.format(util_dataset.get_dataset_name(opt.dataroot), opt.load_epoch, opt.block_size)
+            options = ('block_size', )
+            img_dir_name = self.generate_filename_with_options(options)
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
             self.now_deal_file_name_with_suffix = None
@@ -97,6 +91,18 @@ class Visualizer():
             self.vis = visdom.Visdom(server=opt.display_server, port=opt.display_port, env=opt.display_env)
             if not self.vis.check_connection():
                 self.create_visdom_connections()
+
+    def generate_filename_with_options(self, options=()):
+        assert self.opt.phase in ('test', 'apply')
+        img_dir_name_item_list = []
+        img_dir_name_item_list.append(self.opt.phase)  # test
+        img_dir_name_item_list.append(util_dataset.get_dataset_name(self.opt.dataroot))  # Set5 for test and someimages for apply
+        img_dir_name_item_list.append(self.opt.load_epoch)
+        for option in options:
+            # print(option)
+            img_dir_name_item_list.append("{}_{}".format(option, vars(self.opt)[option]))
+        img_dir_name = "-".join(img_dir_name_item_list)
+        return img_dir_name
 
     def do_some_checks_for_training_and_print_save_help_info(self):
         # some checks for better visualize
