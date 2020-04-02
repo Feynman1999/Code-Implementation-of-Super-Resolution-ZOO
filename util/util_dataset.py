@@ -153,6 +153,13 @@ def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4):
     """
     pre-deal make it suitable for this project for specific dataset: vimeo90K
     link:  http://toflow.csail.mit.edu/
+
+    usage example:
+        vimeo90K_dataset_onlyHR2AB(dataset_path="/opt/data/private/datasets/vimeo_septuplet/vimeo_septuplet",
+                                   ABpath="/opt/data/private/datasets/vimeo_septuplet",
+                                   phase="train",
+                                   factor=4)
+
     :param datasetpath: the path to dataset dir, should have sep_testlist.txt and sep_trainlist.txt and sequences dir
     :param ABpath: the path to place AB
     :param phase: train or test
@@ -160,9 +167,9 @@ def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4):
     """
     Apath = os.path.join(ABpath, phase, "A")
     Bpath = os.path.join(ABpath, phase, "B")
-    assert (not os.path.exists(Apath)) and (not os.path.exists(Bpath)), "{} or {} already exist, if you want to " \
-                                                                        "generate new AB, please delete them " \
-                                                                        "first".format(Apath, Bpath)
+    # assert (not os.path.exists(Apath)) and (not os.path.exists(Bpath)), "{} or {} already exist, if you want to " \
+    #                                                                     "generate new AB, please delete them " \
+    #                                                                     "first".format(Apath, Bpath)
     video_dir = os.path.join(dataset_path, "sequences")
     txt_path = os.path.join(dataset_path, "sep_{}list.txt".format(phase))
     assert os.path.isdir(video_dir)
@@ -170,10 +177,16 @@ def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4):
     with open(txt_path) as f:
         for two_level_path in tqdm(f.readlines()):
             HR_dir_path = os.path.join(video_dir, two_level_path.strip())  # e.g. dataset_path/sequences/00010/0558
-            imagepath_list = make_images_dataset(HR_dir_path)
+            if not os.path.isdir(HR_dir_path):
+                print("illegal path: {} is not dir, continue!".format(HR_dir_path))
+                continue
             new_path = two_level_path.replace('/', '_')
+            if os.path.exists(os.path.join(Apath, new_path)) and os.path.exists(os.path.join(Bpath, new_path)):
+                print("{} already dealed, continue!".format(new_path))
+                continue
             mkdir(os.path.join(Bpath, new_path))  # e.g.  Bpath/00010_0558
             mkdir(os.path.join(Apath, new_path))
+            imagepath_list = make_images_dataset(HR_dir_path)
             for ith, img_path in enumerate(imagepath_list):
                 img = Image.open(img_path)
                 imgpathB = os.path.join(Bpath, new_path, "frame_{:05d}".format(ith) + ".png")
