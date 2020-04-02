@@ -18,6 +18,7 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag=False, do = F
     if do:
         os.system("activate pyt")
     datasetnames = ["Set5", ]
+    linux is python3
     template = "python test.py --dataroot {}  --name {} --model {} --load_epoch epoch_{} --ensemble {} --only_Y {}"
     load_epochs = [3750, 5000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000]
 
