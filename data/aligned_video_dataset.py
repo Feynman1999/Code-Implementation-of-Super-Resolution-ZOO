@@ -23,33 +23,19 @@ class AlignedVideoDataset(BaseDataset):
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
-        self.only_HR = opt.only_HR
         self.SR_factor = opt.SR_factor
 
-        if self.only_HR:  # we create A/B dataset first (for saving time)
-            assert util.check_whether_last_dir(opt.dataroot), 'when only HR, opt.dataroot should be dir and contains only video files'
-            assert opt.direction == 'AtoB', 'please make sure direction is AtoB when set only_HR true'
-            print("warning! we generate LR video(Bicubic) and save to disk first, otherwise will cost much time on preprocessing!")
-            print("please make sure your disk have enough space!")
-            print("High Rosolution videos path: {}".format(opt.dataroot))
-            dir_path = util_dataset.get_dataset_dir(opt.dataroot)
-            self.dir_AB = os.path.join(dir_path, opt.phase)  #  e.g.  ./dir_path/train/
-            self.dir_A = os.path.join(self.dir_AB, 'A')
-            self.dir_B = os.path.join(self.dir_AB, 'B')
-            print("will create {} for LR and {} for HR".format(self.dir_A, self.dir_B))
-            util_dataset.video_dataset_HR2AB(HRpath=opt.dataroot, Apath=self.dir_A, Bpath=self.dir_B, factor=opt.SR_factor, fps=1)
-        else:
-            self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
-            self.dir_A = os.path.join(self.dir_AB, 'A')
-            self.dir_B = os.path.join(self.dir_AB, 'B')
+        self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
+        self.dir_A = os.path.join(self.dir_AB, 'A')
+        self.dir_B = os.path.join(self.dir_AB, 'B')
 
         self.A_paths = sorted(make_videos_dataset(self.dir_A, opt.max_dataset_size))
         self.B_paths = sorted(make_videos_dataset(self.dir_B, opt.max_dataset_size))  # get video paths
         assert (len(self.A_paths) == len(self.B_paths))
         if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
             assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
-        self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc  # The default is A->B
-        self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
+        self.input_nc = self.opt.input_nc  # The default is A->B
+        self.output_nc = self.opt.output_nc
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -68,10 +54,6 @@ class AlignedVideoDataset(BaseDataset):
         B_path = self.B_paths[index]
         A = read_video(A_path)  # a list of PIL.image
         B = read_video(B_path)
-
-        if self.opt.direction == 'BtoA':
-            A, B = B, A
-            A_path, B_path = B_path, A_path
 
         # some checks
         assert (len(A) == len(B))

@@ -79,7 +79,6 @@ class Pix2PixModel(BaseModel):
         Parameters:
             input (dict): include the data itself and its metadata information.
 
-        The option 'direction' can be used to swap images in domain A and domain B.
         """
         self.real_A = input['A'].to(self.device)
         self.real_B = input['B'].to(self.device)

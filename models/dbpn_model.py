@@ -124,7 +124,6 @@ class DBPNModel(BaseModel):
         Parameters:
             input (dict): include the data itself and its metadata information.
 
-        The option 'direction' can be used to swap images in domain A and domain B.
         """
         self.LR = input['A'].to(self.device, non_blocking=True)
         self.A_paths = input['A_paths']  # list       len = batchsize

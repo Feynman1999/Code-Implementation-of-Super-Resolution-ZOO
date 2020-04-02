@@ -21,6 +21,9 @@ def is_video_file(filename):
 
 
 def make_videos_dataset(dir, max_dataset_size=float("inf")):
+    """
+        only support for xx/xxx.mp4 style , return a list of path to videos
+    """
     videos = []
     assert os.path.isdir(dir), '%s is not a valid directory' % dir
 

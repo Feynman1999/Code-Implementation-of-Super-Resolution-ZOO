@@ -23,32 +23,19 @@ class AlignedDataset(BaseDataset):
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
-        self.only_HR = opt.only_HR
         self.SR_factor = opt.SR_factor
 
-        if self.only_HR:
-            assert util.check_whether_last_dir(opt.dataroot), 'when only HR, opt.dataroot should be dir and contains only image files'
-            assert opt.direction == 'AtoB', 'please make sure direction is AtoB when set only_HR true'
-            print("warning! we generate LR image(Bicubic) and save to disk first, otherwise will cost much time on preprocessing!")
-            print("High Rosolution images path: {}".format(opt.dataroot))
-            dir_path = util_dataset.get_dataset_dir(opt.dataroot)
-            self.dir_AB = os.path.join(dir_path, opt.phase)  # e.g.  ./dir_path/train/
-            self.dir_A = os.path.join(self.dir_AB, 'A')
-            self.dir_B = os.path.join(self.dir_AB, 'B')
-            print("will create {} for LR and {} for HR".format(self.dir_A, self.dir_B))
-            util_dataset.image_dataset_HR2AB(HRpath=opt.dataroot, Apath=self.dir_A, Bpath=self.dir_B, factor=self.SR_factor)
-        else:
-            self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
-            self.dir_A = os.path.join(self.dir_AB, 'A')
-            self.dir_B = os.path.join(self.dir_AB, 'B')
+        self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      .datasets/DIV2k/train/
+        self.dir_A = os.path.join(self.dir_AB, 'A')
+        self.dir_B = os.path.join(self.dir_AB, 'B')
 
         self.A_paths = sorted(make_images_dataset(self.dir_A, opt.max_dataset_size))
         self.B_paths = sorted(make_images_dataset(self.dir_B, opt.max_dataset_size))  # get image paths
         assert (len(self.A_paths) == len(self.B_paths))
         if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
             assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
-        self.input_nc = self.opt.output_nc if self.opt.direction == 'BtoA' else self.opt.input_nc  # The default is A->B
-        self.output_nc = self.opt.input_nc if self.opt.direction == 'BtoA' else self.opt.output_nc
+        self.input_nc = self.opt.input_nc  # The default is A->B
+        self.output_nc = self.opt.output_nc
 
 
     def __getitem__(self, index):
@@ -68,10 +55,6 @@ class AlignedDataset(BaseDataset):
         B_path = self.B_paths[index]
         A = Image.open(A_path).convert('RGB')
         B = Image.open(B_path).convert('RGB')
-
-        if self.opt.direction == 'BtoA':
-            A, B = B, A
-            A_path, B_path = B_path, A_path
 
         assert (B.size[0] >= A.size[0] and B.size[1] >= A.size[1]), 'By default, we think that in general tasks, the image size of target domain B is greater than or equal to source domain A'
         transform_params = get_params(self.opt, A.size)

@@ -84,7 +84,7 @@ class Visualizer():
 
 
         print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
-        util.mkdirs([self.img_dir])
+        util_dataset.mkdirs([self.img_dir])
 
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom

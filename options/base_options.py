@@ -1,6 +1,6 @@
 import argparse
 import os
-from util import util
+from util import util, util_dataset
 import torch
 import models
 import data
@@ -41,7 +41,6 @@ class BaseOptions():
         parser.add_argument('--preprocess', type=str, default='crop', help='scaling and cropping of images at load time [resize | scale_width | crop | resize_and_crop | scale_width_and_crop | none]')
         parser.add_argument('--load_size', type=int, default=286, help='scale images to this size')
         parser.add_argument('--crop_size', type=int, default=128, help='then crop to this size')
-        parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
         parser.add_argument('--serial_batches', type=str2bool, default=False, help='if true, takes images in order to make batches, otherwise takes them randomly')
         parser.add_argument('--num_threads', default=4, type=int, help='# threads for loading data')
         parser.add_argument('--max_dataset_size', type=int, default=float("inf"), help='Maximum number of samples allowed per dataset. If the dataset directory contains more than max_dataset_size, only a subset is loaded.')
@@ -118,7 +117,7 @@ class BaseOptions():
 
         # save to the disk
         expr_dir = os.path.join(opt.checkpoints_dir, opt.name)
-        util.mkdirs(expr_dir)
+        util_dataset.mkdirs(expr_dir)
         file_name = os.path.join(expr_dir, '{}_opt.txt'.format(opt.phase))
         with open(file_name, 'wt') as opt_file:
             opt_file.write(message)
