@@ -149,7 +149,7 @@ def video_dataset_HRLR2AB(HRpath, LRpath, ABpath, phase = "train"):
             save_image(img, imgpathA)
 
 
-def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4):
+def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
     """
     pre-deal make it suitable for this project for specific dataset: vimeo90K
     link:  http://toflow.csail.mit.edu/
@@ -180,8 +180,8 @@ def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4):
             if not os.path.isdir(HR_dir_path):
                 print("illegal path: {} is not dir, continue!".format(HR_dir_path))
                 continue
-            new_path = two_level_path.replace('/', '_')
-            if os.path.exists(os.path.join(Apath, new_path)) and os.path.exists(os.path.join(Bpath, new_path)):
+            new_path = two_level_path.strip()[0:10].replace('/', '_')
+            if can_continue and os.path.exists(os.path.join(Apath, new_path)) and os.path.exists(os.path.join(Bpath, new_path)):
                 print("{} already dealed, continue!".format(new_path))
                 continue
             mkdir(os.path.join(Bpath, new_path))  # e.g.  Bpath/00010_0558
