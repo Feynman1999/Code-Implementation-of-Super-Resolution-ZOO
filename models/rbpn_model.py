@@ -5,8 +5,8 @@ aimax:
     gpu:
     python3 train.py
         --dataroot /opt/data/private/datasets/vimeo_septuplet   --name vimeo_rbpn  --model rbpn
-        --display_freq 5000  --print_freq 2000  --save_epoch_freq 15
-        --gpu_ids 0,1
+        --display_freq 5000  --print_freq 2000  --save_epoch_freq 5
+        --gpu_ids 0,1  --batch_size 4
 """
 import torch
 from .base_model import BaseModel
@@ -40,7 +40,7 @@ class RBPNModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=8)  # 8 in paper
+        parser.set_defaults(batch_size=4)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)
@@ -103,7 +103,7 @@ class RBPNModel(BaseModel):
         self.LR = input['A'].to(self.device)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
         self.HR_GroundTruth = input['B'].to(self.device)
-        print(self.LR.shape)
+        # print(self.LR.shape)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.

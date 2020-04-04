@@ -52,7 +52,7 @@ class BaseOptions():
         parser.add_argument('--factor', type=int, default=1, help='scale factor of save images/videos')
 
         # only have HR data
-        parser.add_argument('--only_HR', type=str2bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
+        # parser.add_argument('--only_HR', type=str2bool, default=False, help='only have the HR data when train/test, when this happen, dataroot should path to HR data filedir')
 
         # additional parameters
         parser.add_argument('--verbose', type=str2bool, default=False, help='if specified, print more debugging information')
