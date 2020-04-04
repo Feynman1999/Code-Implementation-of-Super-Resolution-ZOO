@@ -1,9 +1,9 @@
 import os.path
 import random
 from data.base_dataset import BaseDataset, get_params, get_transform
-from data.video_folder import make_videos_dataset, read_video
 import torch
-from util import util, util_dataset
+from data.image_folder import make_images_dataset
+from PIL import Image
 
 
 class AlignedVideoDataset(BaseDataset):
@@ -29,13 +29,36 @@ class AlignedVideoDataset(BaseDataset):
         self.dir_A = os.path.join(self.dir_AB, 'A')
         self.dir_B = os.path.join(self.dir_AB, 'B')
 
-        self.A_paths = sorted(make_videos_dataset(self.dir_A, opt.max_dataset_size))
-        self.B_paths = sorted(make_videos_dataset(self.dir_B, opt.max_dataset_size))  # get video paths
+        self.A_paths = sorted(os.listdir(self.dir_A))
+        self.B_paths = sorted(os.listdir(self.dir_B))
+        # max_dataset_size
+        self.A_paths = self.A_paths[:min(opt.max_dataset_size, len(self.A_paths))]
+        self.B_paths = self.B_paths[:min(opt.max_dataset_size, len(self.B_paths))]
+
         assert (len(self.A_paths) == len(self.B_paths))
+
         if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
             assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
-        self.input_nc = self.opt.input_nc  # The default is A->B
+        self.input_nc = self.opt.input_nc
         self.output_nc = self.opt.output_nc
+
+    def get_image_list(self, A_path, B_path):
+        """
+
+        :param short_path:
+        :return: a list of PIL.Image
+        """
+        A_path = os.path.join(self.dir_A, A_path)
+        B_path = os.path.join(self.dir_B, B_path)
+        A_img_paths = make_images_dataset(A_path)
+        B_img_paths = make_images_dataset(B_path)
+        A = []
+        B = []
+        for path in A_img_paths:
+            A.append(Image.open(path).convert('RGB'))
+        for path in B_img_paths:
+            B.append(Image.open(path).convert('RGB'))
+        return A, B
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
@@ -52,8 +75,7 @@ class AlignedVideoDataset(BaseDataset):
         # read a video given a random integer index
         A_path = self.A_paths[index]
         B_path = self.B_paths[index]
-        A = read_video(A_path)  # a list of PIL.image
-        B = read_video(B_path)
+        A, B = self.get_image_list(A_path, B_path)
 
         # some checks
         assert (len(A) == len(B))
@@ -64,7 +86,7 @@ class AlignedVideoDataset(BaseDataset):
 
         # Capture the substring of video sequence
         if self.opt.imgseqlen > 0:
-            assert self.opt.imgseqlen <= len(A), 'images sequence length for train should less than or equal to length of all images'
+            assert self.opt.imgseqlen <= len(A), 'images sequence length {} for train should less than or equal to length of all images {}'.format(self.opt.imgseqlen, len(A))
             start_id = random.randint(0, len(A)-self.opt.imgseqlen)
             A = A[start_id: start_id + self.opt.imgseqlen]
             B = B[start_id: start_id + self.opt.imgseqlen]
@@ -88,7 +110,7 @@ class AlignedVideoDataset(BaseDataset):
         A = torch.stack(A, 0)
         B = torch.stack(B, 0)
 
-        return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
+        return {'A': A, 'B': B, 'A_paths': os.path.join(self.dir_A, A_path), 'B_paths': os.path.join(self.dir_B, B_path)}
 
     def __len__(self):
         """Return the total number of videos in the dataset."""

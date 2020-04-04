@@ -76,7 +76,9 @@ def get_params(opt, size):
 
     flip = random.random() > 0.5
 
-    return {'crop_pos': (x, y), 'flip': flip}
+    rotate = random.random() > 0.5
+
+    return {'crop_pos': (x, y), 'flip': flip, 'rotate': rotate}
 
 
 def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_size_scale=1):
@@ -123,6 +125,12 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
         elif params['flip']:
             transform_list.append(transforms.Lambda(lambda img: __flip(img, params['flip'])))
 
+    if not opt.no_rotate:
+        if params is None:
+            pass
+        elif params['rotate']:
+            transform_list.append(transforms.Lambda(lambda img: __rotate(img, params['rotate'])))
+
     transform_list += [transforms.ToTensor()]
 
     if grayscale:
@@ -164,6 +172,12 @@ def __crop(img, pos, size):
 def __flip(img, flip):
     if flip:
         return img.transpose(Image.FLIP_LEFT_RIGHT)
+    return img
+
+
+def __rotate(img, rotate):
+    if rotate:
+        return img.transpose(Image.ROTATE_90)
     return img
 
 

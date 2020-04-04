@@ -33,6 +33,7 @@ if __name__ == '__main__':
     opt.num_threads = 1  # test code only supports num_threads = 1
     opt.serial_batches = True  # disable data shuffling; thus every time test, input the same image
     opt.no_flip = True  # no flip; comment this line if results on flipped images are needed.
+    opt.no_rotate = True
     opt.display_id = -1  # no visdom display; the test code only saves the results to disk.
     opt.preprocess = 'none'  # we default do nothing other, just to tensor and normalize
 
@@ -55,6 +56,7 @@ if __name__ == '__main__':
             HR_list = []
             for i in tqdm(range(len(LR_list))):
                 data['A'] = LR_list[i]
+                if video may need do move window, thus need the window size!!
                 model.set_input(data)
                 model.test(compute_flag=(i == 0))
                 HR_list.append(model.HR_G)  # [1,C,H,W] for image and video

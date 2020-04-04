@@ -15,6 +15,7 @@ if __name__ == '__main__':
     opt.num_threads = 1  # apply code only supports num_threads = 1
     opt.serial_batches = True  # disable data shuffling
     opt.no_flip = True  # no flip; comment this line if results on flipped images are needed.
+    opt.no_rotate = True
     opt.display_id = -1  # no visdom display; the apply code only saves the results to disk.
     opt.preprocess = 'none'  # we default do nothing other, just to tensor and normalize
 
