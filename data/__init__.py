@@ -13,6 +13,7 @@ See our template dataset class 'template_dataset.py' for more details.
 import importlib
 import torch.utils.data
 from data.base_dataset import BaseDataset
+from prefetch_generator import BackgroundGenerator
 
 
 def find_dataset_using_name(dataset_name):
@@ -89,7 +90,7 @@ class CustomDatasetDataLoader():
 
     def __iter__(self):
         """Return a batch of data"""
-        for i, data in enumerate(self.dataloader):
+        for i, data in enumerate(BackgroundGenerator(self.dataloader, max_prefetch=2)):
             if i * self.opt.batch_size >= self.opt.max_dataset_size:
                 break
             yield data
