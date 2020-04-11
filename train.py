@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """General-purpose training script for image-to-image translation.
 
 This script works for various models (with option '--model': e.g., pix2pix, lwsr) and

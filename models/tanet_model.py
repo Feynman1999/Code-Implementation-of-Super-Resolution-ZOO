@@ -1,41 +1,32 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_rbpn --model rbpn  --display_freq  4  --print_freq  4
+python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet --model tanet  --display_freq  4  --print_freq  4
 
 aimax:
     gpu:
     python3 train.py
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_rbpn
-        --model             rbpn
-        --display_freq      2400
-        --print_freq        2400
+        --name              vimeo_tanet
+        --model             tanet
+        --display_freq      1200
+        --print_freq        1200
         --save_epoch_freq   5
         --gpu_ids           0,1,2
         --batch_size        6
-        --suffix            04_05_13_46
-        --continue_train    True
-        --load_epoch        epoch_40
-        --epoch_count       41
+        --suffix            04_09_xx_xx
 """
 import torch
 from .base_model import BaseModel
-from . import rbpn_networks
+from . import tanet_networks
 
 
-class RBPNModel(BaseModel):
-    """ This class implements the RBPN model
+class TANETModel(BaseModel):
+    """ This class implements the tanet model
 
     The model training requires '--dataset_mode aligned_video' dataset.
-
-    rbpn paper: arXiv:1903.10128v1 [cs.CV] 25 Mar 2019
-
-    Here we only use the PF(past and future) strategy, so best to use odd numbers for imgseqlen (3,5,7).
 
     Here we do not use optical flow.
 
     vimeo90K train dataset size: 55025.
-
-    for imgseqlen 5, will cost 8200 seconds for one epoch with 3 GPUs (TITAN_X_Pascal). (14 days for 150 epoch)
     """
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
@@ -60,9 +51,6 @@ class RBPNModel(BaseModel):
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=75)
         parser.set_defaults(n_epochs=150)
-        parser.add_argument('--cl', type=int, default=256, help='the cl in paper')
-        parser.add_argument('--cm', type=int, default=256, help='the cm in paper')
-        parser.add_argument('--ch', type=int, default=64, help='the ch in paper')
         parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
@@ -88,7 +76,7 @@ class RBPNModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = rbpn_networks.define_G(opt)
+        self.netG = tanet_networks.define_G(opt)
 
         if self.isTrain:
             self.criterionL1 = torch.nn.L1Loss()

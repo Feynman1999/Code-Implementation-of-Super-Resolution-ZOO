@@ -1,41 +1,38 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_rbpn --model rbpn  --display_freq  4  --print_freq  4
+python train.py --dataroot ./datasets/Vid4 --name Vid4_vesr --model vesr  --display_freq  4  --print_freq  4
 
 aimax:
     gpu:
     python3 train.py
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_rbpn
-        --model             rbpn
+        --name              vimeo_vesr
+        --model             vesr
         --display_freq      2400
         --print_freq        2400
         --save_epoch_freq   5
         --gpu_ids           0,1,2
         --batch_size        6
-        --suffix            04_05_13_46
-        --continue_train    True
-        --load_epoch        epoch_40
-        --epoch_count       41
+        --suffix            04_10_xx_xx
+        --imgseqlen         7
+        --nframes           7
 """
 import torch
 from .base_model import BaseModel
-from . import rbpn_networks
+from . import vesr_networks
 
 
-class RBPNModel(BaseModel):
-    """ This class implements the RBPN model
+class VESRModel(BaseModel):
+    """ This class implements the VESR model
 
     The model training requires '--dataset_mode aligned_video' dataset.
 
-    rbpn paper: arXiv:1903.10128v1 [cs.CV] 25 Mar 2019
+    VESR paper: arXiv:2003.02115v1 [cs.CV] 4 Mar 2020
 
     Here we only use the PF(past and future) strategy, so best to use odd numbers for imgseqlen (3,5,7).
 
-    Here we do not use optical flow.
-
     vimeo90K train dataset size: 55025.
 
-    for imgseqlen 5, will cost 8200 seconds for one epoch with 3 GPUs (TITAN_X_Pascal). (14 days for 150 epoch)
+    for imgseqlen 5, will cost xxx seconds for one epoch with 3 GPUs (TITAN_X_Pascal). (xx days for 150 epoch)
     """
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
@@ -50,7 +47,7 @@ class RBPNModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=4)  # 8 in paper  need 4 gpu
+        parser.set_defaults(batch_size=32*2)  # 32*4 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)
@@ -58,17 +55,18 @@ class RBPNModel(BaseModel):
         parser.set_defaults(lr=0.0001)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
-        parser.set_defaults(lr_decay_iters=75)
+        parser.set_defaults(lr_decay_iters=20)
+        parser.set_defaults(lr_gamma=0.8)
         parser.set_defaults(n_epochs=150)
-        parser.add_argument('--cl', type=int, default=256, help='the cl in paper')
-        parser.add_argument('--cm', type=int, default=256, help='the cm in paper')
-        parser.add_argument('--ch', type=int, default=64, help='the ch in paper')
+        parser.add_argument('--CARB_num1', type=int, default=5, help='the CARB block nums in the feature encoder')
+        parser.add_argument('--CARB_num2', type=int, default=20, help='the CARB block nums in the reconstruct Module')
+        parser.add_argument('--channel_size', type=int, default=128, help='the channel size')
         parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
 
     def __init__(self, opt):
-        """Initialize the RBPN class.
+        """Initialize the VESR class.
 
         Parameters:
             opt (Option class)-- stores all the experiment flags; needs to be a subclass of BaseOptions
@@ -88,7 +86,7 @@ class RBPNModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = rbpn_networks.define_G(opt)
+        self.netG = vesr_networks.define_G(opt)
 
         if self.isTrain:
             self.criterionL1 = torch.nn.L1Loss()
@@ -112,8 +110,8 @@ class RBPNModel(BaseModel):
         # input['B']:   e.g. [4, 10, 3, 256, 256]
         self.LR = input['A'].to(self.device)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
-        self.HR_GroundTruth = input['B'].to(self.device)
-        # print(self.LR.shape)
+        mid = self.opt.nframes // 2
+        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
@@ -123,13 +121,11 @@ class RBPNModel(BaseModel):
     def compute_visuals(self):
         mid = self.opt.nframes//2
         self.LR = self.LR[:, mid, ...]
-        self.HR_GroundTruth = self.HR_GroundTruth[:, mid, ...]
         self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)
 
     def backward(self):
         """Calculate loss"""
-        mid = self.opt.nframes//2
-        self.loss_SR = self.criterionL1(self.HR_G, self.HR_GroundTruth[:, mid, ...])
+        self.loss_SR = self.criterionL1(self.HR_G, self.HR_GroundTruth)
         self.loss_SR.backward()
 
     def optimize_parameters(self):

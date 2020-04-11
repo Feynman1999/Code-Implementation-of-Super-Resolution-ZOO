@@ -152,7 +152,7 @@ def video_dataset_HRLR2AB(HRpath, LRpath, ABpath, phase = "train"):
 def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
     """
     pre-deal make it suitable for this project for specific dataset: vimeo90K
-    link:  http://toflow.csail.mit.edu/
+    link:  http://toflow.csail.mit.edu/           notice!  the dir 00055/0896 only have one frame......   /(ㄒoㄒ)/~~!
 
     usage example:
         vimeo90K_dataset_onlyHR2AB(dataset_path="/opt/data/private/datasets/vimeo_septuplet/vimeo_septuplet",
