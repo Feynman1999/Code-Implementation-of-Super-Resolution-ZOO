@@ -110,9 +110,10 @@ class RBPNModel(BaseModel):
 
         # input['A']:   e.g. [4, 10, 3, 64, 64] for recurrent training
         # input['B']:   e.g. [4, 10, 3, 256, 256]
-        self.LR = input['A'].to(self.device)
+        self.LR = input['A'].to(self.device, non_blocking=True)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
-        self.HR_GroundTruth = input['B'].to(self.device)
+        mid = self.opt.nframes // 2
+        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device, non_blocking=True)
         # print(self.LR.shape)
 
     def forward(self):
@@ -123,13 +124,11 @@ class RBPNModel(BaseModel):
     def compute_visuals(self):
         mid = self.opt.nframes//2
         self.LR = self.LR[:, mid, ...]
-        self.HR_GroundTruth = self.HR_GroundTruth[:, mid, ...]
         self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)
 
     def backward(self):
         """Calculate loss"""
-        mid = self.opt.nframes//2
-        self.loss_SR = self.criterionL1(self.HR_G, self.HR_GroundTruth[:, mid, ...])
+        self.loss_SR = self.criterionL1(self.HR_G, self.HR_GroundTruth)
         self.loss_SR.backward()
 
     def optimize_parameters(self):
