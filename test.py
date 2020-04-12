@@ -23,7 +23,6 @@ from util.visualizer import Visualizer
 from util.util_dataset import get_file_name
 from util import ensemble
 import torch
-from tqdm import tqdm
 
 if __name__ == '__main__':
     opt = TestOptions().parse()  # get test options
@@ -51,14 +50,14 @@ if __name__ == '__main__':
     for i, data in enumerate(dataset):  # data is a dict
         if i >= opt.num_test:
             break
-
+        print("now dealing {}th data".format(i))
         # image
         if len(data['A'].shape) == 4:
             if opt.ensemble:  # only for image
                 LR = data['A']
                 LR_list = ensemble.ensemble(LR)  # torch tensor, [1,C,H,W] for image and [1,F,C,H,W] for video
                 HR_list = []
-                for i in tqdm(range(len(LR_list))):
+                for i in range(len(LR_list)):
                     data['A'] = LR_list[i]
                     model.set_input(data)
                     model.test(compute_visual_flag=(i == 0))  # only for original LR, we compute additional visuals e.g. bicubic
@@ -96,7 +95,7 @@ if __name__ == '__main__':
                 assert LR.shape[1] > remove_first + remove_last
                 window_size = opt.nframes
                 assert window_size % 2 == 1, 'window size should be odd'
-                for target_frame_idx in tqdm(range(remove_first, LR.shape[1] - remove_last)):
+                for target_frame_idx in range(remove_first, LR.shape[1] - remove_last):
                     data['A'] = LR[:, target_frame_idx - window_size//2: target_frame_idx + window_size//2 + 1, ...]
                     data['B'] = HR[:, target_frame_idx - window_size//2: target_frame_idx + window_size//2 + 1, ...]
                     model.set_input(data)
