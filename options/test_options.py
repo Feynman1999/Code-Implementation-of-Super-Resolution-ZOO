@@ -20,5 +20,5 @@ class TestOptions(BaseOptions):
         parser.add_argument('--ensemble', type=str2bool, default=True, help='whether to use ensemble strategy')
 
         # video
-        parser.add_argument('--imgseqlen', type=int, default=0, help='how long sub-string of video frames to test, default 0 means all of them')
+        parser.add_argument('--imgseqlen', type=int, default=0, help='how long sub-string of video frames to test, default 0 means all of them, normally not change')
         return parser

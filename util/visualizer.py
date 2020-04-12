@@ -274,14 +274,18 @@ class Visualizer():
     def save_videos(self, visuals, epoch_or_name, batch_idx=0, factor=1):
         for label, video in visuals.items():
             assert len(video.shape) == 5, 'video dims length should be 5'
-            video = util.tensor2im(video[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [b,h,w,c]
+            video = util.tensor2im(video[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [f,h,w,c]
             if self.opt.phase == "train":
                 vid_path = os.path.join(self.img_dir, '%.6d_epoch%.6d_%s.avi' % (self.dis_save_times+1, epoch_or_name, label))
-            elif self.opt.phase in ("test", "apply"):
-                vid_path = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
+                util.save_video(video, vid_path, factor=factor)
+            elif self.opt.phase in ("test", "apply"):  # save two style!(file and images dir)
+                vid_path1 = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
+                util.save_video(video, vid_path1, factor=factor)
+                vid_path2 = os.path.join(self.img_dir, epoch_or_name)
+                util.save_video(video, vid_path2, factor=factor, image_suffix=label, frame_start_cnt=self.opt.remove_first)
             else:
                 raise NotImplementedError("unknown opt.phase")
-            util.save_video(video, vid_path, factor=factor)
+
 
     def plot_current_losses(self, epoch, counter_ratio, losses):
         """display the current losses on visdom display: dictionary of error labels and values
@@ -321,9 +325,9 @@ class Visualizer():
             t_comp (float) -- computational time per data point (normalized by batch_size)
             t_data (float) -- data loading time per data point (normalized by batch_size)
         """
-        message = '(epoch: %d, iters: %d, time per data: %.3f, load per data: %.3f) ' % (epoch, iters, t_comp, t_data)
+        message = '(epoch: %d, iters: %d, time per data: %.4f, load per data: %.4f) ' % (epoch, iters, t_comp, t_data)
         for k, v in losses.items():
-            message += '%s: %.3f ' % (k, v)
+            message += '%s: %.4f ' % (k, v)
 
         print(message)  # print the message
         with open(self.log_name, "a") as log_file:
@@ -379,7 +383,10 @@ class Visualizer():
             func = find_function_using_name(self.iqa_name_list[i])
             HR_G = util.tensor2im(visuals['HR_G'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
             HR_GroundTruth = util.tensor2im(visuals['HR_GroundTruth'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)
-            val = func(HR_G, HR_GroundTruth, only_Luminance=self.opt.only_Y, crop=self.opt.SR_factor)
+            if len(HR_G.shape) == 3:
+                val = func(HR_G, HR_GroundTruth, only_Luminance=self.opt.only_Y, crop=self.opt.SR_factor)
+            elif len(HR_G.shape) == 4:
+                val = func(HR_G, HR_GroundTruth, only_Luminance=self.opt.only_Y, crop=self.opt.SR_factor*2)
             self.iqa_values[i].append(val)
             temp_list.append("{}: {:.4f}".format(self.iqa_name_list[i], val))
         self.iqa_dict[file_name] = "   ".join(temp_list)

@@ -1,13 +1,44 @@
 """
-    do test on windows or linux
-    and save test.sh
+    do test on windows or linux and save test.sh
+    you need to run test.sh by yourself, and after that, you can run analysis.py to analysis the test result
 """
 import os
 import time
+import argparse
+from options import str2bool
+import platform
 
 # add parser
+parser = argparse.ArgumentParser(description="generate test sh for analysis")
+parser.add_argument('--datasetnames', type=str, default="Vid4, SPMCS, vimeo_septuplet")
+parser.add_argument('--name', type=str, default="vimeo_rbpn_04_05_13_46", help="checkpoints dir name")
+parser.add_argument('--model', type=str, default="rbpn", help="model name")
+parser.add_argument('--auto_load', type=str2bool, default=True, help="auto find xxx.pth in the checkpoints dir")
+parser.add_argument('--video_flag', type=str2bool, default=True)
+parser.add_argument('--load_epoch', type=str, default="50, 100, 5", help="if do not auto load, use this, range(50,100,5)")
+opt = parser.parse_args()
 
-def generate_test_sh_for_one_algorithm(model, name, load_auto_flag=False, do = False):
+model_EXTENSIONS = [
+    '.pth',
+]
+
+
+def is_model_file(filename):
+    return any(filename.endswith(extension) for extension in model_EXTENSIONS)
+
+
+def make_models_dataset(dir):
+    models = []
+    assert os.path.isdir(dir), '%s is not a valid directory' % dir
+
+    for root, _, fnames in sorted(os.walk(dir)):
+        for fname in fnames:
+            if is_model_file(fname):
+                models.append(fname)
+    return models
+
+
+def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     """
 
     :param model:
@@ -15,26 +46,32 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag=False, do = F
     :param load_auto_flag:
     :return:
     """
-    if do:
-        os.system("activate pyt")
-    datasetnames = ["Set5", ]
-    linux is python3
-    template = "python test.py --dataroot {}  --name {} --model {} --load_epoch epoch_{} --ensemble {} --only_Y {}"
-    load_epochs = [3750, 5000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000]
+    if platform.system().lower() == 'windows':
+        template = "python test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {}"
+    elif platform.system().lower() == 'linux':
+        logfile = "/opt/data/private/test_{}_{}.log 2>&1 &".format(opt.model, opt.name)
+        template = "nohup python3 -u test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {} >> " + logfile
+    else:
+        raise NotImplementedError("unknow platform: {}!".format(platform.system().lower()))
+
+    command = ""
+
+    datasetnames = list(map(lambda s: s.strip(), opt.datasetnames.split(",")))
 
     if load_auto_flag:
         # with find with checkpoints/name/epoch_xxxx_xxxxxxxxx.pth
-        load_epochs = []
-        pass
-    command = ""
+        model_names = sorted(make_models_dataset(os.path.join("./checkpoints", opt.name)))
+        load_epochs = list(map(lambda s: s[:s.find("_net")], model_names))
+    else:
+        start, end, gap = list(map(lambda s: int(s.strip()), opt.load_epoch.split(",")))
+        load_epochs = list(map(lambda s: "epoch_{}".format(s), range(start, end, gap)))
+
     for datasetname in datasetnames:
         for load_epoch in load_epochs:
-            for emsemble_flag in ("True", "False"):
+            for emsemble_flag in ("False", ) if opt.video_flag else ("True", "False"):
                 for only_Y_flag in ("True", "False"):
                     str = template.format(os.path.join('./datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag, only_Y_flag)
                     print(str)
-                    if do:
-                        os.system(str)
                     command += str
                     command += "\n"
 
@@ -47,9 +84,4 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag=False, do = F
 
 
 if __name__ == '__main__':
-    dct={}
-    dct["dbpn"] = []
-    dct["dbpn"].append("DIV2K_dbpn")  # key -> value:      model -> [checkpoints_name_list]
-    for model in sorted(dct.keys()):
-        for checkpoints_name in dct[model]:
-            generate_test_sh_for_one_algorithm(model, checkpoints_name)
+    generate_test_sh_for_one_algorithm(opt.model, opt.name, load_auto_flag=opt.auto_load)

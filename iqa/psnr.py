@@ -58,7 +58,7 @@ def rgb2ycbcr(img, only_y=True):
     bgr version of rgb2ycbcr
     :param img: uint8, [0, 255]  or float, [0, 1],  [h,w,c] for image and [b,h,w,c] for video,  ndarray
     :param only_y: only return Y channel
-    :return:
+    :return: [h,w] or [b,h,w] for only Y ; [h,w,c] or [b,h,w,c] for ycbcr
     """
     assert img.shape[-1] == 3
     in_img_type = img.dtype

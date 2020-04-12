@@ -105,7 +105,7 @@ class BaseModel(ABC):
                 net = getattr(self, 'net' + name)
                 net.eval()
 
-    def test(self, compute_flag=True):
+    def test(self, compute_visual_flag=True):
         """Forward function used in test time.
 
         This function wraps <forward> function in no_grad() so we don't save intermediate steps for backprop
@@ -113,7 +113,7 @@ class BaseModel(ABC):
         """
         with torch.no_grad():
             self.forward()
-            if compute_flag:
+            if compute_visual_flag:
                 self.compute_visuals()
 
     def get_image_paths(self):

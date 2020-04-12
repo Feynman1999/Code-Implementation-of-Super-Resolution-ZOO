@@ -63,7 +63,8 @@ class RBPNModel(BaseModel):
         parser.add_argument('--cl', type=int, default=256, help='the cl in paper')
         parser.add_argument('--cm', type=int, default=256, help='the cm in paper')
         parser.add_argument('--ch', type=int, default=64, help='the ch in paper')
-        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
+        # used for assert, imgseqlen should set equal to this when train, normally not change
+        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')
 
         return parser
 

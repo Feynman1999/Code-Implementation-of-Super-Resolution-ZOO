@@ -6,10 +6,12 @@ import numpy as np
 from PIL import Image
 import os
 import cv2
+from data.video_folder import is_video_file
+from . import mkdir
 
 
 def tensor2im(input_image, rgb_mean = (0., 0., 0.), rgb_std = (1.0, 1.0, 1.0)):
-    """"Converts a Tensor array into a numpy image array. [h,w,c] or [b,h,w,c](video)  [0,1]
+    """"Converts a Tensor array into a numpy image array. [h,w,c] or [f,h,w,c](video)  [0,1]
 
     Parameters:
         input_image (tensor) --  the input image tensor array
@@ -72,13 +74,16 @@ def save_image(image, image_path, factor=1, inverse=False):
     image_pil.save(image_path)
 
 
-def save_video(video, video_path, factor=1, fps=2, inverse=True):
+def save_video(video, video_path, factor=1, fps=2, inverse=True, image_suffix=None, frame_start_cnt=0):
     '''
         Save a numpy video to the disk
-    :param video_frames_list:  rgb numpy image(or PIL.image) list [..., [h,w,c], ...]  or single 4d ndarray [b,h,w,c]
-    :param video_path: dst path
-    :param SR_factor:
-    :param fps:
+    :param video:  rgb numpy image(or PIL.image) list [..., [h,w,c], ...]  or single 4d ndarray [b,h,w,c]
+    :param video_path: dst path    filename: xxx/xxxx/xx.avi  or  dirname:  xxx/xxx/
+    :param factor: factor
+    :param fps: used when video_path is file style
+    :param inverse: down or up
+    :param image_suffix: if use file style, please give the image suffix
+    :param frame_start_cnt: if use file style, please give the frame start idx     e.g. 0 or 1 or 6 etc.
     :return:  none
     '''
     if isinstance(video, list):
@@ -108,11 +113,17 @@ def save_video(video, video_path, factor=1, fps=2, inverse=True):
             for i in range(length):
                 video[i] = cv2.resize(video[i], (int(w*factor), int(h*factor)), interpolation=cv2.INTER_CUBIC)
 
-    out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
-    for i in range(length):
-        frame = video[i]
-        out.write(frame[..., ::-1])
-    out.release()
+    if is_video_file(video_path):  # file style
+        out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
+        for i in range(length):
+            frame = video[i]
+            out.write(frame[..., ::-1])
+        out.release()
+    else:  # dir style
+        assert image_suffix is not None
+        mkdir(video_path)
+        for i in range(length):
+            save_image(video[i], os.path.join(video_path, "frame_{:05d}_{}.png".format(i+frame_start_cnt, image_suffix)))
 
 
 def print_numpy(x, val=True, shp=True):

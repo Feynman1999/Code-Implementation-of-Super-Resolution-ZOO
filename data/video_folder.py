@@ -12,7 +12,7 @@ import numpy as np
 VIDEO_EXTENSIONS = [
     '.mp4', '.MP4', '.avi', '.AVI',
     '.rmvb', '.RMVB', '.flv', '.FLV',
-    '.mkv', '.MKV', 'y4m'
+    '.mkv', '.MKV', '.y4m'
 ]
 
 

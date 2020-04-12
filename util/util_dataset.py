@@ -4,9 +4,15 @@ from tqdm import tqdm
 
 from data.image_folder import make_images_dataset
 from data.video_folder import make_videos_dataset, read_video
-from .util import *
+import shutil
+import os
+import cv2
+from PIL import Image
+from util.util import save_image, save_video
+from . import mkdir
 
 
+# wait to check / fix
 def images2video(filepath, fps=2, suffix='.avi'):
     """
     give a dir which contains images , trans to video
@@ -23,7 +29,7 @@ def images2video(filepath, fps=2, suffix='.avi'):
     name = os.path.split(filepath)[-1] + suffix
     save_video(framelist, os.path.join(dn, name), fps=fps)
 
-
+#wait to check / fix
 def dataset_images2video(filepath, fps=2):
     for home, dirs, files in sorted(os.walk(filepath)):
         for dir_ in dirs:
@@ -199,6 +205,23 @@ def youku_dataset_HRLR2AB():
     pass
 
 
+def SPMCS_dataset_HRLR2AB(dataset_path="./datasets/SPMCS/test_set", ABpath="./datasets/SPMCS"):
+    """
+    :param dataset_path: e.g.                           ./datasets/SPMCS/test_set
+    :param ABpath:  the path to place A,B     e.g.      ./datasets/SPMCS
+    :return:
+    """
+    factor = 4
+    phase = "test"
+    Apath = os.path.join(ABpath, phase, "A")
+    Bpath = os.path.join(ABpath, phase, "B")
+    for video_name in tqdm(os.listdir(dataset_path)):
+        Bdir = os.path.join(dataset_path, video_name, "truth")
+        Adir = os.path.join(dataset_path, video_name, "input{}".format(factor))
+        shutil.copytree(src=Bdir, dst=os.path.join(Bpath, video_name), symlinks=False)
+        shutil.copytree(src=Adir, dst=os.path.join(Apath, video_name), symlinks=False)
+
+
 def get_dataset_name(dataroot):
     dataset_name = os.path.basename(dataroot)
     if dataset_name == "":  # dataroot is ./xxxxx/xxxxx/
@@ -215,29 +238,6 @@ def get_file_name(path):
     short_path = ntpath.basename(path)  # get file name, it is name from domain A
     name = os.path.splitext(short_path)[0]  # Separating file name from extensions
     return name
-
-
-def mkdirs(paths):
-    """create empty directories if they don't exist
-
-    Parameters:
-        paths (str list) -- a list of directory paths
-    """
-    if isinstance(paths, list) and not isinstance(paths, str):
-        for path in paths:
-            mkdir(path)
-    else:
-        mkdir(paths)
-
-
-def mkdir(path):
-    """create a single empty directory if it didn't exist
-
-    Parameters:
-        path (str) -- a single directory path
-    """
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 
 def check_whether_last_dir(path):
