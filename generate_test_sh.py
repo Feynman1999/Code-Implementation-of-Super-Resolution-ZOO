@@ -70,9 +70,9 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
         for load_epoch in load_epochs:
             for emsemble_flag in ("False", ) if opt.video_flag else ("True", "False"):
                 for only_Y_flag in ("True", "False"):
-                    if platform.system().lower() == 'windows':
+                    if platform.system().lower() == 'linux':
                         str = template.format(os.path.join('/opt/data/private/datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag, only_Y_flag)
-                    elif platform.system().lower() == 'linux':
+                    elif platform.system().lower() == 'windows':
                         str = template.format(os.path.join('./datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag, only_Y_flag)
                     print(str)
                     command += str
