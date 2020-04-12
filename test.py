@@ -50,7 +50,7 @@ if __name__ == '__main__':
     for i, data in enumerate(dataset):  # data is a dict
         if i >= opt.num_test:
             break
-        print("now dealing {}th data".format(i))
+        print("now dealing {}th data".format(i+1))
         # image
         if len(data['A'].shape) == 4:
             if opt.ensemble:  # only for image
@@ -110,6 +110,7 @@ if __name__ == '__main__':
 
             A_paths, B_paths = model.get_image_paths()  # get image/video paths
             file_name = get_file_name(A_paths[0])
-            visualizer.display_and_save(visuals, file_name)
+            if opt.only_Y and opt.load_epoch == "latest":
+                visualizer.display_and_save(visuals, file_name)
             visualizer.cal_iqa(visuals, file_name)
     visualizer.summary_iqa()

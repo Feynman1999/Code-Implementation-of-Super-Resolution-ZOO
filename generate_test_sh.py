@@ -65,6 +65,7 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     else:
         start, end, gap = list(map(lambda s: int(s.strip()), opt.load_epoch.split(",")))
         load_epochs = list(map(lambda s: "epoch_{}".format(s), range(start, end, gap)))
+        load_epochs.append("latest")
 
     for datasetname in datasetnames:
         for load_epoch in load_epochs:
