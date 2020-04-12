@@ -49,8 +49,8 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     if platform.system().lower() == 'windows':
         template = "python test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {}"
     elif platform.system().lower() == 'linux':
-        logfile = "/opt/data/private/test_{}_{}.log 2>&1 &".format(opt.model, opt.name)
-        template = "nohup python3 -u test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {} >> " + logfile
+        # logfile = "/opt/data/private/test_{}_{}.log 2>&1 &".format(opt.model, opt.name)
+        template = "python3 test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {}"
     else:
         raise NotImplementedError("unknow platform: {}!".format(platform.system().lower()))
 
