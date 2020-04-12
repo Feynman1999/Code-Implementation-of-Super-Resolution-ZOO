@@ -10,7 +10,7 @@ import platform
 
 # add parser
 parser = argparse.ArgumentParser(description="generate test sh for analysis")
-parser.add_argument('--datasetnames', type=str, default="Vid4, SPMCS, vimeo_septuplet")
+parser.add_argument('--datasetnames', type=str, default="Vid4, SPMCS")  #  vimeo_septuplet
 parser.add_argument('--name', type=str, default="vimeo_rbpn_04_05_13_46", help="checkpoints dir name")
 parser.add_argument('--model', type=str, default="rbpn", help="model name")
 parser.add_argument('--auto_load', type=str2bool, default=True, help="auto find xxx.pth in the checkpoints dir")

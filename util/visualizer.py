@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 import time
-from . import util, util_dataset
+from . import util, util_dataset, mkdirs
 from iqa import find_function_using_name
 from subprocess import Popen, PIPE
 from collections import OrderedDict
@@ -84,7 +84,7 @@ class Visualizer():
 
 
         print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
-        util_dataset.mkdirs([self.img_dir])
+        mkdirs([self.img_dir])
 
         if self.display_id > 0:  # connect to a visdom server given <display_port> and <display_server>
             import visdom
