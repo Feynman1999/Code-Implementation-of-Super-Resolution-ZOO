@@ -19,3 +19,6 @@ from util.util_dataset import *
 # from DCN import *
 
 # SPMCS_dataset_HRLR2AB()
+
+SPMCS_dataset_HRLR2AB(dataset_path="/opt/data/private/datasets/SPMCS/test_set",
+                      ABpath="/opt/data/private/datasets/SPMCS")
