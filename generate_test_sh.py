@@ -10,9 +10,9 @@ import platform
 
 # add parser
 parser = argparse.ArgumentParser(description="generate test sh for analysis")
-parser.add_argument('--datasetnames', type=str, default="Vid4, SPMCS")  #  vimeo_septuplet
-parser.add_argument('--name', type=str, default="vimeo_rbpn_04_05_13_46", help="checkpoints dir name")
+parser.add_argument('--datasetnames', type=str, default="Vid4, SPMCS, vimeo_septuplet")
 parser.add_argument('--model', type=str, default="rbpn", help="model name")
+parser.add_argument('--name', type=str, default="vimeo_rbpn_04_05_13_46", help="checkpoints dir name")
 parser.add_argument('--auto_load', type=str2bool, default=True, help="auto find xxx.pth in the checkpoints dir")
 parser.add_argument('--video_flag', type=str2bool, default=True)
 parser.add_argument('--load_epoch', type=str, default="50, 100, 5", help="if do not auto load, use this, range(50,100,5)")
@@ -47,10 +47,10 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     :return:
     """
     if platform.system().lower() == 'windows':
-        template = "python test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {}"
+        template = "python test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {}"
     elif platform.system().lower() == 'linux':
         # logfile = "/opt/data/private/test_{}_{}.log 2>&1 &".format(opt.model, opt.name)
-        template = "python3 test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} --only_Y {}"
+        template = "python3 test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {}"
     else:
         raise NotImplementedError("unknow platform: {}!".format(platform.system().lower()))
 
@@ -70,14 +70,13 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     for datasetname in datasetnames:
         for load_epoch in load_epochs:
             for emsemble_flag in ("False", ) if opt.video_flag else ("True", "False"):
-                for only_Y_flag in ("True", "False"):
-                    if platform.system().lower() == 'linux':
-                        str = template.format(os.path.join('/opt/data/private/datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag, only_Y_flag)
-                    elif platform.system().lower() == 'windows':
-                        str = template.format(os.path.join('./datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag, only_Y_flag)
-                    print(str)
-                    command += str
-                    command += "\n"
+                if platform.system().lower() == 'linux':
+                    str = template.format(os.path.join('/opt/data/private/datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag)
+                elif platform.system().lower() == 'windows':
+                    str = template.format(os.path.join('./datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag)
+                print(str)
+                command += str
+                command += "\n"
 
     # print(command)
     with open("./test.sh", "w+") as f:

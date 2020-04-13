@@ -16,9 +16,9 @@ class TestOptions(BaseOptions):
         parser.add_argument('--num_test', type=int, default=1000000, help='how many test images to run')
         # Image Quality Assessment
         parser.add_argument('--iqa_list', type=str, default='psnr,ssim', help='do the method in the iqa_list')
-        parser.add_argument('--only_Y', type=str2bool, default=True, help='when test, use rgb or only luminance(Y in Ycbcr)')
         parser.add_argument('--ensemble', type=str2bool, default=True, help='whether to use ensemble strategy')
 
         # video
         parser.add_argument('--imgseqlen', type=int, default=0, help='how long sub-string of video frames to test, default 0 means all of them, normally not change')
+        parser.add_argument('--save_flag', type=str2bool, default=False, help='whether to save the result, used for video')
         return parser

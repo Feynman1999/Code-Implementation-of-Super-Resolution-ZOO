@@ -47,6 +47,7 @@ if __name__ == '__main__':
     # test with eval mode. This only affects layers like batchnorm and dropout.
     if opt.eval:
         model.eval()
+    print("total {} test samples".format(len(dataset)))
     for i, data in enumerate(dataset):  # data is a dict
         if i >= opt.num_test:
             break
@@ -110,7 +111,7 @@ if __name__ == '__main__':
 
             A_paths, B_paths = model.get_image_paths()  # get image/video paths
             file_name = get_file_name(A_paths[0])
-            if opt.only_Y and opt.load_epoch == "latest":
+            if opt.load_epoch == "latest" or opt.save_flag:
                 visualizer.display_and_save(visuals, file_name)
             visualizer.cal_iqa(visuals, file_name)
     visualizer.summary_iqa()

@@ -207,6 +207,8 @@ def youku_dataset_HRLR2AB():
 
 def SPMCS_dataset_HRLR2AB(dataset_path="./datasets/SPMCS/test_set", ABpath="./datasets/SPMCS"):
     """
+    you will find that the original input4 is not corresponding to the truth, lead to low psnr.
+    so you should use the SPMCS_dataset_onlyHR2AB.
     :param dataset_path: e.g.                           ./datasets/SPMCS/test_set
     :param ABpath:  the path to place A,B     e.g.      ./datasets/SPMCS
     :return:
@@ -220,6 +222,34 @@ def SPMCS_dataset_HRLR2AB(dataset_path="./datasets/SPMCS/test_set", ABpath="./da
         Adir = os.path.join(dataset_path, video_name, "input{}".format(factor))
         shutil.copytree(src=Bdir, dst=os.path.join(Bpath, video_name), symlinks=False)
         shutil.copytree(src=Adir, dst=os.path.join(Apath, video_name), symlinks=False)
+
+
+def SPMCS_dataset_onlyHR2AB(dataset_path, ABpath):
+    """
+
+    :param dataset_path: e.g.                           ./datasets/SPMCS/test_set
+    :param ABpath:  the path to place A,B     e.g.      ./datasets/SPMCS
+    :return:
+    """
+    factor = 4
+    phase = "test"
+    Apath = os.path.join(ABpath, phase, "A")
+    Bpath = os.path.join(ABpath, phase, "B")
+    assert (not os.path.exists(Apath)) and (not os.path.exists(Bpath)), "{} or {} already exist, if you want to " \
+                                                                        "generate new AB, please delete them " \
+                                                                        "first".format(Apath, Bpath)
+    for video_name in tqdm(os.listdir(dataset_path)):
+        Bdir = os.path.join(dataset_path, video_name, "truth")
+        HRdir = os.path.join(Bpath, video_name)
+        shutil.copytree(src=Bdir, dst=HRdir, symlinks=False)
+        # iteration high resolution to get low resolution
+        imagepath_list = sorted(make_images_dataset(HRdir))
+        mkdir(os.path.join(Apath, video_name))
+        for ith, img_path in enumerate(imagepath_list):
+            img = Image.open(img_path)
+            imgname = get_file_name(img_path)
+            imgpathA = os.path.join(Apath, video_name, imgname + ".png")
+            save_image(img, imgpathA, factor=factor, inverse=True)
 
 
 def get_dataset_name(dataroot):

@@ -67,7 +67,7 @@ class Visualizer():
             self.iqa_dict = dict()
             self.iqa_results = []
 
-            options = ('ensemble', 'only_Y')
+            options = ('ensemble', )
             img_dir_name = self.generate_filename_with_options(options)
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"-results.txt")
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
@@ -95,8 +95,8 @@ class Visualizer():
     def generate_filename_with_options(self, options=()):
         assert self.opt.phase in ('test', 'apply')
         img_dir_name_item_list = []
-        img_dir_name_item_list.append(self.opt.phase)  # test
-        img_dir_name_item_list.append(util_dataset.get_dataset_name(self.opt.dataroot))  # Set5 for test and someimages for apply
+        img_dir_name_item_list.append(self.opt.phase)  # test or apply
+        img_dir_name_item_list.append(util_dataset.get_dataset_name(self.opt.dataroot))  # e.g. Set5 for test and someimages for apply
         img_dir_name_item_list.append(self.opt.load_epoch)
         for option in options:
             # print(option)
@@ -384,25 +384,29 @@ class Visualizer():
             HR_G = util.tensor2im(visuals['HR_G'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [h,w,c] for image and [b,h,w,c] for video
             HR_GroundTruth = util.tensor2im(visuals['HR_GroundTruth'][0], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)
             if len(HR_G.shape) == 3:
-                val = func(HR_G, HR_GroundTruth, only_Luminance=self.opt.only_Y, crop=self.opt.SR_factor)
+                val_Y = func(HR_G, HR_GroundTruth, only_Luminance=True, crop=self.opt.SR_factor)
+                val_rgb = func(HR_G, HR_GroundTruth, only_Luminance=False, crop=self.opt.SR_factor)
             elif len(HR_G.shape) == 4:
-                val = func(HR_G, HR_GroundTruth, only_Luminance=self.opt.only_Y, crop=self.opt.SR_factor*2)
-            self.iqa_values[i].append(val)
-            temp_list.append("{}: {:.4f}".format(self.iqa_name_list[i], val))
-        self.iqa_dict[file_name] = "   ".join(temp_list)
+                val_Y = func(HR_G, HR_GroundTruth, only_Luminance=True, crop=self.opt.SR_factor*2)
+                val_rgb = func(HR_G, HR_GroundTruth, only_Luminance=False, crop=self.opt.SR_factor*2)
+            print("{} for {} : {:.4f} / {:.4f} (Y / rgb)".format(self.iqa_name_list[i], file_name, val_Y, val_rgb))
+            self.iqa_values[i].append((val_Y, val_rgb))
+            temp_list.append("{}: {:.4f} / {:.4f}".format(self.iqa_name_list[i], val_Y, val_rgb))
+        self.iqa_dict[file_name] = "    ".join(temp_list)
 
     def summary_iqa(self):
         for i in range(len(self.iqa_name_list)):
-            result = sum(self.iqa_values[i]) / len(self.iqa_values[i])
+            result = list(np.sum(np.array(self.iqa_values[i]), axis=0) / len(self.iqa_values[i]) )
+            assert len(result) == 2
             self.iqa_results.append(result)
             fmat ='*'*10 + ' '*10
-            print("{}{}: {:.4f}{}".format(fmat, 'average '+self.iqa_name_list[i], result, fmat[::-1]))
+            print("{} {}: {:.4f} / {:.4f} {}".format(fmat, 'average '+self.iqa_name_list[i], result[0], result[1], fmat[::-1]))
         with open(self.iqa_result_path, "w+") as log_file:
             now = time.strftime("%c")
-            content = '================ Result with {} ({}) ================\n\n'.format(" / ".join(self.iqa_name_list), now)
+            content = '================ Result with {} (Y / rgb) ({}) ================\n\n'.format(" / ".join(self.iqa_name_list), now)
             content += " "*15
             for i, res in enumerate(self.iqa_results):
-                content += "average {}: {:.4f}   ".format(self.iqa_name_list[i], res)
+                content += "average {}: {:.4f} / {:.4f}   ".format(self.iqa_name_list[i], res[0], res[1])
             content += "\n\n"
             for key in sorted(self.iqa_dict.keys()):
                 content += "{:^30}:   {}\n".format(key, self.iqa_dict[key])
