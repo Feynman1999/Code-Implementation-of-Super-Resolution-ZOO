@@ -1,5 +1,22 @@
 """
-to analysis result after run
+to analysis result after run test.sh
+only deal with Y channel!
+
+e.g.
+test-Vid4-epoch_5-ensemble_False-results.txt
+test-Vid4-epoch_10-ensemble_False-results.txt
+test-SPMCS-epoch_10-ensemble_False-results.txt
+test-SPMCS-epoch_10-ensemble_False-results.txt
+
+in xxx.txt:
+================ Result with psnr / ssim (Y / rgb) (Mon Apr 13 22:08:25 2020) ================
+
+               average psnr: 26.7214 / 25.2044   average ssim: 1.0000 / 1.0000
+
+           calendar           :   psnr: 23.4931 / 21.7502    ssim: 1.0000 / 1.0000
+             city             :   psnr: 27.3135 / 25.7842    ssim: 1.0000 / 1.0000
+           foliage            :   psnr: 25.9219 / 24.5025    ssim: 1.0000 / 1.0000
+             walk             :   psnr: 30.1570 / 28.7807    ssim: 1.0000 / 1.0000
 """
 import os
 import time
@@ -12,6 +29,7 @@ import matplotlib.pyplot as plt
 parser = argparse.ArgumentParser(description="analysis test result")
 parser.add_argument('--result_dir', type=str, default="./results", help="result dir")
 parser.add_argument('--name', type=str, default="vimeo_rbpn_04_05_13_46", help="checkpoints and result dir name")
+parser.add_argument('--analysis_result_dir_name', type=str, default="analysis")
 opt = parser.parse_args()
 
 
@@ -49,18 +67,3 @@ if __name__ == '__main__':
                 # print(get_iqa_from_txt(path))
             else:
                 pass
-
-    x.pop(8)
-    y.pop(8)
-    x.insert(0, 5)
-    y.insert(0, 25.5155)
-    print(x)
-    print(y)
-
-    plt.plot(x, y, linestyle='-.')
-
-    plt.title('RBPN (only Luminance channel) on Vid4')
-    plt.xlabel('epoch')
-    plt.ylabel('PSNR')
-
-    plt.show()
