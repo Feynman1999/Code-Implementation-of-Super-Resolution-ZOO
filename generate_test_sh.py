@@ -59,7 +59,7 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     datasetnames = list(map(lambda s: s.strip(), opt.datasetnames.split(",")))
 
     if load_auto_flag:
-        # with find with checkpoints/name/epoch_xxxx_xxxxxxxxx.pth
+        # find with checkpoints/name/epoch_xxxx_xxxxxxxxx.pth
         model_names = sorted(make_models_dataset(os.path.join("./checkpoints", opt.name)))
         load_epochs = list(map(lambda s: s[:s.find("_net")], model_names))
     else:
@@ -68,7 +68,11 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
         load_epochs.append("latest")
 
     for datasetname in datasetnames:
-        for load_epoch in load_epochs:
+        if datasetname == 'vimeo_septuplet':  # due to the vimeo testset is too large, we only run test for latest model
+            epochs = [load_epochs[-1], ]
+        else:
+            epochs = load_epochs
+        for load_epoch in epochs:
             for emsemble_flag in ("False", ) if opt.video_flag else ("True", "False"):
                 if platform.system().lower() == 'linux':
                     str = template.format(os.path.join('/opt/data/private/datasets', datasetname).replace('\\', '/'), name, model, load_epoch, emsemble_flag)

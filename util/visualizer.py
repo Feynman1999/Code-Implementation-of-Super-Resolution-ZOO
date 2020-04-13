@@ -16,6 +16,19 @@ else:
     VisdomExceptionBase = ConnectionError
 
 
+class Logger(object):
+    def __init__(self, filename='default.log', stream=sys.stdout):
+        self.terminal = stream
+        self.log = open(filename, 'a')
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        pass
+
+
 class Visualizer():
     """This class includes several functions that can display/save images / videos and print/save logging information.
     and do some checks when training for better visualize.
@@ -70,6 +83,15 @@ class Visualizer():
             options = ('ensemble', )
             img_dir_name = self.generate_filename_with_options(options)
             self.iqa_result_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"-results.txt")
+
+            # copy terminal information to disk
+            self.terminal_log_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"-terminal.log")
+            if os.path.exists(self.terminal_log_path):
+                os.remove(self.terminal_log_path)
+            sys.stdout = Logger(self.terminal_log_path, sys.stdout)
+            sys.stderr = Logger(self.terminal_log_path, sys.stderr)
+
+            assert not os.path.exists(self.iqa_result_path), '{} already existed, if you want to retest, delete it first'.format(self.iqa_result_path)
             self.img_dir = os.path.join(opt.results_dir, opt.name, img_dir_name)
 
         elif opt.phase == "apply":
@@ -81,7 +103,6 @@ class Visualizer():
             self.last_deal_x = -1
         else:
             raise NotImplementedError("unknown opt.phase")
-
 
         print('create %s images/videos directory %s...' % (opt.phase, self.img_dir))
         mkdirs([self.img_dir])
