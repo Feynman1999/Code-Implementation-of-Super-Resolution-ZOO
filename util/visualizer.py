@@ -88,6 +88,7 @@ class Visualizer():
             self.terminal_log_path = os.path.join(opt.results_dir, opt.name, img_dir_name+"-terminal.log")
             if os.path.exists(self.terminal_log_path):
                 os.remove(self.terminal_log_path)
+            mkdirs([os.path.dirname(self.terminal_log_path)])
             sys.stdout = Logger(self.terminal_log_path, sys.stdout)
             sys.stderr = Logger(self.terminal_log_path, sys.stderr)
 
