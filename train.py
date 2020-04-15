@@ -28,7 +28,7 @@ from util.visualizer import Visualizer
 if __name__ == '__main__':
     opt = TrainOptions().parse()   # get training options
     dataset = create_dataset(opt)  # create a dataset given opt.dataset_mode and other options
-    dataset_size = len(dataset)    # get the number of images / videos in the dataset.
+    dataset_size = len(dataset)    # get the number of images / videos in the dataset. do not think dropout.
 
     model = create_model(opt)      # create a model given opt.model and other options
     model.setup(opt)               # regular setup: load and print networks; create schedulers
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         '''save model by epoch'''
         if epoch % opt.save_epoch_freq == 0:              # cache our model every <save_epoch_freq> epochs
             print('-----------------------------------------------------------------')
-            print('saving the model at the end of epoch: %d,  now total iters: %d' % (epoch, total_iters))
+            print('saving the model at the end of epoch: %d,  now total iters: %d' % (epoch, total_iters + visualizer.dataset_size * (opt.epoch_count - 1)))
             print('-----------------------------------------------------------------')
             save_prefix = 'epoch_%d' % epoch
             model.save_networks(save_prefix)
