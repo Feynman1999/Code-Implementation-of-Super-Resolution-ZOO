@@ -1,9 +1,9 @@
 import numpy as np
 import math
-from PIL import Image
+from . import rgb2ycbcr
 
 
-def psnr(HR_G, HR_GroundTruth, only_Luminance=False, crop=0):
+def psnr(HR_G, HR_GroundTruth, only_Luminance=True, crop=0):
     """
     :param HR_G: [h,w,c] for image and [b,h,w,c] for video,  ndarray
     :param HR_GroundTruth:
@@ -51,28 +51,3 @@ def psnr(HR_G, HR_GroundTruth, only_Luminance=False, crop=0):
     else:
         # for [h,w] or [h,w,c]
         return one_frame(HR_G, HR_GroundTruth)
-
-
-def rgb2ycbcr(img, only_y=True):
-    """
-    bgr version of rgb2ycbcr
-    :param img: uint8, [0, 255]  or float, [0, 1],  [h,w,c] for image and [b,h,w,c] for video,  ndarray
-    :param only_y: only return Y channel
-    :return: [h,w] or [b,h,w] for only Y ; [h,w,c] or [b,h,w,c] for ycbcr
-    """
-    assert img.shape[-1] == 3
-    in_img_type = img.dtype
-    img = img.astype(np.float32)
-    if in_img_type != np.uint8:
-        img *= 255.
-    # convert
-    if only_y:
-        rlt = np.dot(img, [65.481, 128.553, 24.966]) / 255.0 + 16.0
-    else:
-        rlt = np.matmul(img, [[65.481, -37.797, 112.0], [128.553, -74.203, -93.786],
-                              [24.966, 112.0, -18.214]]) / 255.0 + [16, 128, 128]
-    if in_img_type == np.uint8:
-        rlt = rlt.round()
-    else:
-        rlt /= 255.
-    return rlt.astype(in_img_type)
