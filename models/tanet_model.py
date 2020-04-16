@@ -1,5 +1,5 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet --model tanet  --display_freq  4  --print_freq  4
+python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet --model tanet  --display_freq  4  --print_freq  4 --imgseqlen 7  --num_threads 2
 
 aimax:
     gpu:
@@ -41,17 +41,21 @@ class TANETModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=4)  # 8 in paper  need 4 gpu
+        parser.set_defaults(batch_size=1)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
-        parser.set_defaults(crop_size=64)
+        parser.set_defaults(crop_size=32)
         parser.set_defaults(beta1='0.9')
         parser.set_defaults(lr=0.0001)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
-        parser.set_defaults(lr_decay_iters=75)
+        parser.set_defaults(lr_decay_iters=10)
+        parser.set_defaults(lr_gamma=1)
         parser.set_defaults(n_epochs=150)
-        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
+        parser.add_argument('--cl', type=int, default=128, help='the cl in paper')
+        parser.add_argument('--cm', type=int, default=128, help='the cm in paper')
+        parser.add_argument('--ch', type=int, default=32, help='the ch in paper')
+        parser.add_argument('--nframes', type=int, default=7, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
 
@@ -83,7 +87,6 @@ class TANETModel(BaseModel):
             self.optimizer_G = torch.optim.Adam(self.netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
             self.optimizers.append(self.optimizer_G)
 
-
     def set_input(self, input):
         """Unpack input data from the dataloader and perform necessary pre-processing steps.
 
@@ -97,8 +100,8 @@ class TANETModel(BaseModel):
         # input['B']:   e.g. [4, 10, 3, 256, 256]
         self.LR = input['A'].to(self.device)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
-        self.HR_GroundTruth = input['B'].to(self.device)
-        # print(self.LR.shape)
+        mid = self.opt.nframes // 2
+        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
@@ -108,13 +111,12 @@ class TANETModel(BaseModel):
     def compute_visuals(self):
         mid = self.opt.nframes//2
         self.LR = self.LR[:, mid, ...]
-        self.HR_GroundTruth = self.HR_GroundTruth[:, mid, ...]
         self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)
 
     def backward(self):
         """Calculate loss"""
         mid = self.opt.nframes//2
-        self.loss_SR = self.criterionL1(self.HR_G, self.HR_GroundTruth[:, mid, ...])
+        self.loss_SR = self.criterionL1(self.HR_G, self.HR_GroundTruth)
         self.loss_SR.backward()
 
     def optimize_parameters(self):

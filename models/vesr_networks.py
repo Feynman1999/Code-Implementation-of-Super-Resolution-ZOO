@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from modules.modulated_deform_conv import ModulatedDeformConv, ModulatedDeformConvFunction
 from . import base_networks
+from modules.modulated_deform_conv import ModulatedDeformConv, ModulatedDeformConvFunction
 import logging
 
 
