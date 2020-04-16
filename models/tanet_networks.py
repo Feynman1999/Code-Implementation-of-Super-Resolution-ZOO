@@ -9,8 +9,12 @@ import logging
 """
 * enhanced UPU and DPU
 * id == mid 不continue
-* add more feature extrater 
-* add non local
+* add more init feature extrater
+* add pcd align
+
+do not use 
+
+* add non local       OOM         
 """
 
 logger = logging.getLogger('base')
@@ -414,13 +418,19 @@ class TANETGenerator(nn.Module):
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
             self.make_carb_layer(block=CARBBlock, ch_num=cm, num_blocks=5),
         )
+        self.fea_L2_conv1 = nn.Conv2d(cm, cm, 3, 2, 1, bias=True)
+        self.fea_L2_conv2 = nn.Conv2d(cm, cm, 3, 1, 1, bias=True)
+        self.fea_L3_conv1 = nn.Conv2d(cm, cm, 3, 2, 1, bias=True)
+        self.fea_L3_conv2 = nn.Conv2d(cm, cm, 3, 1, 1, bias=True)
+        self.PCD_conv = PCD_Align(nf=cm, groups=cm // 64 * 8)
 
-        self.sep = Separate_non_local(channel_num=cm)
         # projection module
         self.Projection = Projection_Module(args)
 
         # reconstruction module
         self.reconstruction = nn.Conv2d((self.nframes ) * ch, args.output_nc, kernel_size=3, stride=1, padding=1)
+
+        self.lrelu = nn.LeakyReLU(negative_slope=0.1, inplace=True)
 
     def make_carb_layer(self, block, ch_num, num_blocks):
         layers = []
@@ -437,18 +447,36 @@ class TANETGenerator(nn.Module):
         B, N, C, H, W = x.shape  # N video frames
         mid = self.nframes // 2
         L = self.conv1(x[:, mid, ...])
-        Hlist = []
 
         # first do feature encoder
         L1_fea = self.feature_encoder_carb(x.view(-1, C, H, W))
-        L1_fea = L1_fea.view(B, N, -1, H, W)
+        # L2
+        L2_fea = self.lrelu(self.fea_L2_conv1(L1_fea))
+        L2_fea = self.lrelu(self.fea_L2_conv2(L2_fea))
+        # L3
+        L3_fea = self.lrelu(self.fea_L3_conv1(L2_fea))
+        L3_fea = self.lrelu(self.fea_L3_conv2(L3_fea))
 
+        L1_fea = L1_fea.view(B, N, -1, H, W)
+        L2_fea = L2_fea.view(B, N, -1, H // 2, W // 2)
+        L3_fea = L3_fea.view(B, N, -1, H // 4, W // 4)
+
+        ref_fea_l = [
+            L1_fea[:, mid, ...].clone(), L2_fea[:, mid, ...].clone(),
+            L3_fea[:, mid, ...].clone()
+        ]
+        Hlist = []
         for id in range(self.nframes):
+            nbr_fea_l = [
+                L1_fea[:, id, ...].clone(), L2_fea[:, id, ...].clone(),
+                L3_fea[:, id, ...].clone()
+            ]
+            M = self.PCD_conv(nbr_fea_l, ref_fea_l)
             # M = self.conv2(torch.cat((x[:, mid, ...], x[:, id, ...]), dim=1))
-            M = self.sep(L1_fea[:, mid, ...], L1_fea[:, id, ...])
+            # M = self.sep(L1_fea[:, mid, ...], L1_fea[:, id, ...])
             H, L = self.Projection(M, L)
             Hlist.append(H)
-
+        del ref_fea_l
         return self.reconstruction(torch.cat(Hlist, dim=1))
 
 
