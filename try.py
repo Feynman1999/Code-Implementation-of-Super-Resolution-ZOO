@@ -23,5 +23,17 @@ from util.util_dataset import *
 # SPMCS_dataset_HRLR2AB(dataset_path="/opt/data/private/datasets/SPMCS/test_set",
 #                       ABpath="/opt/data/private/datasets/SPMCS")
 
-SPMCS_dataset_onlyHR2AB(dataset_path="/opt/data/private/datasets/SPMCS/test_set",
-                        ABpath="/opt/data/private/datasets/SPMCS")
+# SPMCS_dataset_onlyHR2AB(dataset_path="/opt/data/private/datasets/SPMCS/test_set",
+#                         ABpath="/opt/data/private/datasets/SPMCS")
+
+
+#!/usr/bin/env python
+
+class A():
+    def __init__(self):
+        self.a = 1
+
+
+a = A()
+b = a.a
+print(b.__dir__())

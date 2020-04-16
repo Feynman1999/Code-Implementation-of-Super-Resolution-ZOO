@@ -102,9 +102,6 @@ class RBPNModel(BaseModel):
 
         Parameters:
             input (dict): include the data itself and its metadata information.
-
-        by default, in video related task, the first frame is black image
-
         """
         self.A_paths = input['A_paths']
         self.B_paths = input['B_paths']

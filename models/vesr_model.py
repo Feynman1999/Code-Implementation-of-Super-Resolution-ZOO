@@ -1,5 +1,5 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_vesr --model vesr  --display_freq  4  --print_freq  4
+python train.py --dataroot ./datasets/Vid4 --name Vid4_vesr --model vesr  --display_freq  4  --print_freq  4  --imgseqlen 7  --num_threads 2
 
 aimax:
     gpu:
@@ -10,11 +10,10 @@ aimax:
         --display_freq      9600
         --print_freq        9600
         --save_epoch_freq   10
-        --gpu_ids           0,1,2
-        --batch_size        6
-        --suffix            04_10_xx_xx
+        --gpu_ids           0,1,2,3
+        --batch_size        32
+        --suffix            04_16_xx_xx
         --imgseqlen         7
-        --nframes           7
 """
 import torch
 from .base_model import BaseModel
@@ -32,7 +31,7 @@ class VESRModel(BaseModel):
 
     vimeo90K train dataset size: 55025.
 
-    for imgseqlen 5, will cost xxx seconds for one epoch with 3 GPUs (TITAN_X_Pascal). (xx days for 150 epoch)
+    for imgseqlen 7, will cost xxx seconds for one epoch with 4 GPUs (RTX2080Ti). (xx days for 150 epoch)
     """
     @staticmethod
     def modify_commandline_options(parser, is_train=True):
@@ -47,7 +46,7 @@ class VESRModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=32*2)  # 32*4 in paper  need 4 gpu
+        parser.set_defaults(batch_size=2)  # 32*4 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)
@@ -61,7 +60,7 @@ class VESRModel(BaseModel):
         parser.add_argument('--CARB_num1', type=int, default=5, help='the CARB block nums in the feature encoder')
         parser.add_argument('--CARB_num2', type=int, default=20, help='the CARB block nums in the reconstruct Module')
         parser.add_argument('--channel_size', type=int, default=128, help='the channel size')
-        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
+        parser.add_argument('--nframes', type=int, default=7, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
 
@@ -99,9 +98,6 @@ class VESRModel(BaseModel):
 
         Parameters:
             input (dict): include the data itself and its metadata information.
-
-        by default, in video related task, the first frame is black image
-
         """
         self.A_paths = input['A_paths']
         self.B_paths = input['B_paths']
