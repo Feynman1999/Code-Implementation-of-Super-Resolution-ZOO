@@ -27,6 +27,8 @@ options = \
     --gpu_ids           0,1,2
     --batch_size        6
     --suffix            04_16_18_10
+    --imgseqlen         7
+    --crop_size         64
 """
 
 if __name__ == '__main__':

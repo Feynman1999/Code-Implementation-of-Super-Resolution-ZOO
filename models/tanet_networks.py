@@ -9,6 +9,8 @@ import logging
 """
 * enhanced UPU and DPU
 * id == mid 不continue
+* add more feature extrater 
+* add non local
 """
 
 logger = logging.getLogger('base')
@@ -442,8 +444,8 @@ class TANETGenerator(nn.Module):
         L1_fea = L1_fea.view(B, N, -1, H, W)
 
         for id in range(self.nframes):
-            M = self.sep(L1_fea[:, mid, ...], L1_fea[:, id, ...])
             # M = self.conv2(torch.cat((x[:, mid, ...], x[:, id, ...]), dim=1))
+            M = self.sep(L1_fea[:, mid, ...], L1_fea[:, id, ...])
             H, L = self.Projection(M, L)
             Hlist.append(H)
 
