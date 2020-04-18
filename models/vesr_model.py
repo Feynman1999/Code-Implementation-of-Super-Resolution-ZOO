@@ -7,8 +7,8 @@ aimax:
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
         --name              vimeo_vesr
         --model             vesr
-        --display_freq      4800
-        --print_freq        4800
+        --display_freq      7200
+        --print_freq        7200
         --save_epoch_freq   10
         --gpu_ids           0,1,2
         --batch_size        18
