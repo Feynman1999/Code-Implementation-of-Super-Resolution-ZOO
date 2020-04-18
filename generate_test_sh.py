@@ -1,6 +1,9 @@
 """
     do test on windows or linux and save test.sh
     you need to run test.sh by yourself, and after that, you can run analysis.py to analysis the test result
+
+    e.g.
+    python generate_test_sh.py --name vimeo_tanet_04_16_18_10  --model tanet
 """
 import os
 import time
@@ -11,8 +14,8 @@ import platform
 # add parser
 parser = argparse.ArgumentParser(description="generate test sh for analysis")
 parser.add_argument('--datasetnames', type=str, default="Vid4, SPMCS, vimeo_septuplet")
-parser.add_argument('--model', type=str, default="rbpn", help="model name")
 parser.add_argument('--name', type=str, default="vimeo_rbpn_04_05_13_46", help="checkpoints dir name")
+parser.add_argument('--model', type=str, default="rbpn", help="model name")
 parser.add_argument('--auto_load', type=str2bool, default=True, help="auto find xxx.pth in the checkpoints dir")
 parser.add_argument('--video_flag', type=str2bool, default=True)
 parser.add_argument('--load_epoch', type=str, default="50, 100, 5", help="if do not auto load, use this, range(50,100,5)")
