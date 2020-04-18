@@ -11,7 +11,7 @@ aimax:
         --print_freq        4800
         --save_epoch_freq   10
         --gpu_ids           0,1,2
-        --batch_size        24
+        --batch_size        18
         --suffix            04_18_18_06
         --imgseqlen         7
         --crop_size         64
@@ -47,7 +47,7 @@ class VESRModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=24)  # 32 in paper  need 4 gpu
+        parser.set_defaults(batch_size=18)  # 32 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)

@@ -255,6 +255,11 @@ class VESRGenerator(nn.Module):
             ]
             aligned_fea.append(self.PCD_conv7(nbr_fea_l, ref_fea_l))
         aligned_fea = torch.stack(aligned_fea, dim=1)  # [B, N, C', H, W]
+        del ref_fea_l
+        del nbr_fea_l
+        del L1_fea
+        del L2_fea
+        del L3_fea
         aligned_fea = self.Seperate_NL8(aligned_fea)
         aligned_fea = self.lrelu(self.conv9(aligned_fea.view(B, -1, H, W)))  # [B, C', H, W]
         aligned_fea = self.reconstruct_carb(aligned_fea)
@@ -264,9 +269,9 @@ class VESRGenerator(nn.Module):
         aligned_fea = self.conv36(aligned_fea)
 
         x_center = x[:, self.mid, ...].contiguous()
-        base = F.interpolate(x_center, scale_factor=4, mode='bicubic', align_corners=False)
+        x_center = F.interpolate(x_center, scale_factor=4, mode='bicubic', align_corners=False)
 
-        return base + aligned_fea
+        return x_center + aligned_fea
 
 def define_G(opt):
     net = VESRGenerator(opt)

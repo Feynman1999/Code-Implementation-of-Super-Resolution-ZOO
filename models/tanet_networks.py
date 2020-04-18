@@ -477,6 +477,7 @@ class TANETGenerator(nn.Module):
             H, L = self.Projection(M, L)
             Hlist.append(H)
         del ref_fea_l
+        # del nbr_fea_l
         return self.reconstruction(torch.cat(Hlist, dim=1))
 
 
