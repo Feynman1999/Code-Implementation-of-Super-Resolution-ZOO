@@ -1,5 +1,5 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_vesr --model vesr  --display_freq  4  --print_freq  4  --imgseqlen 7  --num_threads 2
+python train.py --dataroot ./datasets/Vid4 --name Vid4_vesr --model vesr  --display_freq  4  --print_freq  4  --imgseqlen 7  --num_threads 2 --batch_size 2
 
 aimax:
     gpu:

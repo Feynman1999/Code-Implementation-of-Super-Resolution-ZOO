@@ -196,16 +196,21 @@ class VESRGenerator(nn.Module):
         self.fea_L3_conv1 = nn.Conv2d(self.channel_size, self.channel_size, 3, 2, 1, bias=True)
         self.fea_L3_conv2 = nn.Conv2d(self.channel_size, self.channel_size, 3, 1, 1, bias=True)
         self.PCD_conv7 = PCD_Align(nf=self.channel_size, groups=self.channel_size//64 * 8)
-        self.Seperate_NL8 = Separate_non_local(channel_num=self.channel_size, frames=args.nframes)
+        # self.Seperate_NL8 = Separate_non_local(channel_num=self.channel_size, frames=args.nframes)
         self.conv9 = nn.Conv2d(self.channel_size * args.nframes, self.channel_size, kernel_size=3, stride=1, padding=1)
 
         self.reconstruct_carb = nn.Sequential(
             self.make_carb_layer(block=CARBBlock, ch_num=self.channel_size, num_blocks=args.CARB_num2),
+            nn.ConvTranspose2d(self.channel_size, self.channel_size, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.LeakyReLU(negative_slope=0.1, inplace=True),
+            nn.ConvTranspose2d(self.channel_size, self.channel_size//2, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.LeakyReLU(negative_slope=0.1, inplace=True),
         )
 
-        self.conv31 = nn.Conv2d(self.channel_size, self.channel_size*4, kernel_size=3, stride=1, padding=1)
-        self.conv33 = nn.Conv2d(self.channel_size, self.channel_size*2, kernel_size=3, stride=1, padding=1)
-        self.pixelshuffle = nn.PixelShuffle(2)
+        # self.conv31 = nn.Conv2d(self.channel_size, self.channel_size*4, kernel_size=3, stride=1, padding=1)
+        # self.conv33 = nn.Conv2d(self.channel_size, self.channel_size*2, kernel_size=3, stride=1, padding=1)
+        # self.pixelshuffle = nn.PixelShuffle(2)
+
 
         self.conv35 = nn.Conv2d(self.channel_size//2, self.channel_size//2, kernel_size=3, stride=1, padding=1)
         self.conv36 = nn.Conv2d(self.channel_size//2, args.output_nc, kernel_size=3, stride=1, padding=1)
@@ -260,11 +265,11 @@ class VESRGenerator(nn.Module):
         del L1_fea
         del L2_fea
         del L3_fea
-        aligned_fea = self.Seperate_NL8(aligned_fea)
+        # aligned_fea = self.Seperate_NL8(aligned_fea)
         aligned_fea = self.lrelu(self.conv9(aligned_fea.view(B, -1, H, W)))  # [B, C', H, W]
         aligned_fea = self.reconstruct_carb(aligned_fea)
-        aligned_fea = self.lrelu(self.pixelshuffle(self.conv31(aligned_fea)))  # [B, C', 2*H, 2*W]
-        aligned_fea = self.lrelu(self.pixelshuffle(self.conv33(aligned_fea)))  # [B, C'/2, 4*H, 4*W]
+        # aligned_fea = self.lrelu(self.pixelshuffle(self.conv31(aligned_fea)))  # [B, C', 2*H, 2*W]
+        # aligned_fea = self.lrelu(self.pixelshuffle(self.conv33(aligned_fea)))  # [B, C'/2, 4*H, 4*W]
         aligned_fea = self.lrelu(self.conv35(aligned_fea))  # [B, C'/2, 4*H, 4*W]
         aligned_fea = self.conv36(aligned_fea)
 

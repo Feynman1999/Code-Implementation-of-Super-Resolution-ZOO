@@ -1,26 +1,28 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet --model tanet  --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
+python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet2 --model tanet2 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
 
 aimax:
     gpu:
     python3 train.py
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_tanet
-        --model             tanet
-        --display_freq      1200
-        --print_freq        1200
+        --name              vimeo_tanet2
+        --model             tanet2
+        --display_freq      4800
+        --print_freq        4800
         --save_epoch_freq   5
         --gpu_ids           0,1,2
         --batch_size        6
-        --suffix            04_09_xx_xx
+        --suffix            04_20_01_05
+        --crop_size         64
+        --imgseqlen         7
 """
 import torch
 from .base_model import BaseModel
-from . import tanet_networks
+from . import tanet2_networks
 
 
-class TANETModel(BaseModel):
-    """ This class implements the tanet model
+class TANET2Model(BaseModel):
+    """ This class implements the tanet2 model
 
     The model training requires '--dataset_mode aligned_video' dataset.
 
@@ -41,10 +43,10 @@ class TANETModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=1)  # 8 in paper  need 4 gpu
+        parser.set_defaults(batch_size=2)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
-        parser.set_defaults(crop_size=64)
+        parser.set_defaults(crop_size=32)
         parser.set_defaults(beta1='0.9')
         parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
@@ -80,7 +82,7 @@ class TANETModel(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = tanet_networks.define_G(opt)
+        self.netG = tanet2_networks.define_G(opt)
 
         if self.isTrain:
             self.criterionL1 = torch.nn.L1Loss()
