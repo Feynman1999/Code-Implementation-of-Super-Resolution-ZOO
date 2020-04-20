@@ -9,10 +9,10 @@ aimax:
         --model             tanet2
         --display_freq      4800
         --print_freq        4800
-        --save_epoch_freq   5
+        --save_epoch_freq   10
         --gpu_ids           0,1,2
-        --batch_size        6
-        --suffix            04_20_01_05
+        --batch_size        18
+        --suffix            04_20_20_32
         --crop_size         64
         --imgseqlen         5
 """
