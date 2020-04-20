@@ -60,7 +60,7 @@ if __name__ == '__main__':
                 visualizer.display_and_save(model.get_current_visuals(), epoch)
 
             '''loss'''
-            if total_iters % opt.print_freq == 0:    # print training losses and save logging information to the disk
+            if total_iters % opt.print_freq == 0 or total_iters <= 2000:    # print training losses and save logging information to the disk
                 losses = model.get_current_losses()
                 t_comp = (time.time() - iter_start_time) / opt.batch_size
                 visualizer.print_and_save_current_losses(epoch, epoch_iter, losses, t_comp, t_data)

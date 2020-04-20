@@ -15,45 +15,53 @@ change all resblock to resneSt!
 class SplAtConv2d(nn.Module):
     """
         Split-Attention Conv2d
+        https://github.com/zhanghang1989/ResNeSt/issues/4
     """
-    def __init__(self, in_channels, channels, kernel_size, stride=(1, 1), padding=(0, 0), groups=2, bias=True,
-                 radix=2, reduction_factor=4, norm_layer=None):
+    def __init__(self, in_channels, channels, kernel_size, stride=(1, 1), padding=(0, 0), groups=2, bias=False, radix=2, reduction_factor=4, norm_layer=None):
         super(SplAtConv2d, self).__init__()
         padding = _pair(padding)
-        inter_channels = max(in_channels*radix//reduction_factor, 32)
+        inter_channels = max(in_channels*radix//reduction_factor, 32)  # not less than 32
         self.radix = radix
         self.cardinality = groups
         self.channels = channels
         self.conv = nn.Conv2d(in_channels, channels*radix, kernel_size, stride, padding, groups=groups*radix, bias=bias)
         self.use_bn = norm_layer is not None
-        self.bn0 = norm_layer(channels*radix)
         self.relu = nn.ReLU(inplace=True)
         self.fc1 = nn.Conv2d(channels, inter_channels, kernel_size=1, groups=self.cardinality)
-        self.bn1 = norm_layer(inter_channels)
-        self.fc2 = nn.Conv2d(inter_channels, channels*radix, 1, groups=self.cardinality)
+        self.fc2 = nn.Conv2d(inter_channels, channels * radix, kernel_size=1, groups=self.cardinality)
+        if norm_layer:
+            self.bn0 = norm_layer(channels * radix)
+            self.bn1 = norm_layer(inter_channels)
+
 
     def forward(self, x):
         x = self.conv(x)
-        # if self.use_bn:
+        # if self.use_bn:           # for vsr , do not use bn
         #     x = self.bn0(x)
         x = self.relu(x)
 
         batch, channel = x.shape[:2]
         if self.radix > 1:
-            splited = torch.split(x, channel//self.radix, dim=1)  # torch.chunk(self.radix)
+            splited = torch.split(x, channel//self.radix, dim=1)
             gap = sum(splited)
         else:
             gap = x
-        gap = F.adaptive_avg_pool2d(gap, output_size=1)  # [B, channels, 1, 1]
-        gap = self.fc1(gap)  # [B, inter_channels, 1, 1]
+
+        gap = F.adaptive_avg_pool2d(gap, output_size=1)  # [B, channels, H, W]  -->  [B, channels, 1, 1]
+        gap = self.fc1(gap)  # [B, inter_channels, 1, 1]     groups: self.cardinality
 
         if self.use_bn:
             gap = self.bn1(gap)
         gap = self.relu(gap)
 
-        atten = self.fc2(gap).view((batch, self.radix, self.channels))  # [B, channels*radix, 1, 1]
+        # atten = self.fc2(gap).view((batch, self.radix, self.channels))  # [B, channels*radix, 1, 1]  -->  [B, radix, channels]
+        """
+        maybe bug! when cardinality > 1      
+        """
+        atten = self.fc2(gap).view((batch, self.channels, self.radix)).permute(0, 2, 1).contiguous()
+
         if self.radix > 1:
-            atten = F.softmax(atten, dim=1).view(batch, -1, 1, 1)
+            atten = F.softmax(atten, dim=1).view(batch, -1, 1, 1)  # [B, radix, channels]  -->  [B, radix*channels, 1, 1]
         else:
             atten = F.sigmoid(atten, dim=1).view(batch, -1, 1, 1)
 
@@ -68,6 +76,7 @@ class SplAtConv2d(nn.Module):
 class ResneStBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size=3, activation='relu'):
         super(ResneStBlock, self).__init__()
+        assert in_channels == out_channels, 'only support in_channels = out_channels now'
 
         if activation == 'relu':
             self.act = nn.ReLU(inplace=True)
@@ -76,9 +85,12 @@ class ResneStBlock(nn.Module):
         else:
             raise NotImplementedError("not implemented activation")
 
+        group_width = out_channels // 2
         m = []
-        m.append(SplAtConv2d(in_channels=in_channels, channels=out_channels, kernel_size=kernel_size, padding=(kernel_size//2, kernel_size//2), norm_layer=BatchNorm2d))
-        m.append(nn.Conv2d(out_channels, out_channels, kernel_size=1, padding=0, stride=1))
+        m.append(nn.Conv2d(in_channels, group_width, kernel_size=1, padding=0, stride=1, bias=False))
+        m.append(nn.ReLU(inplace=True))
+        m.append(SplAtConv2d(in_channels=group_width, channels=group_width, kernel_size=kernel_size, padding=(kernel_size//2, kernel_size//2)))
+        m.append(nn.Conv2d(group_width, out_channels, kernel_size=1, padding=0, stride=1, bias=False))
         self.body = nn.Sequential(*m)
 
     def forward(self, x):
@@ -214,7 +226,7 @@ class TANET2Generator(nn.Module):
         self.fea_L2_conv2 = nn.Conv2d(cm, cm, 3, 1, 1, bias=True)
         self.fea_L3_conv1 = nn.Conv2d(cm, cm, 3, 2, 1, bias=True)
         self.fea_L3_conv2 = nn.Conv2d(cm, cm, 3, 1, 1, bias=True)
-        self.PCD_conv = PCD_Align(nf=cm, groups=cm // 64 * 8)
+        self.PCD_conv = PCD_Align(nf=cm, groups=cm // 64 * 4)
 
         # projection module
         self.Projection = Projection_Module(args)

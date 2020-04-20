@@ -1,5 +1,5 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet2 --model tanet2 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
+python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet2 --model tanet2 --display_freq  40  --print_freq  4 --imgseqlen 5  --num_threads 2
 
 aimax:
     gpu:
@@ -14,7 +14,7 @@ aimax:
         --batch_size        6
         --suffix            04_20_01_05
         --crop_size         64
-        --imgseqlen         7
+        --imgseqlen         5
 """
 import torch
 from .base_model import BaseModel
@@ -46,7 +46,7 @@ class TANET2Model(BaseModel):
         parser.set_defaults(batch_size=2)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
-        parser.set_defaults(crop_size=32)
+        parser.set_defaults(crop_size=64)
         parser.set_defaults(beta1='0.9')
         parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
@@ -56,8 +56,8 @@ class TANET2Model(BaseModel):
         parser.set_defaults(n_epochs=150)
         parser.add_argument('--cl', type=int, default=64, help='the cl in paper')
         parser.add_argument('--cm', type=int, default=64, help='the cm in paper')
-        parser.add_argument('--ch', type=int, default=32, help='the ch in paper')
-        parser.add_argument('--nframes', type=int, default=7, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
+        parser.add_argument('--ch', type=int, default=16, help='the ch in paper')
+        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
 

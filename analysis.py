@@ -19,6 +19,13 @@ in xxx.txt:
              city             :   psnr: 27.3135 / 25.7842    ssim: 1.0000 / 1.0000
            foliage            :   psnr: 25.9219 / 24.5025    ssim: 1.0000 / 1.0000
              walk             :   psnr: 30.1570 / 28.7807    ssim: 1.0000 / 1.0000
+
+
+
+use:
+
+e.g.
+python analysis.py --name vimeo_rbpn_04_05_13_46
 """
 import os
 import time
