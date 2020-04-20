@@ -7,11 +7,11 @@ aimax:
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
         --name              vimeo_tanet2
         --model             tanet2
-        --display_freq      7200
-        --print_freq        7200
+        --display_freq      4800
+        --print_freq        4800
         --save_epoch_freq   10
         --gpu_ids           0,1,2
-        --batch_size        18
+        --batch_size        15
         --suffix            04_20_20_32
         --crop_size         64
         --imgseqlen         5
