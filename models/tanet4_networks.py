@@ -269,7 +269,6 @@ class TANET4Generator(nn.Module):
         ]
         Hlist = []
         for id in range(self.nframes):
-            print(id)
             nbr_fea_l = [
                 L1_fea[:, id, ...].clone(), L2_fea[:, id, ...].clone(),
                 L3_fea[:, id, ...].clone()
