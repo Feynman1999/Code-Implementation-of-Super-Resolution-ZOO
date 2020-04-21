@@ -24,11 +24,11 @@ options = \
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --batch_size        4
+        --batch_size        5
         --suffix            04_21_21_30
         --crop_size         64
         --imgseqlen         7
-        --seed              1
+        --seed              2
         --cl                32
         --cm                32
         --ch                16
