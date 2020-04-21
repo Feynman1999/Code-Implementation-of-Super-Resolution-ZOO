@@ -9,10 +9,10 @@ aimax:
         --model             tanet4
         --display_freq      4800
         --print_freq        4800
-        --save_epoch_freq   10
-        --gpu_ids           0,1,2
-        --batch_size        6
-        --suffix            04_21_09_24
+        --save_epoch_freq   5
+        --gpu_ids           0,1,2,3
+        --batch_size        4
+        --suffix            04_21_17_00
         --crop_size         64
         --imgseqlen         7
 """
@@ -46,7 +46,7 @@ class TANET4Model(BaseModel):
         parser.set_defaults(batch_size=1)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
-        parser.set_defaults(crop_size=48)
+        parser.set_defaults(crop_size=48)  # 64
         parser.set_defaults(beta1='0.9')
         parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
@@ -57,7 +57,7 @@ class TANET4Model(BaseModel):
         parser.add_argument('--cl', type=int, default=128, help='the cl in paper')
         parser.add_argument('--cm', type=int, default=128, help='the cm in paper')
         parser.add_argument('--ch', type=int, default=64, help='the ch in paper')
-        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
+        parser.add_argument('--nframes', type=int, default=7, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
 
