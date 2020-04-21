@@ -15,7 +15,24 @@ aimax:
         --suffix            04_21_17_00
         --crop_size         64
         --imgseqlen         7
-        --seed              0
+        --seed              1
+
+
+        v5:
+        --dataroot          /opt/data/private/datasets/vimeo_septuplet
+        --name              vimeo_tanet5
+        --model             tanet4
+        --display_freq      4800
+        --print_freq        4800
+        --save_epoch_freq   5
+        --batch_size        4
+        --suffix            04_21_21_30
+        --crop_size         64
+        --imgseqlen         7
+        --seed              1
+        --cl                32
+        --cm                32
+        --ch                16
 """
 import torch
 from .base_model import BaseModel
