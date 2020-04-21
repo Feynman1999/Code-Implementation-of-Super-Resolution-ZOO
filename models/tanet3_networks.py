@@ -224,7 +224,7 @@ class TANET3Generator(nn.Module):
         self.fea_L2_conv2 = nn.Conv2d(cm, cm, 3, 1, 1, bias=True)
         self.fea_L3_conv1 = nn.Conv2d(cm, cm, 3, 2, 1, bias=True)
         self.fea_L3_conv2 = nn.Conv2d(cm, cm, 3, 1, 1, bias=True)
-        self.PCD_conv = PCD_Align(nf=cm, groups=cm // 64 * 4)
+        self.PCD_conv = PCD_Align(nf=cm, groups=cm // 64 * 8)
 
         # projection module
         self.Projection = Projection_Module(args)
