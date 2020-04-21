@@ -1,5 +1,5 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet4 --model tanet4 --display_freq  40  --print_freq  4 --imgseqlen 5  --num_threads 2
+python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet4 --model tanet4 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
 
 aimax:
     gpu:
@@ -46,7 +46,7 @@ class TANET4Model(BaseModel):
         parser.set_defaults(batch_size=1)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
-        parser.set_defaults(crop_size=48)  # 64
+        parser.set_defaults(crop_size=64)  # 64
         parser.set_defaults(beta1='0.9')
         parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
