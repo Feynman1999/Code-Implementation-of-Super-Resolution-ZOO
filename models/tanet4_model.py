@@ -101,10 +101,10 @@ class TANET4Model(BaseModel):
 
         # input['A']:   e.g. [4, 10, 3, 64, 64] for recurrent training
         # input['B']:   e.g. [4, 10, 3, 256, 256]
-        self.LR = input['A'].to(self.device)
+        self.LR = input['A'].to(self.device, non_blocking=True)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
         mid = self.opt.nframes // 2
-        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device)
+        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device, non_blocking=True)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
