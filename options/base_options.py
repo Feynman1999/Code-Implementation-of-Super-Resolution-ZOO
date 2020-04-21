@@ -4,6 +4,8 @@ from util import mkdirs
 import torch
 import models
 import data
+import random
+import numpy as np
 from . import str2bool
 
 
@@ -144,6 +146,14 @@ class BaseOptions():
                 opt.gpu_ids.append(id)
         if len(opt.gpu_ids) > 0:
             torch.cuda.set_device(opt.gpu_ids[0])
+
+        # set seed
+        seed = opt.seed
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        random.seed(seed)
+        np.random.seed(seed)
+        os.environ['PYTHONHASHSEED'] = str(seed)
 
         self.opt = opt
         return self.opt

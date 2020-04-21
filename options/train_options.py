@@ -16,6 +16,7 @@ class TrainOptions(BaseOptions):
         parser = BaseOptions.initialize(self, parser)
         parser.add_argument('--phase', type=str, default='train', help='train, val, test, etc')
         # visdom visualization parameters
+        parser.add_argument('--seed', type=int, default=0, help="random seed for torch, numpy and python")
         parser.add_argument('--display_freq', type=int, default=6400, help='frequency of showing training results on visdom and save to disk, please make sure freq%batchsize =0 ')
         parser.add_argument('--display_id', type=int, default=0, help='window id of the visdom web display, set to >0 use visdom')
         parser.add_argument('--display_server', type=str, default="http://localhost", help='visdom server of the web display')
