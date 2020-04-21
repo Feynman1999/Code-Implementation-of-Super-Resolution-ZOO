@@ -15,7 +15,7 @@ aimax:
         --suffix            04_21_17_00
         --crop_size         64
         --imgseqlen         7
-        --seed              1
+        --seed              2
 
 
         v5:
