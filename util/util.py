@@ -74,7 +74,7 @@ def save_image(image, image_path, factor=1, inverse=False):
     image_pil.save(image_path)
 
 
-def save_video(video, video_path, factor=1, fps=2, inverse=True, image_suffix=None, frame_start_cnt=0):
+def save_video(video, video_path, factor=1, fps=3, inverse=True, image_suffix=None, frame_start_cnt=0):
     '''
         Save a numpy video to the disk
     :param video:  rgb numpy image(or PIL.image) list [..., [h,w,c], ...]  or single 4d ndarray [b,h,w,c]

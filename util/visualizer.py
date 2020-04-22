@@ -294,20 +294,46 @@ class Visualizer():
         pass
 
     def save_videos(self, visuals, epoch_or_name, batch_idx=0, factor=1):
+        video_list = []
         for label, video in visuals.items():
             assert len(video.shape) == 5, 'video dims length should be 5'
             video = util.tensor2im(video[batch_idx], rgb_mean=self.rgb_mean, rgb_std=self.rgb_std)  # [f,h,w,c]
             if self.opt.phase == "train":
                 vid_path = os.path.join(self.img_dir, '%.6d_epoch%.6d_%s.avi' % (self.dis_save_times+1, epoch_or_name, label))
                 util.save_video(video, vid_path, factor=factor)
-            elif self.opt.phase in ("test", "apply"):  # save two style!(file and images dir)
+            elif self.opt.phase in ("test", "apply"):  # save two style! (file and images dir)
                 vid_path1 = os.path.join(self.img_dir, '%s_%s.avi' % (epoch_or_name, label))
                 util.save_video(video, vid_path1, factor=factor)
                 vid_path2 = os.path.join(self.img_dir, epoch_or_name)
                 util.save_video(video, vid_path2, factor=factor, image_suffix=label, frame_start_cnt=self.opt.remove_first)
+                video_list.append(video)  # LR HR_GroundTruth HR_G HR_Bicubic
             else:
                 raise NotImplementedError("unknown opt.phase")
 
+        if self.opt.phase == "test":
+            def pad_for_lr(x):
+                if x % 2 == 0:
+                    padx1 = 3 * x // 2
+                    padx2 = padx1
+                else:
+                    padx1 = 3 * x // 2
+                    padx2 = padx1 + 1
+                return (padx1, padx2)
+
+            # compare 4 kinds
+            vid_path1 = os.path.join(self.img_dir, '%s_compare_1.avi' % (epoch_or_name))
+            _, h, w, _ = video_list[0].shape
+            padh = pad_for_lr(h)
+            padw = pad_for_lr(w)
+            video_list[0] = np.pad(video_list[0], ((0, 0), padh, padw, (0, 0)), mode='constant')
+            # 左上角加上标记
+            Bicubic_and_G = np.concatenate((video_list[3], video_list[2]), axis=2)  # [f, h, 2w, c]
+            GT_and_LR = np.concatenate((video_list[1], video_list[0]), axis=2)  # [f, h, 2w, c]
+            all = np.concatenate((Bicubic_and_G, GT_and_LR), axis=1)  # [f, 2h, 2w, c]
+            util.save_video(all, vid_path1, factor=factor)
+
+            # compare bicubic and G
+            pass
 
     def plot_current_losses(self, epoch, counter_ratio, losses):
         """display the current losses on visdom display: dictionary of error labels and values
