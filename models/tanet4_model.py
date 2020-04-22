@@ -37,6 +37,7 @@ aimax:
 import torch
 from .base_model import BaseModel
 from . import tanet4_networks
+from util import remove_pad_for_tensor
 
 
 class TANET4Model(BaseModel):
@@ -72,6 +73,7 @@ class TANET4Model(BaseModel):
         parser.set_defaults(lr_decay_iters=20)
         parser.set_defaults(lr_gamma=0.75)
         parser.set_defaults(n_epochs=150)
+        parser.set_defaults(multi_base=8)
         parser.add_argument('--cl', type=int, default=128, help='the cl in paper')
         parser.add_argument('--cm', type=int, default=128, help='the cm in paper')
         parser.add_argument('--ch', type=int, default=64, help='the ch in paper')
@@ -131,6 +133,16 @@ class TANET4Model(BaseModel):
     def compute_visuals(self):
         mid = self.opt.nframes//2
         self.LR = self.LR[:, mid, ...]
+        if self.opt.phase == "test":
+            # remove pad for LR
+            self.LR = remove_pad_for_tensor(tensor=self.LR,
+                                            HR_GT_h_w=(self.HR_GroundTruth.shape[-2], self.HR_GroundTruth.shape[-1]),
+                                            factor=self.SR_factor, LR_flag=True)
+            # remove pad for HR_G
+            self.HR_G = remove_pad_for_tensor(tensor=self.HR_G,
+                                              HR_GT_h_w=(self.HR_GroundTruth.shape[-2], self.HR_GroundTruth.shape[-1]),
+                                              factor=self.SR_factor, LR_flag=False)
+
         self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)
 
     def backward(self):

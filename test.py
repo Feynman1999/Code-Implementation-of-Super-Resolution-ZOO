@@ -21,7 +21,7 @@ from data import create_dataset
 from models import create_model
 from util.visualizer import Visualizer
 from util.util_dataset import get_file_name
-from util import ensemble
+from util import ensemble, remove_pad_for_tensor
 import torch
 
 if __name__ == '__main__':
@@ -93,6 +93,7 @@ if __name__ == '__main__':
                 HR = data['B']
                 HR_G_list = []
                 HR_bicubic_list = []
+                LR_list = []
                 assert LR.shape[1] > remove_first + remove_last
                 window_size = opt.nframes
                 assert window_size % 2 == 1, 'window size should be odd'
@@ -101,10 +102,11 @@ if __name__ == '__main__':
                     data['B'] = HR[:, target_frame_idx - window_size//2: target_frame_idx + window_size//2 + 1, ...]
                     model.set_input(data)
                     model.test(compute_visual_flag=True)
+                    LR_list.append(model.LR)
                     HR_G_list.append(model.HR_G)
                     HR_bicubic_list.append(model.HR_Bicubic)
                 visuals = model.get_current_visuals()
-                visuals["LR"] = LR[:, remove_first: -remove_last, ...]
+                visuals["LR"] = torch.stack(LR_list, dim=1)
                 visuals["HR_GroundTruth"] = HR[:, remove_first: -remove_last, ...]
                 visuals["HR_G"] = torch.stack(HR_G_list, dim=1)
                 visuals["HR_Bicubic"] = torch.stack(HR_bicubic_list, dim=1)

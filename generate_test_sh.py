@@ -6,6 +6,10 @@
     python generate_test_sh.py --name vimeo_tanet_04_16_18_10  --model tanet
     python generate_test_sh.py --name vimeo_tanet2_04_20_20_32  --model tanet2
     python generate_test_sh.py --name vimeo_tanet3_04_21_09_24  --model tanet3
+    python generate_test_sh.py --name vimeo_tanet4_04_21_17_00  --model tanet4
+    python generate_test_sh.py --name vimeo_tanet5_04_21_21_30  --model tanet4  --addition "--cl 32 --cm 32 --ch 16"
+
+
 """
 import os
 import time
@@ -21,6 +25,7 @@ parser.add_argument('--model', type=str, default="rbpn", help="model name")
 parser.add_argument('--auto_load', type=str2bool, default=True, help="auto find xxx.pth in the checkpoints dir")
 parser.add_argument('--video_flag', type=str2bool, default=True)
 parser.add_argument('--load_epoch', type=str, default="50, 100, 5", help="if do not auto load, use this, range(50,100,5)")
+parser.add_argument('--addition', type=str, default="", help="additional parameters you need, e.g. ")
 opt = parser.parse_args()
 
 model_EXTENSIONS = [
@@ -52,10 +57,10 @@ def generate_test_sh_for_one_algorithm(model, name, load_auto_flag):
     :return:
     """
     if platform.system().lower() == 'windows':
-        template = "python test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {}"
+        template = "python test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} " + opt.addition
     elif platform.system().lower() == 'linux':
         # logfile = "/opt/data/private/test_{}_{}.log 2>&1 &".format(opt.model, opt.name)
-        template = "python3 test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {}"
+        template = "python3 test.py --dataroot {}  --name {} --model {} --load_epoch {} --ensemble {} " + opt.addition
     else:
         raise NotImplementedError("unknow platform: {}!".format(platform.system().lower()))
 

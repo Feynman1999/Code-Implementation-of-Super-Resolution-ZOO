@@ -5,7 +5,7 @@ It also includes common transformation functions (e.g., get_transform, __scale_w
 import random
 import numpy as np
 import torch.utils.data as data
-from PIL import Image
+from PIL import Image, ImageOps
 import torchvision.transforms as transforms
 from abc import ABC, abstractmethod
 
@@ -116,7 +116,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
             transform_list.append(transforms.Lambda(lambda img: __crop(img, tuple([crop_size_scale*loc for loc in params['crop_pos']]), opt.crop_size * crop_size_scale)))
 
     # if none preprocess , make sure size some multiple of base. e.g. 4
-    if opt.preprocess.lower() == 'none' and opt.multi_base > 0:
+    if opt.preprocess.lower() == 'none' and opt.multi_base > 0 and crop_size_scale == 1:  # only for LR now
         transform_list.append(transforms.Lambda(lambda img: make_power_2(img, base=opt.multi_base, method=method)))
 
     if not opt.no_flip:
@@ -142,13 +142,35 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
 
 def make_power_2(img, base, method=Image.BICUBIC):
     ow, oh = img.size
-    h = int(round(oh / base) * base)
-    w = int(round(ow / base) * base)
-    if (h == oh) and (w == ow):
+    ow_left = ow % base
+    oh_left = oh % base
+    if ow_left == 0 and oh_left == 0:
         return img
+    # pad by 0 default (right,down) is more than (left, up) 1 if odd
+    def pad_for_lr(x):
+        if x == base:
+            return 0, 0
+        if x % 2 == 0:
+            padx1 = x//2
+            padx2 = padx1
+        else:
+            padx1 = x // 2
+            padx2 = padx1 + 1
+        return padx1, padx2
 
-    __print_size_warning(ow, oh, w, h)
-    return img.resize((w, h), method)
+    w1, w2 = pad_for_lr(base - ow_left)
+    h1, h2 = pad_for_lr(base - oh_left)
+    return ImageOps.expand(img, border=(w1, h1, w2, h2), fill=0)  # left, top, right and bottom borders
+
+    # h = int(round(oh / base) * base)
+    # w = int(round(ow / base) * base)
+    # if (h == oh) and (w == ow):
+    #     return img
+    #
+    # __print_size_warning(ow, oh, w, h)
+    # return img.resize((w, h), method)
+
+
 
 
 def __scale_width(img, target_width, method=Image.BICUBIC):
