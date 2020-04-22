@@ -148,12 +148,13 @@ class BaseOptions():
             torch.cuda.set_device(opt.gpu_ids[0])
 
         # set seed
-        seed = opt.seed
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed_all(seed)
-        random.seed(seed)
-        np.random.seed(seed)
-        os.environ['PYTHONHASHSEED'] = str(seed)
+        if opt.phase == "train":
+            seed = opt.seed
+            torch.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
+            random.seed(seed)
+            np.random.seed(seed)
+            os.environ['PYTHONHASHSEED'] = str(seed)
 
         self.opt = opt
         return self.opt

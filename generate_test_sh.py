@@ -5,6 +5,7 @@
     e.g.
     python generate_test_sh.py --name vimeo_tanet_04_16_18_10  --model tanet
     python generate_test_sh.py --name vimeo_tanet2_04_20_20_32  --model tanet2
+    python generate_test_sh.py --name vimeo_tanet3_04_21_09_24  --model tanet3
 """
 import os
 import time
