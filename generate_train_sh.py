@@ -30,6 +30,9 @@ options = \
         --crop_size         64
         --imgseqlen         7
         --seed              3
+        --continue_train    True
+        --load_epoch        epoch_35
+        --epoch_count       36
 """
 
 if __name__ == '__main__':
