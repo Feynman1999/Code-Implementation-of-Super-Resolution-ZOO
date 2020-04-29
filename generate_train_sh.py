@@ -29,7 +29,7 @@ options = \
         --suffix            04_21_17_00
         --crop_size         64
         --imgseqlen         7
-        --seed              3
+        --seed              4
         --continue_train    True
         --load_epoch        epoch_35
         --epoch_count       36

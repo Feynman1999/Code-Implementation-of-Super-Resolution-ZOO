@@ -74,7 +74,7 @@ class TANET4Model(BaseModel):
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
-        parser.set_defaults(lr_gamma=0.7)
+        parser.set_defaults(lr_gamma=0.65)
         parser.set_defaults(n_epochs=150)
         parser.set_defaults(multi_base=8)
         parser.add_argument('--cl', type=int, default=128, help='the cl in paper')
