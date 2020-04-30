@@ -15,6 +15,23 @@ aimax:
         --suffix            04_21_09_24
         --crop_size         64
         --imgseqlen         7
+
+
+        --dataroot          /opt/data/private/datasets/vimeo_septuplet
+        --name              vimeo_tanet3
+        --model             tanet3
+        --display_freq      4800
+        --print_freq        4800
+        --gpu_ids           0,1,2
+        --batch_size        6
+        --suffix            04_21_09_24
+        --crop_size         64
+        --imgseqlen         7
+        --save_epoch_freq   5
+        --seed              4
+        --continue_train    True
+        --load_epoch        epoch_110
+        --epoch_count       111
 """
 import torch
 from .base_model import BaseModel
@@ -53,7 +70,7 @@ class TANET3Model(BaseModel):
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
-        parser.set_defaults(lr_gamma=0.75)
+        parser.set_defaults(lr_gamma=0.65)
         parser.set_defaults(n_epochs=150)
         parser.set_defaults(multi_base=8)
         parser.add_argument('--cl', type=int, default=64, help='the cl in paper')
