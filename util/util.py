@@ -114,7 +114,7 @@ def save_video(video, video_path, factor=1, fps=3, inverse=True, image_suffix=No
                 video[i] = cv2.resize(video[i], (int(w*factor), int(h*factor)), interpolation=cv2.INTER_CUBIC)
 
     if is_video_file(video_path):  # file style
-        out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'I420'), fps, (w, h))
+        out = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'XVID'), fps, (w, h))
         for i in range(length):
             frame = video[i]
             out.write(frame[..., ::-1])
