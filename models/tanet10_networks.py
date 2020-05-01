@@ -167,7 +167,7 @@ class ResneStBlock(nn.Module):
             self.act = nn.PReLU()
         else:
             raise NotImplementedError("not implemented activation")
-
+        # !!!!!!!!!!!!!!!!!!!!!!!!
         group_width = out_channels
         m = []
         m.append(nn.Conv2d(in_channels, group_width, kernel_size=1, padding=0, stride=1, bias=False))
