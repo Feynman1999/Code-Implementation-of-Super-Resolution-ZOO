@@ -36,6 +36,9 @@ aimax:
         --cl                32
         --cm                32
         --ch                16
+        --continue_train    True
+        --load_epoch        epoch_70
+        --epoch_count       71
 """
 import torch
 from .base_model import BaseModel
