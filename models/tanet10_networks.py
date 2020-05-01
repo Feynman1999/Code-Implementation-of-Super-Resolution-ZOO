@@ -4,11 +4,96 @@ import torch.nn.functional as F
 from torch.nn import Linear, BatchNorm2d
 from torch.nn.modules.utils import _pair
 from . import base_networks
-from .tanet_networks import EDPU, EUPU
 
-"""
-change all resblock to resneSt!
-"""
+class EUPU(nn.Module):
+    """
+        Enhanced up-projection units
+    """
+    def __init__(self, channels, kernel_size, stride, padding, use_pixel_shuffle=False):
+        super(EUPU, self).__init__()
+        if use_pixel_shuffle:
+            assert stride == 4, "now support 4 only"
+            self.deconv1 = nn.Sequential(
+                nn.Conv2d(channels, channels*4, kernel_size=3, stride=1, padding=1),
+                nn.PixelShuffle(2),
+                nn.Conv2d(channels, channels*4, kernel_size=3, stride=1, padding=1),
+                nn.PixelShuffle(2),
+            )
+            self.deconv2 = nn.Sequential(
+                nn.Conv2d(channels, channels * 4, kernel_size=3, stride=1, padding=1),
+                nn.PixelShuffle(2),
+                nn.Conv2d(channels, channels * 4, kernel_size=3, stride=1, padding=1),
+                nn.PixelShuffle(2),
+            )
+        else:
+            self.deconv1 = nn.ConvTranspose2d(channels, channels, kernel_size=kernel_size, stride=stride, padding=padding, output_padding=0)
+            self.deconv2 = nn.ConvTranspose2d(channels, channels, kernel_size=kernel_size, stride=stride, padding=padding, output_padding=0)
+
+        self.PRelu1 = nn.PReLU(num_parameters=1, init=0.25)
+        self.conv1 = nn.Conv2d(channels, channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.PRelu2 = nn.PReLU(num_parameters=1, init=0.25)
+        self.PRelu3 = nn.PReLU(num_parameters=1, init=0.25)
+        self.PRelu4 = nn.PReLU(num_parameters=1, init=0.25)
+        self.conv1_1_1 = nn.Conv2d(channels, channels, kernel_size=1, stride=1, padding=0)
+        self.conv1_1_2 = nn.Conv2d(channels, channels, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x1):
+        x2 = self.deconv1(x1)
+        x2 = self.PRelu1(x2)
+
+        x3 = self.conv1(x2)
+        x3 = x3 - self.PRelu2(self.conv1_1_1(x1))
+
+        x4 = self.deconv2(x3)
+        x4 = self.PRelu3(x4)
+
+        x4 = x4 + self.PRelu4(self.conv1_1_2(x2))
+
+        return x4
+
+
+class EDPU(nn.Module):
+    """
+        Enhanced down-projection units
+    """
+    def __init__(self, channels, kernel_size, stride, padding, use_pixel_shuffle=False):
+        super(EDPU, self).__init__()
+        if use_pixel_shuffle:
+            assert stride == 4, "now support 4 only"
+            self.deconv1 = nn.Sequential(
+                nn.Conv2d(channels, channels*4, kernel_size=3, stride=1, padding=1),
+                nn.PixelShuffle(2),
+                nn.Conv2d(channels, channels*4, kernel_size=3, stride=1, padding=1),
+                nn.PixelShuffle(2),
+            )
+        else:
+            self.deconv1 = nn.ConvTranspose2d(channels, channels, kernel_size=kernel_size, stride=stride, padding=padding, output_padding=0)
+
+        self.conv1 = nn.Conv2d(channels, channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.PRelu1 = nn.PReLU(num_parameters=1, init=0.25)
+        self.PRelu2 = nn.PReLU(num_parameters=1, init=0.25)
+        self.conv2 = nn.Conv2d(channels, channels, kernel_size=kernel_size, stride=stride, padding=padding)
+        self.PRelu3 = nn.PReLU(num_parameters=1, init=0.25)
+        self.PRelu4 = nn.PReLU(num_parameters=1, init=0.25)
+
+        self.conv1_1_1 = nn.Conv2d(channels, channels, kernel_size=1, stride=1, padding=0)
+        self.conv1_1_2 = nn.Conv2d(channels, channels, kernel_size=1, stride=1, padding=0)
+
+    def forward(self, x1):
+        x2 = self.conv1(x1)
+        x2 = self.PRelu1(x2)
+
+        x3 = self.deconv1(x2)
+
+        x3 = x3 - self.PRelu2(self.conv1_1_1(x1))
+
+        x4 = self.conv2(x3)
+        x4 = self.PRelu3(x4)
+
+        x4 = x4 + self.PRelu4(self.conv1_1_2(x2))
+
+        return x4
+
 
 class SplAtConv2d(nn.Module):
     """
