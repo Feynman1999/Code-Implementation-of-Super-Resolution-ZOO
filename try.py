@@ -29,11 +29,4 @@ from util.util_dataset import *
 
 #!/usr/bin/env python
 
-class A():
-    def __init__(self):
-        self.a = 1
-
-
-a = A()
-b = a.a
-print(b.__dir__())
+import VSR

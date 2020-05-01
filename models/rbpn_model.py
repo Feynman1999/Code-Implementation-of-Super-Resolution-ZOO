@@ -16,6 +16,23 @@ aimax:
         --continue_train    True
         --load_epoch        epoch_40
         --epoch_count       41
+
+
+        baseline for compare:
+        --dataroot          /opt/data/private/datasets/vimeo_septuplet
+        --name              vimeo_rbpn_baseline
+        --model             rbpn
+        --display_freq      4800
+        --print_freq        4800
+        --save_epoch_freq   5
+        --gpu_ids           0,1
+        --batch_size        16
+        --suffix            05_02_00_09
+        --cl                64
+        --cm                64
+        --ch                16
+        --seed              1
+        --imgseqlen         5
 """
 import torch
 from .base_model import BaseModel
@@ -50,15 +67,16 @@ class RBPNModel(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=4)  # 8 in paper  need 4 gpu
+        parser.set_defaults(batch_size=2)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0001)
+        parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
-        parser.set_defaults(lr_decay_iters=75)
+        parser.set_defaults(lr_decay_iters=20)
+        parser.set_defaults(lr_gamma=0.65)
         parser.set_defaults(n_epochs=150)
         parser.add_argument('--cl', type=int, default=256, help='the cl in paper')
         parser.add_argument('--cm', type=int, default=256, help='the cm in paper')
@@ -111,7 +129,7 @@ class RBPNModel(BaseModel):
         self.LR = input['A'].to(self.device, non_blocking=True)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
         mid = self.opt.nframes // 2
-        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device, non_blocking=True)
+        self.HR_GroundTruth = input['B'][:, mid, ...].contiguous().to(self.device, non_blocking=True)
         # print(self.LR.shape)
 
     def forward(self):
