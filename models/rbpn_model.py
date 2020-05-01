@@ -76,7 +76,7 @@ class RBPNModel(BaseModel):
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
-        parser.set_defaults(lr_gamma=0.65)
+        parser.set_defaults(lr_gamma=0.75)
         parser.set_defaults(n_epochs=150)
         parser.add_argument('--cl', type=int, default=256, help='the cl in paper')
         parser.add_argument('--cm', type=int, default=256, help='the cm in paper')
