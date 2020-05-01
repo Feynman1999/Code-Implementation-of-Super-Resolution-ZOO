@@ -19,19 +19,16 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 options = \
 """
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_rbpn_baseline
-        --model             rbpn
+        --name              vimeo_tanet10
+        --model             tanet10
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --gpu_ids           0,1
-        --batch_size        16
-        --suffix            05_02_00_09
-        --cl                64
-        --cm                64
-        --ch                16
-        --seed              1
+        --batch_size        8
+        --suffix            05_02_01_04
+        --crop_size         64
         --imgseqlen         5
+        --seed              1
 """
 
 if __name__ == '__main__':

@@ -83,7 +83,7 @@ class ResneStBlock(nn.Module):
         else:
             raise NotImplementedError("not implemented activation")
 
-        group_width = out_channels // 2
+        group_width = out_channels
         m = []
         m.append(nn.Conv2d(in_channels, group_width, kernel_size=1, padding=0, stride=1, bias=False))
         m.append(nn.ReLU(inplace=True))
@@ -142,7 +142,7 @@ class Residual_Blocks(nn.Module):
     def __init__(self, ch):
         super(Residual_Blocks, self).__init__()
         self.model = nn.Sequential(
-            ResBlocks(channel_num=ch, resblock_num=8, kernel_size=3),
+            ResBlocks(channel_num=ch, resblock_num=5, kernel_size=3),
             nn.Conv2d(ch, ch, kernel_size=3, stride=1, padding=1),
             nn.PReLU(),
         )
@@ -155,7 +155,7 @@ class MISR_Block(nn.Module):
     def __init__(self, cm, ch):
         super(MISR_Block, self).__init__()
         self.model = nn.Sequential(
-            ResBlocks(channel_num=cm, resblock_num=8, kernel_size=3),
+            ResBlocks(channel_num=cm, resblock_num=5, kernel_size=3),
             nn.ConvTranspose2d(cm, ch, kernel_size=8, stride=4, padding=2, output_padding=0),
             nn.PReLU(),
         )
@@ -168,7 +168,7 @@ class Decoder(nn.Module):
     def __init__(self, ch, cl):
         super(Decoder, self).__init__()
         self.model = nn.Sequential(
-            ResBlocks(channel_num=ch, resblock_num=8, kernel_size=3),
+            ResBlocks(channel_num=ch, resblock_num=5, kernel_size=3),
             nn.Conv2d(ch, cl, kernel_size=8, stride=4, padding=2),
             nn.PReLU(),
         )
@@ -218,11 +218,9 @@ class TANET10Generator(nn.Module):
         self.feature_encoder_carb = nn.Sequential(
             nn.Conv2d(args.input_nc, cm, kernel_size=3, stride=1, padding=1),
             nn.LeakyReLU(negative_slope=0.1, inplace=True),
-            ResBlocks(channel_num=cm, resblock_num=8, kernel_size=3),
+            ResBlocks(channel_num=cm, resblock_num=5, kernel_size=3),
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(cm*2, 2*cm, kernel_size=3, stride=1, padding=1),
-            nn.PReLU(),
             nn.Conv2d(cm * 2, cm, kernel_size=3, stride=1, padding=1),
             nn.PReLU(),
         )
