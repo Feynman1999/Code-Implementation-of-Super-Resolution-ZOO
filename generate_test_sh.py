@@ -9,6 +9,7 @@
     python generate_test_sh.py --name vimeo_tanet4_04_21_17_00  --model tanet4
     python generate_test_sh.py --name vimeo_tanet5_04_21_21_30  --model tanet4  --addition "--cl 32 --cm 32 --ch 16"
     python generate_test_sh.py --name vimeo_rbpn_baseline_05_02_00_09  --model rbpn  --addition "--cl 64 --cm 64 --ch 16"
+    python generate_test_sh.py --name vimeo_tanet10_05_02_01_04 --model tanet10
 
 """
 import os

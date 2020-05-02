@@ -30,8 +30,8 @@ aimax:
         --save_epoch_freq   5
         --seed              4
         --continue_train    True
-        --load_epoch        epoch_110
-        --epoch_count       111
+        --load_epoch        epoch_130
+        --epoch_count       131
 """
 import torch
 from .base_model import BaseModel
@@ -66,7 +66,7 @@ class TANET3Model(BaseModel):
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0002)
+        parser.set_defaults(lr=0.0001)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
