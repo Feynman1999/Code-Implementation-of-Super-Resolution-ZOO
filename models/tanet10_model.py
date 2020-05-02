@@ -10,9 +10,9 @@ aimax:
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --batch_size        20
+        --batch_size        25
         --suffix            05_02_01_04
-        --gpu_ids           0,1,2,3
+        --gpu_ids           0,1,2,3,4
         --crop_size         64
         --imgseqlen         5
         --seed              1
@@ -53,7 +53,7 @@ class TANET10Model(BaseModel):
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)  # 64
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0003)
+        parser.set_defaults(lr=0.0004)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
