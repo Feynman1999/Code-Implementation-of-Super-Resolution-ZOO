@@ -98,6 +98,7 @@ if __name__ == '__main__':
                 window_size = opt.nframes
                 assert window_size % 2 == 1, 'window size should be odd'
                 for target_frame_idx in range(remove_first, LR.shape[1] - remove_last):
+                    print(target_frame_idx)
                     data['A'] = LR[:, target_frame_idx - window_size//2: target_frame_idx + window_size//2 + 1, ...]
                     data['B'] = HR[:, target_frame_idx - window_size//2: target_frame_idx + window_size//2 + 1, ...]
                     model.set_input(data)
