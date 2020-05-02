@@ -103,9 +103,9 @@ if __name__ == '__main__':
                     data['B'] = HR[:, target_frame_idx - window_size//2: target_frame_idx + window_size//2 + 1, ...]
                     model.set_input(data)
                     model.test(compute_visual_flag=True)
-                    LR_list.append(model.LR)
-                    HR_G_list.append(model.HR_G)
-                    HR_bicubic_list.append(model.HR_Bicubic)
+                    LR_list.append(model.LR.cpu())
+                    HR_G_list.append(model.HR_G.cpu())
+                    HR_bicubic_list.append(model.HR_Bicubic.cpu())
                 visuals = model.get_current_visuals()
                 visuals["LR"] = torch.stack(LR_list, dim=1)
                 visuals["HR_GroundTruth"] = HR[:, remove_first: -remove_last, ...]
