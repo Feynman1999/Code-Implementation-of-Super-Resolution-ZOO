@@ -17,8 +17,8 @@ aimax:
         --imgseqlen         7
         --seed              3
         --continue_train    True
-        --load_epoch        epoch_35
-        --epoch_count       36
+        --load_epoch        epoch_55
+        --epoch_count       56
 
 
         v5:
