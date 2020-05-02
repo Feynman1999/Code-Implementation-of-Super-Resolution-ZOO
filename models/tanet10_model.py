@@ -10,11 +10,15 @@ aimax:
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --batch_size        5
+        --batch_size        20
         --suffix            05_02_01_04
+        --gpu_ids           0,1,2,3
         --crop_size         64
         --imgseqlen         5
         --seed              1
+        --continue_train    True
+        --load_epoch        epoch_5
+        --epoch_count       6
 """
 import torch
 from .base_model import BaseModel
@@ -49,7 +53,7 @@ class TANET10Model(BaseModel):
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)  # 64
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0001)
+        parser.set_defaults(lr=0.0003)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
