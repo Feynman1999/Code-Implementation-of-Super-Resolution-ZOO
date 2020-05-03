@@ -39,6 +39,58 @@ aimax:
         --continue_train    True
         --load_epoch        epoch_75
         --epoch_count       76
+
+        v6:
+        --dataroot          /opt/data/private/datasets/vimeo_septuplet
+        --name              vimeo_tanet6
+        --model             tanet4
+        --display_freq      4800
+        --print_freq        4800
+        --save_epoch_freq   5
+        --batch_size        10
+        --suffix            05_03_11_40
+        --crop_size         64
+        --imgseqlen         5
+        --seed              1
+        --cl                32
+        --cm                32
+        --ch                16
+        --nframes           5
+
+
+        v7:
+        --dataroot          /opt/data/private/datasets/vimeo_septuplet
+        --name              vimeo_tanet7
+        --model             tanet4
+        --display_freq      4800
+        --print_freq        4800
+        --save_epoch_freq   5
+        --batch_size        10
+        --suffix            05_03_11_40
+        --crop_size         64
+        --imgseqlen         3
+        --seed              1
+        --cl                32
+        --cm                32
+        --ch                16
+        --nframes           3
+
+        v8:
+        --dataroot          /opt/data/private/datasets/vimeo_septuplet
+        --name              vimeo_tanet8
+        --model             tanet4
+        --display_freq      4800
+        --print_freq        4800
+        --save_epoch_freq   5
+        --batch_size        10
+        --suffix            05_03_11_40
+        --crop_size         64
+        --imgseqlen         1
+        --seed              1
+        --cl                32
+        --cm                32
+        --ch                16
+        --nframes           1
 """
 import torch
 from .base_model import BaseModel
