@@ -24,7 +24,7 @@ options = \
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --batch_size        32
+        --batch_size        16
         --suffix            05_03_11_40
         --crop_size         64
         --imgseqlen         1
@@ -33,7 +33,7 @@ options = \
         --cm                32
         --ch                16
         --nframes           1
-        --lr                0.0004
+        --lr                0.0002
 """
 
 if __name__ == '__main__':
