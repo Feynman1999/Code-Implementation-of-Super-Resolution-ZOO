@@ -17,8 +17,8 @@ aimax:
         --imgseqlen         5
         --seed              1
         --continue_train    True
-        --load_epoch        epoch_5
-        --epoch_count       6
+        --load_epoch        epoch_30
+        --epoch_count       31
 """
 import torch
 from .base_model import BaseModel
@@ -53,11 +53,11 @@ class TANET10Model(BaseModel):
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)  # 64
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0004)
+        parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
-        parser.set_defaults(lr_gamma=0.65)
+        parser.set_defaults(lr_gamma=0.7)
         parser.set_defaults(n_epochs=150)
         parser.set_defaults(multi_base=8)
         parser.add_argument('--cl', type=int, default=64, help='the cl in paper')
