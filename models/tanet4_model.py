@@ -82,7 +82,7 @@ aimax:
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --batch_size        10
+        --batch_size        40
         --suffix            05_03_11_40
         --crop_size         64
         --imgseqlen         1
@@ -91,6 +91,7 @@ aimax:
         --cm                32
         --ch                16
         --nframes           1
+        --lr                0.0004
 """
 import torch
 from .base_model import BaseModel
