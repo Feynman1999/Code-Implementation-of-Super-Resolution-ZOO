@@ -12,7 +12,7 @@ aimax:
         --save_epoch_freq   5
         --gpu_ids           0
         --batch_size        8
-        --suffix            05_04_16_32
+        --suffix            05_04_17_10
         --crop_size         64
         --imgseqlen         5
         --nframes           5
