@@ -1,108 +1,31 @@
 """
-python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet4 --model tanet4 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
+python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet9 --model tanet9 --display_freq  40  --print_freq  4  --num_threads 2
 
 aimax:
     gpu:
     python3 train.py
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_tanet4
-        --model             tanet4
+        --name              vimeo_tanet9
+        --model             tanet9
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --gpu_ids           0,1,2,3
-        --batch_size        4
-        --suffix            04_21_17_00
-        --crop_size         64
-        --imgseqlen         7
-        --seed              3
-        --continue_train    True
-        --load_epoch        epoch_55
-        --epoch_count       56
-
-
-        v5:
-        --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_tanet5
-        --model             tanet4
-        --display_freq      4800
-        --print_freq        4800
-        --save_epoch_freq   5
-        --batch_size        5
-        --suffix            04_21_21_30
-        --crop_size         64
-        --imgseqlen         7
-        --seed              2
-        --cl                32
-        --cm                32
-        --ch                16
-        --continue_train    True
-        --load_epoch        epoch_75
-        --epoch_count       76
-
-        v6:
-        --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_tanet6
-        --model             tanet4
-        --display_freq      4800
-        --print_freq        4800
-        --save_epoch_freq   5
-        --batch_size        10
-        --suffix            05_03_11_40
+        --gpu_ids           0
+        --batch_size        8
+        --suffix            05_04_16_32
         --crop_size         64
         --imgseqlen         5
-        --seed              1
-        --cl                32
-        --cm                32
-        --ch                16
         --nframes           5
-
-
-        v7:
-        --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_tanet7
-        --model             tanet4
-        --display_freq      4800
-        --print_freq        4800
-        --save_epoch_freq   5
-        --gpu_ids           0,1
-        --batch_size        20
-        --suffix            05_04_16_15
-        --crop_size         64
-        --imgseqlen         3
         --seed              1
-        --cl                32
-        --cm                32
-        --ch                16
-        --nframes           3
-        --lr                0.0002
-
-        v8:
-        --dataroot          /opt/data/private/datasets/vimeo_septuplet
-        --name              vimeo_tanet8
-        --model             tanet4
-        --display_freq      4800
-        --print_freq        4800
-        --save_epoch_freq   5
-        --batch_size        16
-        --suffix            05_03_11_40
-        --crop_size         64
-        --imgseqlen         1
-        --seed              1
-        --cl                32
-        --cm                32
-        --ch                16
-        --nframes           1
-        --lr                0.0002
 """
 import torch
 from .base_model import BaseModel
-from . import tanet4_networks
+from . import tanet9_networks
 from util import remove_pad_for_tensor
 
 
-class TANET4Model(BaseModel):
-    """ This class implements the tanet4 model
+class TANET9Model(BaseModel):
+    """ This class implements the tanet9 model
 
     The model training requires '--dataset_mode aligned_video' dataset.
 
@@ -123,7 +46,7 @@ class TANET4Model(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=1)  # 8 in paper  need 4 gpu
+        parser.set_defaults(batch_size=2)  # 8 in paper  need 4 gpu
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=4)
         parser.set_defaults(crop_size=64)  # 64
@@ -135,10 +58,10 @@ class TANET4Model(BaseModel):
         parser.set_defaults(lr_gamma=0.65)
         parser.set_defaults(n_epochs=150)
         parser.set_defaults(multi_base=8)
-        parser.add_argument('--cl', type=int, default=128, help='the cl in paper')
-        parser.add_argument('--cm', type=int, default=128, help='the cm in paper')
-        parser.add_argument('--ch', type=int, default=64, help='the ch in paper')
-        parser.add_argument('--nframes', type=int, default=7, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
+        parser.add_argument('--cl', type=int, default=32, help='the cl in paper')
+        parser.add_argument('--cm', type=int, default=32, help='the cm in paper')
+        parser.add_argument('--ch', type=int, default=16, help='the ch in paper')
+        parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
 
@@ -163,7 +86,7 @@ class TANET4Model(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = tanet4_networks.define_G(opt)
+        self.netG = tanet9_networks.define_G(opt)
 
         if self.isTrain:
             self.criterionL1 = torch.nn.L1Loss()
@@ -184,7 +107,7 @@ class TANET4Model(BaseModel):
         self.LR = input['A'].to(self.device, non_blocking=True)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
         mid = self.opt.nframes // 2
-        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device, non_blocking=True)
+        self.HR_GroundTruth = input['B'][:, mid, ...].contiguous().to(self.device, non_blocking=True)
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
