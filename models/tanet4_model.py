@@ -47,7 +47,8 @@ aimax:
         --display_freq      4800
         --print_freq        4800
         --save_epoch_freq   5
-        --batch_size        10
+        --gpu_ids           0,1,2
+        --batch_size        18
         --suffix            05_03_11_40
         --crop_size         64
         --imgseqlen         5
@@ -56,6 +57,7 @@ aimax:
         --cm                32
         --ch                16
         --nframes           5
+        --lr                0.0002
 
 
         v7:
