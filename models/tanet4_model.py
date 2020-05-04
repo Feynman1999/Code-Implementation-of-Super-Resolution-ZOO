@@ -66,7 +66,7 @@ aimax:
         --print_freq        4800
         --save_epoch_freq   5
         --batch_size        10
-        --suffix            05_03_11_40
+        --suffix            05_04_16_15
         --crop_size         64
         --imgseqlen         3
         --seed              1
@@ -74,6 +74,7 @@ aimax:
         --cm                32
         --ch                16
         --nframes           3
+        --lr                0.0001
 
         v8:
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
