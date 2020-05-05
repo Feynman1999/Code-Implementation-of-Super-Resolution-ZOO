@@ -21,8 +21,8 @@ options = \
         --dataroot          /opt/data/private/datasets/vimeo_septuplet
         --name              vimeo_tanet9
         --model             tanet9
-        --display_freq      4800
-        --print_freq        4800
+        --display_freq      5400
+        --print_freq        5400
         --save_epoch_freq   5
         --gpu_ids           0,1,2
         --batch_size        18
