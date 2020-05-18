@@ -29,7 +29,7 @@ from util.util_dataset import *
 
 #!/usr/bin/env python
 
-import VSR
+# import VSR
 
 video_dataset_onlyHR2AB("/opt/data/private/datasets/demo/HR", "/opt/data/private/datasets/demo", phase="test")
 
