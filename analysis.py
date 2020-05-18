@@ -26,6 +26,8 @@ use:
 
 e.g.
 python analysis.py --name vimeo_rbpn_04_05_13_46
+python analysis.py --name vimeo_tanet6_05_03_11_40
+python analysis.py --name vimeo_tanet7_05_04_16_15
 """
 import os
 import time
@@ -68,7 +70,7 @@ def add_header(header_list, l):
         header_list.append(splited[0])
 
 
-viz = Visdom(env='vimeo_rbpn_04_05_13_46')
+viz = Visdom(env=opt.name)
 
 
 def plot(dataset, iqaname, epochs, results):
