@@ -33,6 +33,8 @@ from util.util_dataset import *
 
 video_dataset_onlyHR2AB("./datasets/demo/HR", "./datasets/demo", phase="test")
 
+video_dataset_onlyHR2AB("/opt/data/private/datasets/demo/HR", "/opt/data/private/datasets/demo", phase="test")
+
 from util.compare import compare
 
 

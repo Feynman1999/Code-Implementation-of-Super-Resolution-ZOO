@@ -10,6 +10,8 @@ class SingleVideoDataset(BaseDataset):
     """A dataset class for single video dataset when apply.
 
     It assumes that the directory '/path/to/data/' contains images dir for video in domain A.
+
+    only support dir style now.
     """
 
     def __init__(self, opt):

@@ -4,6 +4,8 @@ apply:
 
     python3 apply.py --dataroot  /opt/data/private/datasets/demo/test/A --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85
 
+    dataset_images2video(datasetpath = "./results/vimeo_tanet4_04_21_17_00/apply-A-epoch_85-block_size_250", fps=25)
+
 python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet4 --model tanet4 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
 
 aimax:

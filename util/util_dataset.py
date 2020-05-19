@@ -12,29 +12,34 @@ from util.util import save_image, save_video
 from . import mkdir
 
 
-# wait to check / fix
-def images2video(filepath, fps=2, suffix='.avi'):
+def images2video(dirpath, fps=2, suffix='.avi', must_have="HR_G"):
     """
     give a dir which contains images , trans to video
-    :param filepath: the path to images dir
+    :param dirpath: the path to images dir
     :param fps: fps for video
     :param suffix:
     :return:
     """
-    imagepathlist = make_images_dataset(filepath)
+    imagepathlist = sorted(make_images_dataset(dirpath))
+    dn = os.path.dirname(dirpath)
+    name = os.path.split(dirpath)[-1] + "_" + must_have + suffix
     framelist = []
+    id = 0
     for imgpath in imagepathlist:
-        framelist.append(cv2.imread(imgpath)[..., ::-1])
-    dn = os.path.dirname(filepath)
-    name = os.path.split(filepath)[-1] + suffix
+        if must_have in get_file_name(imgpath):
+            print("{} frame: {}".format(name, id))
+            id += 1
+            framelist.append(cv2.imread(imgpath)[..., ::-1])
     save_video(framelist, os.path.join(dn, name), fps=fps)
 
-#wait to check / fix
-def dataset_images2video(filepath, fps=2):
-    for home, dirs, files in sorted(os.walk(filepath)):
+
+def dataset_images2video(datasetpath, fps=2, must_have=("HR_G", "HR_Bicubic", "LR")):
+    for home, dirs, files in sorted(os.walk(datasetpath)):
         for dir_ in dirs:
             dir_ = os.path.join(home, dir_)
-            images2video(dir_, fps=fps)
+            for item in must_have:
+                print("now dealing {} in {}".format(item, dir_))
+                images2video(dir_, fps=fps, must_have=item)
 
         # print("#######file list#######")
         # for filename in files:
