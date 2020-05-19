@@ -1,4 +1,9 @@
 """
+apply:
+    python apply.py --dataroot  ./datasets/demo/test/A --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85
+
+    python3 apply.py --dataroot  /opt/data/private/datasets/demo/test/A --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85
+
 python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet4 --model tanet4 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
 
 aimax:
@@ -157,7 +162,10 @@ class TANET4Model(BaseModel):
         self.loss_names = ['SR']
 
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
-        self.visual_names = ['LR', 'HR_GroundTruth', 'HR_G', 'HR_Bicubic']
+        if self.opt.phase == "apply":
+            self.visual_names = ['LR', 'HR_Bicubic', 'HR_G']
+        else:
+            self.visual_names = ['LR', 'HR_GroundTruth', 'HR_G', 'HR_Bicubic']
 
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>
         if self.isTrain:
@@ -179,14 +187,19 @@ class TANET4Model(BaseModel):
             input (dict): include the data itself and its metadata information.
         """
         self.A_paths = input['A_paths']
-        self.B_paths = input['B_paths']
 
         # input['A']:   e.g. [4, 10, 3, 64, 64] for recurrent training
         # input['B']:   e.g. [4, 10, 3, 256, 256]
         self.LR = input['A'].to(self.device, non_blocking=True)
         assert self.LR.shape[1] == self.opt.nframes, "input image length {} should equal to opt.nframes {}".format(self.LR.shape[1], self.opt.nframes)
         mid = self.opt.nframes // 2
-        self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device, non_blocking=True)
+
+        if self.opt.phase in ('train', 'test'):
+            self.B_paths = input['B_paths']
+            self.HR_GroundTruth = input['B'][:, mid, ...].to(self.device, non_blocking=True)
+
+        if self.opt.phase == "apply":
+            self.HR_GT_h, self.HR_GT_w = input['gt_h_w']
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>.
@@ -196,14 +209,18 @@ class TANET4Model(BaseModel):
     def compute_visuals(self):
         mid = self.opt.nframes//2
         self.LR = self.LR[:, mid, ...]
-        if self.opt.phase == "test":
+        if self.opt.phase in ("test", "apply"):
             # remove pad for LR
+            if self.opt.phase == "test":
+                h, w = self.HR_GroundTruth.shape[-2], self.HR_GroundTruth.shape[-1]
+            else:
+                h, w = self.HR_GT_h, self.HR_GT_w
             self.LR = remove_pad_for_tensor(tensor=self.LR,
-                                            HR_GT_h_w=(self.HR_GroundTruth.shape[-2], self.HR_GroundTruth.shape[-1]),
+                                            HR_GT_h_w=(h, w),
                                             factor=self.SR_factor, LR_flag=True)
             # remove pad for HR_G
             self.HR_G = remove_pad_for_tensor(tensor=self.HR_G,
-                                              HR_GT_h_w=(self.HR_GroundTruth.shape[-2], self.HR_GroundTruth.shape[-1]),
+                                              HR_GT_h_w=(h, w),
                                               factor=self.SR_factor, LR_flag=False)
 
         self.HR_Bicubic = torch.nn.functional.interpolate(self.LR, scale_factor=self.SR_factor, mode='bicubic', align_corners=False)

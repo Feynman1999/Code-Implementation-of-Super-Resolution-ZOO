@@ -70,7 +70,7 @@ def save_image(image, image_path, factor=1, inverse=False):
             image_pil = image_pil.resize((w//factor, h//factor), resample=Image.BICUBIC)
         else:
             image_pil = image_pil.resize((int(w*factor), int(h*factor)), resample=Image.BICUBIC)
-
+    mkdir(os.path.dirname(image_path))
     image_pil.save(image_path)
 
 

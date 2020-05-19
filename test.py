@@ -11,8 +11,9 @@ It then runs inference for --num_test images and save results to disk.
 Example (You need to train models first or download pre-trained models from somewhere):
 
     Test a rbpn model:
-        python test.py --dataroot ./datasets/Vid4  --name vimeo_rbpn  --suffix 04_05_13_46  --model rbpn --load_epoch epoch_65  --ensemble true  --only_Y  true
+        python test.py --dataroot ./datasets/Vid4  --name vimeo_rbpn  --suffix 04_05_13_46  --model rbpn --load_epoch epoch_65  --ensemble true
 
+        python3 test.py --dataroot /opt/data/private/datasets/demo  --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85 --ensemble False --save_flag true
 See options/base_options.py and options/test_options.py for more test options.
 """
 
