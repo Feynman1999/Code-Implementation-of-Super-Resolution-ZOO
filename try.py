@@ -31,9 +31,15 @@ from util.util_dataset import *
 
 # import VSR
 
-video_dataset_onlyHR2AB("./datasets/demo/HR", "./datasets/demo", phase="test")
+# video_dataset_onlyHR2AB("./datasets/demo/HR", "./datasets/demo", phase="test")
 
-video_dataset_onlyHR2AB("/opt/data/private/datasets/demo/HR", "/opt/data/private/datasets/demo", phase="test")
+# video_dataset_onlyHR2AB("/opt/data/private/datasets/demo/HR", "/opt/data/private/datasets/demo", phase="test")
+
+# videos_to_images(videos_path="./datasets/mgtv/test_damage_A", path2place="./datasets/mgtv")
+
+videos_to_images(videos_path="/opt/data/private/datasets/mgtv/Noisevideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="A")
+# videos_to_images(videos_path="/opt/data/private/datasets/mgtv/GTvideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="B")
+
 
 from util.compare import compare
 

@@ -160,6 +160,30 @@ def video_dataset_HRLR2AB(HRpath, LRpath, ABpath, phase = "train"):
             save_image(img, imgpathA)
 
 
+def videos_to_images(videos_path, path2place, phase="train", AorB = "A"):
+    """
+    give videos, transfer to domain A or B (images style)
+    :param videos_path:
+    :param ABpath:
+    :param phase:
+    :return:
+    """
+    AorBpath = os.path.join(path2place, phase, AorB)
+    assert (not os.path.exists(AorBpath)), "{}already exist, if you want to " \
+                                                                        "generate new AorB, please delete it " \
+                                                                        "first".format(AorBpath)
+
+    assert check_whether_last_dir(videos_path), 'HRpath should be dir and contains only video files'
+    videopath_list = make_videos_dataset(videos_path)
+    for i in tqdm(range(len(videopath_list))):
+        vid = read_video(videopath_list[i], PIL_Image_flag=False)
+        vidname = get_file_name(videopath_list[i])
+        mkdir(os.path.join(AorBpath, vidname))
+        for ith, img in enumerate(vid):
+            imgpath = os.path.join(AorBpath, vidname, "frame_{:05d}".format(ith) + ".png")
+            save_image(img, imgpath)
+
+
 def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
     """
     pre-deal make it suitable for this project for specific dataset: vimeo90K
