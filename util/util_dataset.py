@@ -160,7 +160,7 @@ def video_dataset_HRLR2AB(HRpath, LRpath, ABpath, phase = "train"):
             save_image(img, imgpathA)
 
 
-def videos_to_images(videos_path, path2place, phase="train", AorB = "A"):
+def videos_to_images(videos_path, path2place, phase="train", AorB = "A", max_frames=25):
     """
     give videos, transfer to domain A or B (images style)
     :param videos_path:
@@ -182,6 +182,8 @@ def videos_to_images(videos_path, path2place, phase="train", AorB = "A"):
         for ith, img in enumerate(vid):
             imgpath = os.path.join(AorBpath, vidname, "frame_{:05d}".format(ith) + ".png")
             save_image(img, imgpath)
+            if ith + 1 == max_frames:
+                break
 
 
 def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
