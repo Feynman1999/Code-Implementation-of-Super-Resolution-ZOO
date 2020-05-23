@@ -176,7 +176,7 @@ def videos_to_images(videos_path, path2place, phase="train", AorB = "A", max_fra
     assert check_whether_last_dir(videos_path), 'HRpath should be dir and contains only video files'
     videopath_list = make_videos_dataset(videos_path)
     for i in tqdm(range(len(videopath_list))):
-        vid = read_video(videopath_list[i], PIL_Image_flag=False)
+        vid = read_video(videopath_list[i], max_frames=max_frames, PIL_Image_flag=False)
         vidname = get_file_name(videopath_list[i])
         mkdir(os.path.join(AorBpath, vidname))
         for ith, img in enumerate(vid):

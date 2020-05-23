@@ -56,7 +56,7 @@ def process_y4m_frame(frame):
     y4m_frames.append(bgr[..., ::-1])
 
 
-def read_video(videopath, PIL_Image_flag=True):
+def read_video(videopath, max_frames=100000, PIL_Image_flag=True):
     """
 
     :param videopath: the path to the video
@@ -74,7 +74,12 @@ def read_video(videopath, PIL_Image_flag=True):
                 data = f.read(1024 * 1024)
                 if not data:
                     break
+
                 parser.decode(data)
+
+                if len(y4m_frames) == max_frames:
+                    break
+
         if PIL_Image_flag:
             return [Image.fromarray(f) for f in y4m_frames]
         else:
@@ -90,6 +95,9 @@ def read_video(videopath, PIL_Image_flag=True):
                 # cv2.imshow('frame', frame)
                 # cv2.waitKey(25)
             else:
+                break
+
+            if len(frames) == max_frames:
                 break
         cap.release()  # close vapture
 
