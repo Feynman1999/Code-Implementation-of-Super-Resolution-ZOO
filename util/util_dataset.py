@@ -188,7 +188,7 @@ def videos_to_images(videos_path, path2place, phase="train", AorB = "A", max_fra
         vidname = get_file_name(videopath_list[i])
         stream = ffmpeg.input(videopath_list[i])
         stream = ffmpeg.output(stream, os.path.join(AorBpath, vidname, "frame_" + '%05d.png'))
-
+        ffmpeg.run(stream)
 
 def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
     """
