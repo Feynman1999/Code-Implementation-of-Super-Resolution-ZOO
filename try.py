@@ -37,8 +37,8 @@ from util.util_dataset import *
 
 # videos_to_images(videos_path="./datasets/mgtv/test_damage_A", path2place="./datasets/mgtv")
 
-# videos_to_images(videos_path="/opt/data/private/datasets/mgtv/Noisevideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="A")
-videos_to_images(videos_path="/opt/data/private/datasets/mgtv/GTvideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="B")
+videos_to_images(videos_path="/opt/data/private/datasets/mgtv/Noisevideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="A")
+# videos_to_images(videos_path="/opt/data/private/datasets/mgtv/GTvideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="B")
 
 
 from util.compare import compare
