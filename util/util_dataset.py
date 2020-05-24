@@ -169,9 +169,9 @@ def videos_to_images(videos_path, path2place, phase="train", AorB = "A", max_fra
     :return:
     """
     AorBpath = os.path.join(path2place, phase, AorB)
-    assert (not os.path.exists(AorBpath)), "{}already exist, if you want to " \
-                                                                        "generate new AorB, please delete it " \
-                                                                        "first".format(AorBpath)
+    # assert (not os.path.exists(AorBpath)), "{}already exist, if you want to " \
+    #                                                                     "generate new AorB, please delete it " \
+    #                                                                     "first".format(AorBpath)
 
     assert check_whether_last_dir(videos_path), 'HRpath should be dir and contains only video files'
     videopath_list = make_videos_dataset(videos_path)
