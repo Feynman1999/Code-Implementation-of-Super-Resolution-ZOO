@@ -98,8 +98,8 @@ class AlignedVideoDataset(BaseDataset):
         # B.insert(0, black_img_B)
 
         transform_params = get_params(self.opt, A[0].size)
-        A_transform = get_transform(self.opt, transform_params, grayscale=(self.input_nc == 1))
-        B_transform = get_transform(self.opt, transform_params, grayscale=(self.output_nc == 1), crop_size_scale=self.opt.SR_factor)
+        A_transform = get_transform(self.opt, transform_params, grayscale=(self.input_nc == 1), domain="A")
+        B_transform = get_transform(self.opt, transform_params, grayscale=(self.output_nc == 1), domain="B")
 
         for i in range(len(A)):
             # print("doing transform..the {}th frame of {}th video".format(i, index))

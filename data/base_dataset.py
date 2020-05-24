@@ -81,7 +81,7 @@ def get_params(opt, size):
     return {'crop_pos': (x, y), 'flip': flip, 'rotate': rotate}
 
 
-def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_size_scale=1):
+def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, domain='A'):
     '''
     opt.preprocess:     [resize | scale_width | crop | resize_and_crop | scale_width_and_crop | none]
 
@@ -92,6 +92,12 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
     :param crop_size_scale: if you do crop, you can set bigger crop through this param factor
     :return: transforms.Compose(transform_list)
     '''
+    assert domain in ("A", "B")
+    if domain == 'A':
+        crop_size_scale = 1
+    else:
+        crop_size_scale = opt.SR_factor
+
     rgb_mean = list(map(float, opt.normalize_means.split(',')))
     rgb_std = list(map(float, opt.normalize_stds.split(',')))
     if not grayscale:
@@ -116,7 +122,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, crop_
             transform_list.append(transforms.Lambda(lambda img: __crop(img, tuple([crop_size_scale*loc for loc in params['crop_pos']]), opt.crop_size * crop_size_scale)))
 
     # if none preprocess , make sure size some multiple of base. e.g. 4
-    if opt.preprocess.lower() == 'none' and opt.multi_base > 0 and crop_size_scale == 1:  # only for LR now
+    if opt.preprocess.lower() == 'none' and opt.multi_base > 0 and domain == 'A':  # only for domain A
         transform_list.append(transforms.Lambda(lambda img: make_power_2(img, base=opt.multi_base, method=method)))
 
     if not opt.no_flip:
