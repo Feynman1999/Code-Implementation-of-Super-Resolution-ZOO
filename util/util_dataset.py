@@ -7,6 +7,7 @@ from data.video_folder import make_videos_dataset, read_video
 import shutil
 import os
 import cv2
+import ffmpeg
 from PIL import Image
 from util.util import save_image, save_video
 from . import mkdir
@@ -176,16 +177,17 @@ def videos_to_images(videos_path, path2place, phase="train", AorB = "A", max_fra
     assert check_whether_last_dir(videos_path), 'HRpath should be dir and contains only video files'
     videopath_list = make_videos_dataset(videos_path)
     for i in tqdm(range(len(videopath_list))):
-        if i <= 19:
-            continue
-        vid = read_video(videopath_list[i], max_frames=max_frames, PIL_Image_flag=False)
+        # vid = read_video(videopath_list[i], max_frames=max_frames, PIL_Image_flag=False)
+        # vidname = get_file_name(videopath_list[i])
+        # mkdir(os.path.join(AorBpath, vidname))
+        # for ith, img in enumerate(vid):
+        #     imgpath = os.path.join(AorBpath, vidname, "frame_{:05d}".format(ith) + ".png")
+        #     save_image(img, imgpath)
+        #     if ith + 1 == max_frames:
+        #         break
         vidname = get_file_name(videopath_list[i])
-        mkdir(os.path.join(AorBpath, vidname))
-        for ith, img in enumerate(vid):
-            imgpath = os.path.join(AorBpath, vidname, "frame_{:05d}".format(ith) + ".png")
-            save_image(img, imgpath)
-            if ith + 1 == max_frames:
-                break
+        stream = ffmpeg.input(videopath_list[i])
+        stream = ffmpeg.output(stream, os.path.join(AorBpath, vidname, "frame_" + '%05d.png'))
 
 
 def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
