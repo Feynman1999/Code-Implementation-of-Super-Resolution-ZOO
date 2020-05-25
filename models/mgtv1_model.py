@@ -14,11 +14,11 @@ aimax:
         --dataroot          /opt/data/private/datasets/mgtv
         --name              mgtv_mgtv1
         --model             mgtv1
-        --display_freq      480
-        --print_freq        160
+        --display_freq      600
+        --print_freq        120
         --save_epoch_freq   500
         --gpu_ids           0
-        --batch_size        16
+        --batch_size        12
         --suffix            05_24_22_39
         --crop_size         256
         --imgseqlen         5
