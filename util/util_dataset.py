@@ -7,7 +7,8 @@ from data.video_folder import make_videos_dataset, read_video
 import shutil
 import os
 import cv2
-import ffmpeg
+
+# import ffmpeg
 from PIL import Image
 from util.util import save_image, save_video
 from . import mkdir

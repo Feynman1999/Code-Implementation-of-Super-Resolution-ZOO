@@ -5,6 +5,7 @@ import torch.nn as nn
 
 class CONV(nn.Module):
     def __init__(self, input_ch, output_ch, activate='relu', use_bn = False, stride = 1):
+        super(CONV, self).__init__()
         if activate == 'relu':
             self.act = nn.ReLU(inplace=True)
         elif activate == 'lrelu':

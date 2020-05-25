@@ -55,7 +55,7 @@ class MGTV1Model(BaseModel):
         parser.set_defaults(SR_factor=1)
         parser.set_defaults(crop_size=256)
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0001)
+        parser.set_defaults(lr=0.0004)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=500)
@@ -140,7 +140,7 @@ class MGTV1Model(BaseModel):
         _, _, C, H, W = self.HR_Gs.shape
         self.loss_pd = self.criterionL2(self.HR_Gs.view(-1, C, H, W), self.HR_GroundTruth.view(-1, C, H, W))
         self.loss_st = self.criterionL2(self.HR_G, self.HR_GroundTruth[:, self.opt.nframes//2, ...])
-        self.loss = self.loss_pd + self.loss_st
+        self.loss = self.loss_pd + self.nowepoch / 1000 * self.loss_st
         self.loss.backward()
 
     def optimize_parameters(self):
