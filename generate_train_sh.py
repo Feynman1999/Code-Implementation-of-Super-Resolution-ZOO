@@ -21,11 +21,11 @@ options = \
         --dataroot          /opt/data/private/datasets/mgtv
         --name              mgtv_mgtv1
         --model             mgtv1
-        --display_freq      600
-        --print_freq        120
+        --display_freq      480
+        --print_freq        160
         --save_epoch_freq   500
         --gpu_ids           0
-        --batch_size        24
+        --batch_size        16
         --suffix            05_24_22_39
         --crop_size         256
         --imgseqlen         5
