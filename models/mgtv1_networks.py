@@ -27,7 +27,7 @@ class CONV(nn.Module):
         return x
 
 class G1(nn.Module):
-    def __init__(self, ch):
+    def __init__(self, ch=48):
         super(G1, self).__init__()
         self.ch = ch
 
@@ -111,35 +111,35 @@ class G1(nn.Module):
 
 
 class G2(nn.Module):
-    def __init__(self):
+    def __init__(self, ch=32):
         super(G2, self).__init__()
         self.conv1 = nn.Sequential(
             CONV(9, 90, 'relu', True, 1),
-            CONV(90, 32, 'relu', True, 1)
+            CONV(90, ch, 'relu', True, 1)
         )
         self.conv2 = nn.Sequential(
-            CONV(32, 64, 'relu', True, 2),
-            CONV(64, 64, 'relu', True, 1),
-            CONV(64, 64, 'relu', True, 1)
+            CONV(ch, 2*ch, 'relu', True, 2),
+            CONV(2*ch, 2*ch, 'relu', True, 1),
+            CONV(2*ch, 2*ch, 'relu', True, 1)
         )
         self.conv3 = nn.Sequential(
-            CONV(64, 128, 'relu', True, 2),
-            CONV(128, 128, 'relu', True, 1),
-            CONV(128, 128, 'relu', True, 1),
-            CONV(128, 128, 'relu', True, 1),
-            CONV(128, 128, 'relu', True, 1),
-            CONV(128, 256, 'relu', True, 1),
+            CONV(2*ch, 4*ch, 'relu', True, 2),
+            CONV(4*ch, 4*ch, 'relu', True, 1),
+            CONV(4*ch, 4*ch, 'relu', True, 1),
+            CONV(4*ch, 4*ch, 'relu', True, 1),
+            CONV(4*ch, 4*ch, 'relu', True, 1),
+            CONV(4*ch, 8*ch, 'relu', True, 1),
             nn.PixelShuffle(2)
         )
         self.conv4 = nn.Sequential(
-            CONV(64, 64, 'relu', True, 1),
-            CONV(64, 64, 'relu', True, 1),
-            CONV(64, 128, 'relu', True, 1),
+            CONV(2*ch, 2*ch, 'relu', True, 1),
+            CONV(2*ch, 2*ch, 'relu', True, 1),
+            CONV(2*ch, 4*ch, 'relu', True, 1),
             nn.PixelShuffle(2)
         )
         self.conv5 = nn.Sequential(
-            CONV(32, 32, 'relu', True, 1),
-            CONV(32, 3, 'relu', True, 1),
+            CONV(ch, ch, 'relu', True, 1),
+            CONV(ch, 3, 'relu', True, 1),
         )
 
     def forward(self, x):
@@ -164,9 +164,9 @@ class MGTV1Generator(nn.Module):
         super(MGTV1Generator, self).__init__()
         self.nframes = args.nframes
 
-        self.g1 = G1(48)
-        self.g2_1 = G2()
-        self.g2_2 = G2()
+        self.g1 = G1(args.ch1)
+        self.g2_1 = G2(args.ch2)
+        self.g2_2 = G2(args.ch2)
 
     def forward(self, x):
         """
