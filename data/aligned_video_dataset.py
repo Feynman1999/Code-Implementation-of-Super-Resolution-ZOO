@@ -36,6 +36,7 @@ class AlignedVideoDataset(BaseDataset):
         self.B_paths = self.B_paths[:min(opt.max_dataset_size, len(self.B_paths))]
 
         assert (len(self.A_paths) == len(self.B_paths))
+        assert opt.imgseqlen <= opt.max_consider_len  # when train
 
         if ('resize' in opt.preprocess or 'scale_width' in opt.preprocess) and 'crop' in opt.preprocess:
             assert (self.opt.load_size >= self.opt.crop_size)  # crop_size should be smaller than the size of loaded image
@@ -52,6 +53,15 @@ class AlignedVideoDataset(BaseDataset):
         B_path = os.path.join(self.dir_B, B_path)
         A_img_paths = make_images_dataset(A_path)
         B_img_paths = make_images_dataset(B_path)
+
+        if self.opt.imgseqlen > 0:
+            assert self.opt.max_consider_len <= len(A_img_paths)
+            A_img_paths = A_img_paths[:self.opt.max_consider_len]
+            B_img_paths = B_img_paths[:self.opt.max_consider_len]
+            start_id = random.randint(0, self.opt.max_consider_len-self.opt.imgseqlen)
+            A_img_paths = A_img_paths[start_id: start_id + self.opt.imgseqlen]
+            B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]
+
         A = []
         B = []
         for path in A_img_paths:
@@ -84,12 +94,6 @@ class AlignedVideoDataset(BaseDataset):
         for i in range(len(A)):
             assert (B[i].size[0] == self.opt.SR_factor * A[i].size[0] and B[i].size[1] == self.opt.SR_factor * A[i].size[1]), 'the dataset should satisfy the sr_factor {}'.format(self.opt.SR_factor)
 
-        # Capture the substring of video sequence
-        if self.opt.imgseqlen > 0:
-            assert self.opt.imgseqlen <= len(A), 'images sequence length {} for train should less than or equal to length of all images {}'.format(self.opt.imgseqlen, len(A))
-            start_id = random.randint(0, len(A)-self.opt.imgseqlen)
-            A = A[start_id: start_id + self.opt.imgseqlen]
-            B = B[start_id: start_id + self.opt.imgseqlen]
 
         # by default, we add an black image to the start of list A, B
         # black_img_A = Image.fromarray(np.zeros((A[0].size[1], A[0].size[0], self.input_nc), dtype=np.uint8))  # h w c
