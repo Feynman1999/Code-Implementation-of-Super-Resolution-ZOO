@@ -46,7 +46,7 @@ def images2video(dirpath, fps=2, suffix='.avi', must_have="HR_G"):
     (
         ffmpeg
         .input(os.path.join(dirpath, "*{}*.png".format(must_have)), pattern_type='glob', framerate=fps)
-        .output(os.path.join(dn, name))
+        .output(os.path.join(dn, name), pix_fmt="yuv422p")
         .run()
     )
 
