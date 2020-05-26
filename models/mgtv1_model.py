@@ -2,7 +2,7 @@
 apply:
     python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000
 
-    python3 apply.py --dataroot  /opt/data/private/datasets/demo/test/A --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85
+    python3 apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000
 
     dataset_images2video(datasetpath = "./results/vimeo_tanet4_04_21_17_00/apply-A-epoch_85-block_size_250", fps=25)
 
@@ -121,7 +121,10 @@ class MGTV1Model(BaseModel):
     def compute_visuals(self):
         mid = self.opt.nframes//2
         self.LR = self.LR[:, mid, ...]
-        self.HR_GroundTruth = self.HR_GroundTruth[:, mid, ...]
+
+        if self.opt.phase in ("train", "test"):
+            self.HR_GroundTruth = self.HR_GroundTruth[:, mid, ...]
+
         if self.opt.phase in ("test", "apply"):
             # remove pad for LR
             if self.opt.phase == "test":
