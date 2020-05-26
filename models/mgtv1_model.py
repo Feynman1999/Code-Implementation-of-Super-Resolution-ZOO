@@ -22,6 +22,9 @@ aimax:
         --crop_size         256
         --imgseqlen         5
         --seed              1
+        --continue_train    True
+        --load_epoch        epoch_1000
+        --epoch_count       1001
 """
 import torch
 from .base_model import BaseModel
