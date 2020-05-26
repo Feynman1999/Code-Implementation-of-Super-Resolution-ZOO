@@ -25,23 +25,39 @@ def images2video(dirpath, fps=2, suffix='.avi', must_have="HR_G"):
     imagepathlist = sorted(make_images_dataset(dirpath))
     dn = os.path.dirname(dirpath)
     name = os.path.split(dirpath)[-1] + "_" + must_have + suffix
-    framelist = []
-    id = 0
-    for imgpath in imagepathlist:
-        if must_have in get_file_name(imgpath):
-            print("{} frame: {}".format(name, id))
-            id += 1
-            framelist.append(cv2.imread(imgpath)[..., ::-1])
-    save_video(framelist, os.path.join(dn, name), fps=fps)
+
+    # framelist = []
+    # id = 0
+    # for imgpath in imagepathlist:
+    #     if must_have in get_file_name(imgpath):
+    #         print("{} frame: {}".format(name, id))
+    #         id += 1
+    #         framelist.append(cv2.imread(imgpath)[..., ::-1])
+    # save_video(framelist, os.path.join(dn, name), fps=fps)
+
+    flag = False
+    for item in imagepathlist:
+        if must_have in get_file_name(item):
+            flag = True
+            break
+    if not flag:
+        return
+
+    (
+        ffmpeg
+        .input(os.path.join(dirpath, "*{}*.png".format(must_have)), pattern_type='glob', framerate=fps)
+        .output(os.path.join(dn, name))
+        .run()
+    )
 
 
-def dataset_images2video(datasetpath, fps=2, must_have=("HR_G", "HR_Bicubic", "LR")):
+def dataset_images2video(datasetpath, fps=2, must_have=("HR_G", "HR_Bicubic", "LR"), suffix=".avi"):
     for home, dirs, files in sorted(os.walk(datasetpath)):
         for dir_ in dirs:
             dir_ = os.path.join(home, dir_)
             for item in must_have:
                 print("now dealing {} in {}".format(item, dir_))
-                images2video(dir_, fps=fps, must_have=item)
+                images2video(dir_, fps=fps, suffix=suffix, must_have=item)
 
         # print("#######file list#######")
         # for filename in files:

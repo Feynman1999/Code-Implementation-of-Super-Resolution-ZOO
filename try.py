@@ -1,5 +1,12 @@
 from util.util_dataset import *
+import ffmpeg
 
+(
+    ffmpeg
+    .input("./datasets/mgtv/apply/A/mg_test_0800_damage/*.png", pattern_type='glob', framerate=25)
+    .output('mg_test_0800_damage.y4m')
+    .run()
+)
 
 # video_dataset_onlyHR2AB("./datasets/youku/B", "./datasets/youku/train")
 
@@ -40,7 +47,7 @@ from util.util_dataset import *
 # videos_to_images(videos_path="/opt/data/private/datasets/mgtv/Noisevideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="A")
 # videos_to_images(videos_path="/opt/data/private/datasets/mgtv/GTvideos", path2place="/opt/data/private/datasets/mgtv", phase="train", AorB="B")
 # videos_to_images(videos_path="./datasets/mgtv/test_damage_A", path2place="./datasets/mgtv", phase="apply")
-videos_to_images(videos_path="/opt/data/private/datasets/mgtv/test_damage_A", path2place="/opt/data/private/datasets/mgtv", phase="apply")
+# videos_to_images(videos_path="/opt/data/private/datasets/mgtv/test_damage_A", path2place="/opt/data/private/datasets/mgtv", phase="apply")
 
 from util.compare import compare
 
