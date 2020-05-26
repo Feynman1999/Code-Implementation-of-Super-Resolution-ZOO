@@ -30,7 +30,8 @@ class SingleVideoDataset(BaseDataset):
         self.length_for_videos = []
         for path in self.A_paths:
             A_path = os.path.join(self.dir_A, path)
-            length = len(make_images_dataset(A_path)) - opt.nframes + 1
+            length = len(make_images_dataset(A_path))
+            # length = len(make_images_dataset(A_path)) - opt.nframes + 1
             self.length_for_videos.append(length)
 
         self.now_deal_video_index = 0
@@ -42,6 +43,13 @@ class SingleVideoDataset(BaseDataset):
         assert index >= 0
         A_path = os.path.join(self.dir_A, A_path)
         A_img_paths = make_images_dataset(A_path)
+        # padding
+        A_img_paths_front = A_img_paths[1: 1+self.opt.nframes//2]
+        A_img_paths_front.reverse()
+        A_img_paths_back = A_img_paths[-1-self.opt.nframes//2: -1]
+        A_img_paths_back.reverse()
+        A_img_paths = A_img_paths_front + A_img_paths + A_img_paths_back
+
         A = []
         for path in A_img_paths[index: index + self.opt.nframes]:
             A.append(Image.open(path).convert('RGB'))

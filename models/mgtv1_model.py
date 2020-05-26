@@ -1,12 +1,11 @@
 """
 apply:
-    python apply.py --dataroot  ./datasets/demo/test/A --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85
+    python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000
 
     python3 apply.py --dataroot  /opt/data/private/datasets/demo/test/A --name vimeo_tanet4_04_21_17_00 --model tanet4 --load_epoch epoch_85
 
     dataset_images2video(datasetpath = "./results/vimeo_tanet4_04_21_17_00/apply-A-epoch_85-block_size_250", fps=25)
 
-python train.py --dataroot ./datasets/Vid4 --name Vid4_tanet4 --model tanet4 --display_freq  40  --print_freq  4 --imgseqlen 7  --num_threads 2
 
 aimax:
     gpu:
@@ -14,11 +13,11 @@ aimax:
         --dataroot          /opt/data/private/datasets/mgtv
         --name              mgtv_mgtv1
         --model             mgtv1
-        --display_freq      600
-        --print_freq        120
+        --display_freq      480
+        --print_freq        160
         --save_epoch_freq   500
         --gpu_ids           0
-        --batch_size        6
+        --batch_size        16
         --suffix            05_24_22_39
         --crop_size         256
         --imgseqlen         5
@@ -78,7 +77,7 @@ class MGTV1Model(BaseModel):
 
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
         if self.opt.phase == "apply":
-            self.visual_names = ['LR', 'HR_G']
+            self.visual_names = ['HR_G']
         else:
             self.visual_names = ['LR', 'HR_GroundTruth', 'HR_G']
 
