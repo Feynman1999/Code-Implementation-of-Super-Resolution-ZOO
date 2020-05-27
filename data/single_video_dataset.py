@@ -43,7 +43,7 @@ class SingleVideoDataset(BaseDataset):
         if opt.scenedetect:
             # 读取dataset文件夹中的分段信息(train/scene.json)，如果没有则报错
             # 列表 套 列表 套 列表
-            pickle_path = os.path.join(self.dir_A, 'scene.pickle')
+            pickle_path = os.path.join(os.path.split(self.dir_A)[0], 'scene.pickle')
             assert os.path.exists(pickle_path)
             with open(pickle_path, 'rb') as f:
                 self.scene = pickle.load(f)
