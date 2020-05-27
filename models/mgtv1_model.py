@@ -1,8 +1,9 @@
 """
 apply:
-    python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000
+    v1: python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000
+    v2: python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1000
 
-    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000 >> /opt/data/private/mgtv_epoch1000.log 2>&1 &
+    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1500 >> /opt/data/private/mgtv_epoch1500.log 2>&1 &
 
     dataset_images2video(datasetpath = "./results/mgtv_mgtv1_05_24_22_39/apply-A-epoch_1000-block_size_250", fps=25, suffix=".y4m")
 
