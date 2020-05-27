@@ -71,6 +71,8 @@ class SingleVideoDataset(BaseDataset):
         A = []
 
         for path in A_img_paths[index: index + self.opt.nframes]:
+            if self.now_deal_video_index == 3:
+                print(path)
             A.append(Image.open(path).convert('RGB'))
 
         assert len(A) == self.opt.nframes
