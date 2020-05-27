@@ -60,7 +60,13 @@ class SingleVideoDataset(BaseDataset):
                     index = index - one_scene[0]
                     break
 
-        assert len(A_img_paths) >= self.opt.nframes // 2 + 1
+        # assert len(A_img_paths) >= self.opt.nframes // 2 + 1
+        if len(A_img_paths) < self.opt.nframes // 2 + 1:
+            gap = self.opt.nframes // 2 + 1 - len(A_img_paths)
+            if gap % 2:
+                A_img_paths = [A_img_paths[0], ] * (gap//2) + A_img_paths + [A_img_paths[-1], ] * (gap//2+1)
+            else:
+                A_img_paths = [A_img_paths[0], ] * (gap // 2) + A_img_paths + [A_img_paths[-1], ] * (gap // 2)
 
         A_img_paths_front = A_img_paths[1: 1+self.opt.nframes//2]
         A_img_paths_front.reverse()
@@ -71,8 +77,6 @@ class SingleVideoDataset(BaseDataset):
         A = []
 
         for path in A_img_paths[index: index + self.opt.nframes]:
-            if self.now_deal_video_index == 3:
-                print(path)
             A.append(Image.open(path).convert('RGB'))
 
         assert len(A) == self.opt.nframes
