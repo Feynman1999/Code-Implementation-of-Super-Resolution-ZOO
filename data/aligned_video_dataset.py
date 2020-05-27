@@ -4,6 +4,7 @@ from data.base_dataset import BaseDataset, get_params, get_transform
 import torch
 from data.image_folder import make_images_dataset
 from PIL import Image
+import pickle
 
 
 class AlignedVideoDataset(BaseDataset):
@@ -43,10 +44,28 @@ class AlignedVideoDataset(BaseDataset):
         self.input_nc = self.opt.input_nc
         self.output_nc = self.opt.output_nc
 
+        def deal_scene_list(List, max_len):
+            l = []
+            if max_len > List[-1][1]+1:
+                max_len = List[-1][1]+1
+            for scene in List:
+                if scene[1]+1 >= max_len:
+                    l.append([scene[0], max_len-1])
+                    break
+                else:
+                    l.append(scene)
+            return l
+
         if opt.scenedetect:
             # 读取dataset文件夹中的分段信息(train/scene.json)，如果没有则报错
             # 列表 套 列表 套 列表
-            self.xxx = xxxx;
+            pickle_path = os.path.join(self.dir_AB, 'scene.pickle')
+            assert os.path.exists(pickle_path)
+            with open(pickle_path, 'rb') as f:
+                self.scene = pickle.load(f)
+            # 根据max consider len进行修改
+            for i in range(len(self.scene)):
+                self.scene[i] = deal_scene_list(self.scene[i], opt.max_consider_len)
 
     def get_image_list(self, A_path, B_path, video_index):
         """
@@ -60,16 +79,27 @@ class AlignedVideoDataset(BaseDataset):
         B_img_paths = make_images_dataset(B_path)
 
         if self.opt.imgseqlen > 0:
-            assert self.opt.max_consider_len <= len(A_img_paths)
-            A_img_paths = A_img_paths[:self.opt.max_consider_len]
-            B_img_paths = B_img_paths[:self.opt.max_consider_len]
+            if self.opt.scenedetect:
+                l = self.scene[video_index]
+                scene_id = random.randint(0, len(l)-1)
+                times = 0
+                while l[scene_id][1] - l[scene_id][0]+1 < self.opt.imgseqlen:
+                    times += 1
+                    if times > 20:
+                        raise ValueError("may be do not have scene satisfy imgseqlen, imgseqlen too large?")
+                    scene_id = random.randint(0, len(l) - 1)
+                # 在当前scene_id中选择一个片段
+                start_id = random.randint(l[scene_id][0], l[scene_id][1]+1-self.opt.imgseqlen)
+                A_img_paths = A_img_paths[start_id: start_id + self.opt.imgseqlen]
+                B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]
 
-            # 分段信息： self.xxx[video_index]
-            # 在其中随机选择一个场景
-            # 在场景中选择一段
-            start_id = random.randint(0, self.opt.max_consider_len-self.opt.imgseqlen)
-            A_img_paths = A_img_paths[start_id: start_id + self.opt.imgseqlen]
-            B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]
+            else:
+                assert self.opt.max_consider_len <= len(A_img_paths)
+                A_img_paths = A_img_paths[:self.opt.max_consider_len]
+                B_img_paths = B_img_paths[:self.opt.max_consider_len]
+                start_id = random.randint(0, self.opt.max_consider_len-self.opt.imgseqlen)
+                A_img_paths = A_img_paths[start_id: start_id + self.opt.imgseqlen]
+                B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]
 
         A = []
         B = []

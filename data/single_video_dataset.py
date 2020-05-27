@@ -4,6 +4,7 @@ from data.base_dataset import BaseDataset, get_params, get_transform
 import torch
 from data.image_folder import make_images_dataset
 from PIL import Image
+import pickle
 
 
 class SingleVideoDataset(BaseDataset):
@@ -38,6 +39,14 @@ class SingleVideoDataset(BaseDataset):
 
         self.input_nc = self.opt.input_nc
         self.output_nc = self.opt.output_nc
+
+        if opt.scenedetect:
+            # 读取dataset文件夹中的分段信息(train/scene.json)，如果没有则报错
+            # 列表 套 列表 套 列表
+            pickle_path = os.path.join(self.dir_A, 'scene.pickle')
+            assert os.path.exists(pickle_path)
+            with open(pickle_path, 'rb') as f:
+                self.scene = pickle.load(f)
 
     def get_image_list(self, A_path, index):
         assert index >= 0
