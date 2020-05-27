@@ -86,6 +86,7 @@ class MGTV1Model(BaseModel):
         parser.set_defaults(n_epochs=5000)
         parser.set_defaults(multi_base=32)
         parser.set_defaults(max_consider_len=25)
+        parser.set_defaults(scenedetect=True)
         parser.add_argument('--ch1', type=int, default=12)
         parser.add_argument('--ch2', type=int, default=8)
         parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train

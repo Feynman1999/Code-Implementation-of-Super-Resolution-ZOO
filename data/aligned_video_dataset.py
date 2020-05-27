@@ -43,7 +43,12 @@ class AlignedVideoDataset(BaseDataset):
         self.input_nc = self.opt.input_nc
         self.output_nc = self.opt.output_nc
 
-    def get_image_list(self, A_path, B_path):
+        if opt.scenedetect:
+            # 读取dataset文件夹中的分段信息(train/scene.json)，如果没有则报错
+            # 列表 套 列表 套 列表
+            self.xxx = xxxx;
+
+    def get_image_list(self, A_path, B_path, video_index):
         """
 
         :param short_path:
@@ -58,6 +63,10 @@ class AlignedVideoDataset(BaseDataset):
             assert self.opt.max_consider_len <= len(A_img_paths)
             A_img_paths = A_img_paths[:self.opt.max_consider_len]
             B_img_paths = B_img_paths[:self.opt.max_consider_len]
+
+            # 分段信息： self.xxx[video_index]
+            # 在其中随机选择一个场景
+            # 在场景中选择一段
             start_id = random.randint(0, self.opt.max_consider_len-self.opt.imgseqlen)
             A_img_paths = A_img_paths[start_id: start_id + self.opt.imgseqlen]
             B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]
@@ -85,7 +94,7 @@ class AlignedVideoDataset(BaseDataset):
         # read a video given a random integer index
         A_path = self.A_paths[index]
         B_path = self.B_paths[index]
-        A, B = self.get_image_list(A_path, B_path)
+        A, B = self.get_image_list(A_path, B_path, index)
 
         # some checks
         assert (len(A) == len(B))

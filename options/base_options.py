@@ -68,6 +68,9 @@ class BaseOptions():
         parser.add_argument('--netG', type=str, default='resnet_9blocks', help='specify generator architecture [resnet_9blocks | resnet_6blocks | unet_256 | unet_128]')
         parser.add_argument('--n_layers_D', type=int, default=3, help='only used if netD==n_layers')
         parser.add_argument('--norm', type=str, default='none', help='instance normalization or batch normalization [instance | batch | none]')
+
+        # 对于视频 是否考虑镜头
+        parser.add_argument('--scenedetect', type=str2bool, default=False, help=" when do video task , whether take scene into consideration")
         self.initialized = True
         return parser
 
