@@ -52,7 +52,16 @@ class SingleVideoDataset(BaseDataset):
         assert index >= 0
         A_path = os.path.join(self.dir_A, A_path)
         A_img_paths = make_images_dataset(A_path)
-        # padding
+
+        if self.opt.scenedetect:
+            for one_scene in self.scene[self.now_deal_video_index]:
+                if one_scene[0] <= index and index <= one_scene[1]:
+                    A_img_paths = A_img_paths[one_scene[0]:one_scene[1]+1]
+                    index = index - one_scene[0]
+                    break
+
+        assert len(A_img_paths) >= self.opt.nframes // 2 + 1
+
         A_img_paths_front = A_img_paths[1: 1+self.opt.nframes//2]
         A_img_paths_front.reverse()
         A_img_paths_back = A_img_paths[-1-self.opt.nframes//2: -1]
@@ -60,8 +69,10 @@ class SingleVideoDataset(BaseDataset):
         A_img_paths = A_img_paths_front + A_img_paths + A_img_paths_back
 
         A = []
+
         for path in A_img_paths[index: index + self.opt.nframes]:
             A.append(Image.open(path).convert('RGB'))
+
         assert len(A) == self.opt.nframes
         return A
 

@@ -8,6 +8,8 @@ import cv2
 from PIL import Image
 import y4m
 import numpy as np
+import ffmpeg
+import sys
 
 VIDEO_EXTENSIONS = [
     '.mp4', '.MP4', '.avi', '.AVI',
@@ -15,6 +17,20 @@ VIDEO_EXTENSIONS = [
     '.mkv', '.MKV', '.y4m', '.mpeg'
 ]
 
+def get_video_info(in_file):
+    """
+    获取视频基本信息
+    """
+    try:
+        probe = ffmpeg.probe(in_file)
+        video_stream = next((stream for stream in probe['streams'] if stream['codec_type'] == 'video'), None)
+        if video_stream is None:
+            print('No video stream found', file=sys.stderr)
+            sys.exit(1)
+        return video_stream
+    except ffmpeg.Error as err:
+        print(str(err.stderr, encoding='utf8'))
+        sys.exit(1)
 
 def is_video_file(filename):
     return any(filename.endswith(extension) for extension in VIDEO_EXTENSIONS)
