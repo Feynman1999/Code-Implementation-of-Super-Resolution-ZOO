@@ -94,9 +94,11 @@ class AlignedVideoDataset(BaseDataset):
                 B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]
 
             else:
-                assert self.opt.max_consider_len <= len(A_img_paths)
-                A_img_paths = A_img_paths[:self.opt.max_consider_len]
-                B_img_paths = B_img_paths[:self.opt.max_consider_len]
+                max_len = self.opt.max_consider_len
+                if max_len > len(A_img_paths):
+                    max_len = len(A_img_paths)
+                A_img_paths = A_img_paths[:max_len]
+                B_img_paths = B_img_paths[:max_len]
                 start_id = random.randint(0, self.opt.max_consider_len-self.opt.imgseqlen)
                 A_img_paths = A_img_paths[start_id: start_id + self.opt.imgseqlen]
                 B_img_paths = B_img_paths[start_id: start_id + self.opt.imgseqlen]

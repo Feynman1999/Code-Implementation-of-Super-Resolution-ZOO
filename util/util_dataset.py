@@ -66,8 +66,8 @@ def videodataset_scenedetect(dirpath):
             print("\n")
             print(re_scene_list)
             print("\n")
-            for item in re_scene_list:
-                assert item[1] - item[0] + 1 >= 3
+            # for item in re_scene_list:
+            #     assert item[1] - item[0] + 1 >= 3
             result_list.append(re_scene_list)
         finally:
             video_manager.release()
