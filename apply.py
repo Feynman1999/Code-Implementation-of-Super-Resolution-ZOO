@@ -4,7 +4,20 @@ from models import create_model
 from util.visualizer import Visualizer
 from util.util_dataset import get_dataset_name
 from tqdm import tqdm
+import torch
 import os
+
+
+def cat_blocks(image_list, block_size):
+    assert len(image_list[0].shape) == 4
+    h = block_size[0]
+    w = block_size[1]
+    row_list = []
+    id = 0
+    for i in range(h):
+        row_list.append(torch.cat(image_list[id:id + w], dim=-1))
+        id += w
+    return torch.cat(row_list, dim=-2)
 
 
 if __name__ == '__main__':
@@ -29,6 +42,9 @@ if __name__ == '__main__':
         model.eval()
 
     now_deal_frame = 0  # for video
+    block_size = opt.block_size.split("_")  # "2_3"
+    block_size = list(map(int, block_size))
+    block_list = []
 
     for i, data in tqdm(enumerate(dataset)):
         if i >= opt.num_test:
@@ -46,11 +62,15 @@ if __name__ == '__main__':
             model.set_input(data)
             model.test()
             visuals = model.get_current_visuals()  # get image/video results
-            A_paths, _ = model.get_image_paths()  # get image/video paths
-            video_name = get_dataset_name(A_paths[0])
-            visualizer.display_and_save(visuals, os.path.join(video_name, '%.6d' % now_deal_frame))
-            if data['end_flag']:
-                now_deal_frame = 0
-                print("video: {} is ok!".format(video_name))
-            else:
-                now_deal_frame += 1
+            block_list.append(visuals['HR_G'])
+            if len(block_list) == block_size[0] * block_size[1]:
+                A_paths, _ = model.get_image_paths()  # get image/video paths
+                video_name = get_dataset_name(A_paths[0])
+                visuals['HR_G'] = cat_blocks(block_list, block_size)
+                block_list = []
+                visualizer.display_and_save(visuals, os.path.join(video_name, '%.6d' % now_deal_frame))
+                if data['end_flag']:
+                    now_deal_frame = 0
+                    print("video: {} is ok!".format(video_name))
+                else:
+                    now_deal_frame += 1

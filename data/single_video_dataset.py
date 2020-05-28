@@ -5,6 +5,7 @@ import torch
 from data.image_folder import make_images_dataset
 from PIL import Image
 import pickle
+import copy
 
 
 class SingleVideoDataset(BaseDataset):
@@ -22,6 +23,8 @@ class SingleVideoDataset(BaseDataset):
             opt (Option class) -- stores all the experiment flags; needs to be a subclass of BaseOptions
         """
         BaseDataset.__init__(self, opt)
+        self.block_size = opt.block_size.split("_")  # "2_3"
+        self.block_size = list(map(int, self.block_size))
         self.SR_factor = opt.SR_factor
         self.dir_A = opt.dataroot
         self.A_paths = sorted(os.listdir(self.dir_A))
@@ -95,8 +98,26 @@ class SingleVideoDataset(BaseDataset):
         """
         # read a video given a random integer index
         A_path = self.A_paths[self.now_deal_video_index]
+        frame_index = index//(self.block_size[0] * self.block_size[1])
+        block_index = index % (self.block_size[0] * self.block_size[1])
+        block_index_h = block_index // self.block_size[1]
+        block_index_w = block_index % self.block_size[1]
 
-        A = self.get_image_list(A_path, index - sum(self.length_for_videos[0:self.now_deal_video_index]))
+        if block_index == 0:
+            self.A = self.get_image_list(A_path, frame_index - sum(self.length_for_videos[0:self.now_deal_video_index]))
+            w, h = self.A[0].size
+            self.block_h = list(range(0, h+1, h//self.block_size[0]))
+            if self.block_h[-1] != h:
+                self.block_h[-1] = h
+            self.block_w = list(range(0, w+1, w//self.block_size[1]))
+            if self.block_w[-1] != w:
+                self.block_w[-1] = w
+
+        A = []
+        box = (self.block_w[block_index_w], self.block_h[block_index_h], self.block_w[block_index_w + 1], self.block_h[block_index_h + 1])
+        # blocking from self.A
+        for frame in self.A:
+            A.append(frame.crop(box))
 
         w, h = A[0].size
         gt_h_w = (h*self.SR_factor, w*self.SR_factor)
@@ -104,14 +125,13 @@ class SingleVideoDataset(BaseDataset):
         trans = get_transform(self.opt, grayscale=(self.input_nc == 1))
 
         for i in range(len(A)):
-            # print("doing transform..the {}th frame of {}th video".format(i, index))
             A[i] = trans(A[i])
 
         # list of 3dim to 4dim  e.g. ... [3,128,128] ... to [11,3,128,128]
         A = torch.stack(A, 0)
 
         end_flag = False
-        if index+1 == sum(self.length_for_videos[0:self.now_deal_video_index+1]):
+        if frame_index + 1 == sum(self.length_for_videos[0:self.now_deal_video_index+1]):
             self.now_deal_video_index += 1
             end_flag = True
 
@@ -119,4 +139,4 @@ class SingleVideoDataset(BaseDataset):
 
     def __len__(self):
         """Return the total number of videos in the dataset."""
-        return sum(self.length_for_videos)
+        return sum(self.length_for_videos) * self.block_size[0] * self.block_size[1]
