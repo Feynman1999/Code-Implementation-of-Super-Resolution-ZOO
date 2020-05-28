@@ -17,7 +17,7 @@ aimax:
         --name              mgtv_mgtv1
         --model             mgtv1
         --display_freq      480
-        --print_freq        160
+        --print_freq        320
         --save_epoch_freq   500
         --gpu_ids           0
         --batch_size        16
@@ -26,8 +26,9 @@ aimax:
         --imgseqlen         5
         --seed              1
         --continue_train    True
-        --load_epoch        epoch_1000
-        --epoch_count       1001
+        --load_epoch        epoch_1500
+        --epoch_count       1501
+        --max_consider_len  75
 
     v2:
     python3 train.py
@@ -82,7 +83,7 @@ class MGTV1Model(BaseModel):
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=500)
-        parser.set_defaults(lr_gamma=0.75)
+        parser.set_defaults(lr_gamma=0.7)
         parser.set_defaults(n_epochs=5000)
         parser.set_defaults(multi_base=32)
         parser.set_defaults(max_consider_len=25)

@@ -19,20 +19,21 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 options = \
 """
         --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv1_48_32_100
+        --name              mgtv_mgtv1
         --model             mgtv1
-        --display_freq      600
-        --print_freq        120
+        --display_freq      480
+        --print_freq        320
         --save_epoch_freq   500
         --gpu_ids           0
-        --batch_size        6
-        --suffix            05_27_00_25
+        --batch_size        16
+        --suffix            05_24_22_39
         --crop_size         256
         --imgseqlen         5
         --seed              1
-        --max_consider_len  100
-        --ch1               48
-        --ch2               32
+        --continue_train    True
+        --load_epoch        epoch_1500
+        --epoch_count       1501
+        --max_consider_len  75
 """
 
 if __name__ == '__main__':
