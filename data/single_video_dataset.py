@@ -131,7 +131,7 @@ class SingleVideoDataset(BaseDataset):
         A = torch.stack(A, 0)
 
         end_flag = False
-        if frame_index + 1 == sum(self.length_for_videos[0:self.now_deal_video_index+1]):
+        if frame_index + 1 == sum(self.length_for_videos[0:self.now_deal_video_index+1]) and block_index+1 == (self.block_size[0] * self.block_size[1]):
             self.now_deal_video_index += 1
             end_flag = True
 

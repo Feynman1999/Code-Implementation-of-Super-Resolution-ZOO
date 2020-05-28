@@ -4,6 +4,7 @@ apply:
     v2: python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1000  --block_size 2_3 --ch1 48 --ch2 32
 
     nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1500 >> /opt/data/private/mgtv_epoch1500.log 2>&1 &
+    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1000  --block_size 2_3 --ch1 48 --ch2 32 >> /opt/data/private/mgtv_epoch1000_48_32.log 2>&1 &
 
     dataset_images2video(datasetpath = "./results/mgtv_mgtv1_05_24_22_39/apply-A-epoch_1000-block_size_250", fps=25, suffix=".y4m")
 
@@ -184,6 +185,13 @@ class MGTV1Model(BaseModel):
             self.HR_G = remove_pad_for_tensor(tensor=self.HR_G,
                                               HR_GT_h_w=(h, w),
                                               factor=self.SR_factor, LR_flag=False)
+
+            # 将HR_G的边缘部分替换为LR的  两个像素
+            assert self.LR.shape == self.HR_G.shape #  [1,3,H,W]
+            self.HR_G[..., 0:2, :] = self.LR[..., 0:2, :]
+            self.HR_G[..., -2:, :] = self.LR[..., -2:, :]
+            self.HR_G[..., :, 0:2] = self.LR[..., :, 0:2]
+            self.HR_G[..., :, -2:] = self.LR[..., :, -2:]
 
 
     def backward(self):
