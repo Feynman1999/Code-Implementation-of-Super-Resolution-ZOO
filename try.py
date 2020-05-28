@@ -3,8 +3,8 @@ import ffmpeg
 import sys
 import pickle
 
-path = "E:/git_repo/Code-Implementation-of-Super-Resolution-ZOO/datasets/mgtv/test_damage_A"
-# videodataset_scenedetect(path)
+path = "/opt/data/private/datasets/mgtv/GTvideos/"
+videodataset_scenedetect(path)
 
 with open(os.path.join(path, 'scene.pickle'), 'rb') as f:
     b = pickle.load(f)
