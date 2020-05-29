@@ -15,17 +15,17 @@ from util.util import save_image, save_video
 from . import mkdir
 
 
-class images_pre_crop_process(Process):
-    def __init__(self, list, size, path):
-        super(images_pre_crop_process, self).__init__()
-        self.list = list
-        self.size = size
-        self.path = path
+class videos_pre_crop_process(Process):
+    def __init__(self, path2videos, videoname_list, crop_size):
+        super(videos_pre_crop_process, self).__init__()
+        self.path2videos = path2videos
+        self.videoname_list = videoname_list
+        self.crop_size = crop_size
 
     def run(self):
-        for path in self.list:
-            imgname = get_file_name(path)
-            image_pre_crop(path2img=path, crop_size=self.size, path2placeblocks=os.path.join(self.path, imgname))
+        for videoname in self.videoname_list:
+            print("now dealing {} {}".format(self.path2videos, videoname))
+            video_pre_crop(os.path.join(self.path2videos, videoname), crop_size=self.crop_size)
 
 
 def image_pre_crop(path2img, crop_size, path2placeblocks):
@@ -56,39 +56,29 @@ def video_pre_crop(path2video, crop_size):
     path2place_result = os.path.dirname(path2place_result)
     path2place_result = os.path.join(path2place_result, domain + "_cropsize_" + str(crop_size), videoname)
 
-    # one thread
-    # for path in imgpathlist:
-    #     imgname = get_file_name(path)
-    #     image_pre_crop(path2img=path, crop_size=crop_size, path2placeblocks=os.path.join(path2place_result, imgname))
-
-    # multi thread
-    thread_nums = 16
-    thread_range_len = len(imgpathlist) // thread_nums
-    thread_range_list = list(range(0, len(imgpathlist)+1, thread_range_len))
-    thread_range_list[-1] = len(imgpathlist)
-    thread_list = []
-    for i in range(thread_nums):
-        thread_list.append(images_pre_crop_process(imgpathlist[thread_range_list[i]:thread_range_list[i+1]], crop_size, path2place_result))
-        thread_list[-1].start()
-    for item in thread_list:
-        item.join()
+    for path in imgpathlist:
+        imgname = get_file_name(path)
+        image_pre_crop(path2img=path, crop_size=crop_size, path2placeblocks=os.path.join(path2place_result, imgname))
 
 
-def videodataset_pre_crop(path2AB, crop_size=256):
+def videodataset_pre_crop(path2AorB, crop_size=256, process_num=2):
     """
 
-    :param path2AB: e.g. ./datasets/mgtv/train
+    :param path2AB: e.g. ./datasets/mgtv/train/A
     :param crop_size:
     :return:
     """
-    Apath = os.path.join(path2AB, "A")
-    Bpath = os.path.join(path2AB, "B")
-    for videoname in os.listdir(Apath):
-        print("now dealing A: {}".format(videoname))
-        video_pre_crop(os.path.join(Apath, videoname), crop_size=crop_size)
-    for videoname in os.listdir(Bpath):
-        print("now dealing B: {}".format(videoname))
-        video_pre_crop(os.path.join(Bpath, videoname), crop_size=crop_size)
+    Apath = path2AorB
+    A_videonames = os.listdir(Apath)
+    process_range_len = len(A_videonames) // process_num
+    process_range_list = list(range(0, len(A_videonames)+1, process_range_len))
+    process_range_list[-1] = len(A_videonames)
+    process_list = []
+    for i in range(process_num):
+        process_list.append(videos_pre_crop_process(Apath, A_videonames[process_range_list[i]:process_range_list[i+1]], crop_size))
+        process_list[-1].start()
+    for item in process_list:
+        item.join()
 
 
 def videodataset_scenedetect(dirpath):

@@ -88,6 +88,7 @@ aimax:
         --max_consider_len  125
         --ch1               96
         --ch2               64
+        --scenedetect       True
 """
 import torch
 from .base_model import BaseModel
@@ -127,7 +128,7 @@ class MGTV1Model(BaseModel):
         parser.set_defaults(lr_gamma=0.7)
         parser.set_defaults(n_epochs=5000)
         parser.set_defaults(multi_base=32)
-        parser.set_defaults(max_consider_len=25)
+        parser.set_defaults(max_consider_len=125)
         parser.set_defaults(scenedetect=True)
         parser.set_defaults(block_size="2_3")
         parser.add_argument('--ch1', type=int, default=12)

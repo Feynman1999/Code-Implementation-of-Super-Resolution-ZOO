@@ -5,8 +5,9 @@ import pickle
 
 
 if __name__ == '__main__':
-    videodataset_pre_crop(path2AB="/opt/data/private/datasets/mgtv/train", crop_size=256)
-    # videodataset_pre_crop(path2AB="./datasets/mgtv/train", crop_size=256)
+    # videodataset_pre_crop(path2AB="/opt/data/private/datasets/mgtv/train", crop_size=256)
+    videodataset_pre_crop("/opt/data/private/datasets/mgtv/train/A", crop_size=256, process_num=14)
+    videodataset_pre_crop("/opt/data/private/datasets/mgtv/train/B", crop_size=256, process_num=14)
 
 # path = "/opt/data/private/datasets/mgtv/GTvideos/"
 # videodataset_scenedetect(path)
