@@ -58,6 +58,8 @@ if __name__ == '__main__':
             file_name_with_suffix = os.path.basename(A_paths[0])  # xxxxxx__0__1.jpg     __0__1 help to locate block
             visualizer.save_for_apply(visuals, file_name_with_suffix, i)
         else:  # video
+            if i <= 9629:
+                continue
             assert opt.dataset_mode == 'single_video'
             model.set_input(data)
             model.test()
