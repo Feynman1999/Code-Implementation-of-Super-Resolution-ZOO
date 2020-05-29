@@ -3,12 +3,17 @@ import ffmpeg
 import sys
 import pickle
 
-path = "/opt/data/private/datasets/mgtv/GTvideos/"
-videodataset_scenedetect(path)
 
-with open(os.path.join(path, 'scene.pickle'), 'rb') as f:
-    b = pickle.load(f)
-    print(b)
+
+videodataset_pre_crop(path2AB="./datasets/mgtv/train", crop_size=256)
+
+
+# path = "/opt/data/private/datasets/mgtv/GTvideos/"
+# videodataset_scenedetect(path)
+#
+# with open(os.path.join(path, 'scene.pickle'), 'rb') as f:
+#     b = pickle.load(f)
+#     print(b)
 
 
 

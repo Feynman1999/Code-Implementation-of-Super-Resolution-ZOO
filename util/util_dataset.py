@@ -8,11 +8,87 @@ import shutil
 import os
 import cv2
 import pickle
+import threading
 
 import ffmpeg
 from PIL import Image
 from util.util import save_image, save_video
 from . import mkdir
+
+
+class myThread(threading.Thread):
+    def __init__(self, list, size, path):
+        threading.Thread.__init__(self)
+        self.list = list
+        self.size = size
+        self.path = path
+
+    def run(self):
+        for path in self.list:
+            imgname = get_file_name(path)
+            image_pre_crop(path2img=path, crop_size=self.size, path2placeblocks=os.path.join(self.path, imgname))
+
+
+def image_pre_crop(path2img, crop_size, path2placeblocks):
+    img = Image.open(path2img).convert('RGB')
+    w, h = img.size
+    w_list = list(range(0, w+1, crop_size))
+    h_list = list(range(0, h+1, crop_size))
+    id = 0
+    for i in range(len(w_list)-1):
+        for j in range(len(h_list)-1):
+            box = (w_list[i], h_list[j], w_list[i+1], h_list[j+1])
+            croped_img = img.crop(box)
+            save_image(croped_img, os.path.join(path2placeblocks, "{}.png".format(id)))
+            id += 1
+
+
+def video_pre_crop(path2video, crop_size):
+    """
+
+    :param path2video:  e.g. ./datasets/mgtv/train/A/damage_01
+    :param crop_size: e.g. 256
+    :return:
+    """
+    imgpathlist = make_images_dataset(path2video)
+    videoname = os.path.split(path2video)[-1]
+    path2place_result = os.path.dirname(path2video)
+    domain = os.path.split(path2place_result)[-1]
+    path2place_result = os.path.dirname(path2place_result)
+    path2place_result = os.path.join(path2place_result, domain + "_cropsize_" + str(crop_size), videoname)
+    # for path in imgpathlist:
+    #     imgname = get_file_name(path)
+    #     image_pre_crop(path2img=path, crop_size=crop_size, path2placeblocks=os.path.join(path2place_result, imgname))
+
+    # multi thread
+    thread_nums = 8
+    thread_range_len = len(imgpathlist) // thread_nums
+    thread_range_list = list(range(0, len(imgpathlist)+1, thread_range_len))
+    if thread_range_list[-1] != len(imgpathlist):
+        thread_range_list[-1] = len(imgpathlist)
+    thread_list = []
+    for i in range(thread_nums):
+        thread_list.append(myThread(imgpathlist[thread_range_list[i]:thread_range_list[i+1]], crop_size, path2place_result))
+        thread_list[-1].start()
+    for item in thread_list:
+        item.join()
+
+
+def videodataset_pre_crop(path2AB, crop_size=256):
+    """
+
+    :param path2AB: e.g. ./datasets/mgtv/train
+    :param crop_size:
+    :return:
+    """
+    Apath = os.path.join(path2AB, "A")
+    Bpath = os.path.join(path2AB, "B")
+    for videoname in os.listdir(Apath):
+        print("now dealing A: {}".format(videoname))
+        video_pre_crop(os.path.join(Apath, videoname), crop_size=crop_size)
+    for videoname in os.listdir(Bpath):
+        print("now dealing B: {}".format(videoname))
+        video_pre_crop(os.path.join(Bpath, videoname), crop_size=crop_size)
 
 
 def videodataset_scenedetect(dirpath):
@@ -269,8 +345,6 @@ def videos_to_images(videos_path, path2place, phase="train", AorB = "A", max_fra
         stream = ffmpeg.output(stream, os.path.join(AorBpath, vidname, "frame_" + '%05d.png'))
         ffmpeg.run(stream)
 
-def images_to_y4m():
-    pass
 
 def vimeo90K_dataset_onlyHR2AB(dataset_path, ABpath, phase="train", factor=4, can_continue=False):
     """

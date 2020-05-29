@@ -70,6 +70,24 @@ aimax:
         --seed              1
         --max_consider_len  100
         --scenedetect       True
+
+    v4:
+    python3 train.py
+        --dataroot          /opt/data/private/datasets/mgtv
+        --name              mgtv_mgtv1_96_64_125
+        --model             mgtv1
+        --display_freq      600
+        --print_freq        300
+        --save_epoch_freq   500
+        --gpu_ids           0
+        --batch_size        4
+        --suffix            05_29_15_27
+        --crop_size         256
+        --imgseqlen         5
+        --seed              1
+        --max_consider_len  125
+        --ch1               96
+        --ch2               64
 """
 import torch
 from .base_model import BaseModel
