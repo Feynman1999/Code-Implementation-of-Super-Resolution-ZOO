@@ -5,7 +5,7 @@ import pickle
 
 
 
-videodataset_pre_crop(path2AB="./datasets/mgtv/train", crop_size=256)
+videodataset_pre_crop(path2AB="opt/data/private/datasets/mgtv/train", crop_size=256)
 
 
 # path = "/opt/data/private/datasets/mgtv/GTvideos/"
