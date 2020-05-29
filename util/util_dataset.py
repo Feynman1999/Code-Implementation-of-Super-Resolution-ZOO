@@ -62,7 +62,7 @@ def video_pre_crop(path2video, crop_size):
     #     image_pre_crop(path2img=path, crop_size=crop_size, path2placeblocks=os.path.join(path2place_result, imgname))
 
     # multi thread
-    thread_nums = 8
+    thread_nums = 16
     thread_range_len = len(imgpathlist) // thread_nums
     thread_range_list = list(range(0, len(imgpathlist)+1, thread_range_len))
     thread_range_list[-1] = len(imgpathlist)
