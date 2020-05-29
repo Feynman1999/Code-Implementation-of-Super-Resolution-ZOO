@@ -7,7 +7,7 @@ apply:
     nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1000  --block_size 2_3 --ch1 48 --ch2 32 >> /opt/data/private/mgtv_epoch1000_48_32.log 2>&1 &
 
     dataset_images2video(datasetpath = "./results/mgtv_mgtv1_05_24_22_39/apply-A-epoch_1000-block_size_250", fps=25, suffix=".y4m")
-
+    dataset_images2video(datasetpath = "./results/mgtv_mgtv1_48_32_100_05_27_00_25/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
 
 aimax:
     gpu:
@@ -50,6 +50,9 @@ aimax:
         --max_consider_len  100
         --ch1               48
         --ch2               32
+        --continue_train    True
+        --load_epoch        epoch_1000
+        --epoch_count       1001
 
     v3:
     python3 train.py
