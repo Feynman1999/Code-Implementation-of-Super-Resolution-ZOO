@@ -8,17 +8,16 @@ import shutil
 import os
 import cv2
 import pickle
-import threading
-
+from multiprocessing import Process
 import ffmpeg
 from PIL import Image
 from util.util import save_image, save_video
 from . import mkdir
 
 
-class myThread(threading.Thread):
+class images_pre_crop_process(Process):
     def __init__(self, list, size, path):
-        threading.Thread.__init__(self)
+        super(images_pre_crop_process, self).__init__()
         self.list = list
         self.size = size
         self.path = path
@@ -56,6 +55,8 @@ def video_pre_crop(path2video, crop_size):
     domain = os.path.split(path2place_result)[-1]
     path2place_result = os.path.dirname(path2place_result)
     path2place_result = os.path.join(path2place_result, domain + "_cropsize_" + str(crop_size), videoname)
+
+    # one thread
     # for path in imgpathlist:
     #     imgname = get_file_name(path)
     #     image_pre_crop(path2img=path, crop_size=crop_size, path2placeblocks=os.path.join(path2place_result, imgname))
@@ -64,11 +65,10 @@ def video_pre_crop(path2video, crop_size):
     thread_nums = 8
     thread_range_len = len(imgpathlist) // thread_nums
     thread_range_list = list(range(0, len(imgpathlist)+1, thread_range_len))
-    if thread_range_list[-1] != len(imgpathlist):
-        thread_range_list[-1] = len(imgpathlist)
+    thread_range_list[-1] = len(imgpathlist)
     thread_list = []
     for i in range(thread_nums):
-        thread_list.append(myThread(imgpathlist[thread_range_list[i]:thread_range_list[i+1]], crop_size, path2place_result))
+        thread_list.append(images_pre_crop_process(imgpathlist[thread_range_list[i]:thread_range_list[i+1]], crop_size, path2place_result))
         thread_list[-1].start()
     for item in thread_list:
         item.join()
