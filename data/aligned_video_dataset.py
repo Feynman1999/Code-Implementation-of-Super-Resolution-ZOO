@@ -76,13 +76,14 @@ class AlignedVideoDataset(BaseDataset):
         :param short_path:
         :return: a list of PIL.Image
         """
+        if self.opt.pre_crop_num > 0:
+            A_path_crop = os.path.join(self.dir_A_pre_crop, A_path)
+            B_path_crop = os.path.join(self.dir_B_pre_crop, B_path)
         A_path = os.path.join(self.dir_A, A_path)
         B_path = os.path.join(self.dir_B, B_path)
         A_img_paths = make_images_dataset(A_path)
         B_img_paths = make_images_dataset(B_path)
-        if self.opt.pre_crop_num > 0:
-            A_path_crop = os.path.join(self.dir_A_pre_crop, A_path)
-            B_path_crop = os.path.join(self.dir_B_pre_crop, B_path)
+
 
         if self.opt.imgseqlen > 0:
             if self.opt.scenedetect:
