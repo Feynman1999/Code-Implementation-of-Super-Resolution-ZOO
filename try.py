@@ -3,12 +3,12 @@ import ffmpeg
 import sys
 import pickle
 
-dataset_images2video(datasetpath = "./results/mgtv_mgtv1_add_scene_05_28_12_51/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
+# dataset_images2video(datasetpath = "./results/mgtv_mgtv1_add_scene_05_28_12_51/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 #     # videodataset_pre_crop(path2AB="/opt/data/private/datasets/mgtv/train", crop_size=256)
-#     videodataset_pre_crop("/opt/data/private/datasets/mgtv/train/A", crop_size=256, process_num=14)
-#     videodataset_pre_crop("/opt/data/private/datasets/mgtv/train/B", crop_size=256, process_num=14)
+     videodataset_pre_crop("./datasets/mgtv/train/A", crop_size=256, process_num=2)
+     videodataset_pre_crop("./datasets/mgtv/train/B", crop_size=256, process_num=2)
 
 # path = "/opt/data/private/datasets/mgtv/GTvideos/"
 # videodataset_scenedetect(path)
