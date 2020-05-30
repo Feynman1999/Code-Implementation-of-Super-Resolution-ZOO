@@ -43,4 +43,5 @@ class TrainOptions(BaseOptions):
         # video
         parser.add_argument('--imgseqlen', type=int, default=5, help='frames used by train model, default 0 means all of them')
         parser.add_argument('--max_consider_len', type=int, default=1000, help='when training for video, only consider part for speed up (pin memory)')
+        parser.add_argument('--pre_crop_num', type=int, default=0)
         return parser

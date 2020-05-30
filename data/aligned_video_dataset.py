@@ -29,6 +29,9 @@ class AlignedVideoDataset(BaseDataset):
         self.dir_AB = os.path.join(opt.dataroot, opt.phase)  # get the image directory e.g.      ./DIV2k/train/
         self.dir_A = os.path.join(self.dir_AB, 'A')
         self.dir_B = os.path.join(self.dir_AB, 'B')
+        if opt.pre_crop_num > 0:
+            self.dir_A_pre_crop = os.path.join(self.dir_AB, 'A_cropsize_{}'.format(opt.crop_size))
+            self.dir_B_pre_crop = os.path.join(self.dir_AB, 'B_cropsize_{}'.format(opt.crop_size))
 
         self.A_paths = sorted(os.listdir(self.dir_A))
         self.B_paths = sorted(os.listdir(self.dir_B))
@@ -77,6 +80,9 @@ class AlignedVideoDataset(BaseDataset):
         B_path = os.path.join(self.dir_B, B_path)
         A_img_paths = make_images_dataset(A_path)
         B_img_paths = make_images_dataset(B_path)
+        if self.opt.pre_crop_num > 0:
+            A_path_crop = os.path.join(self.dir_A_pre_crop, A_path)
+            B_path_crop = os.path.join(self.dir_B_pre_crop, B_path)
 
         if self.opt.imgseqlen > 0:
             if self.opt.scenedetect:
@@ -105,11 +111,22 @@ class AlignedVideoDataset(BaseDataset):
 
         A = []
         B = []
-        for path in A_img_paths:
-            A.append(Image.open(path).convert('RGB'))
-        for path in B_img_paths:
-            B.append(Image.open(path).convert('RGB'))
-        return A, B
+
+        if self.opt.pre_crop_num > 0:
+            id = random.randint(0, self.opt.pre_crop_num-1)
+            for path in A_img_paths:
+                (filename, extension) = os.path.splitext(os.path.split(path)[-1])
+                A.append(Image.open(os.path.join(A_path_crop, filename, str(id)+".png")).convert('RGB'))
+            for path in B_img_paths:
+                (filename, extension) = os.path.splitext(os.path.split(path)[-1])
+                B.append(Image.open(os.path.join(B_path_crop, filename, str(id)+".png")).convert('RGB'))
+            return A, B
+        else:
+            for path in A_img_paths:
+                A.append(Image.open(path).convert('RGB'))
+            for path in B_img_paths:
+                B.append(Image.open(path).convert('RGB'))
+            return A, B
 
     def __getitem__(self, index):
         """Return a data point and its metadata information.
