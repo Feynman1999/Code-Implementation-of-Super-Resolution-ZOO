@@ -21,17 +21,19 @@ options = \
         --dataroot          /opt/data/private/datasets/mgtv
         --name              mgtv_mgtv2
         --model             mgtv2
-        --display_freq      840
-        --print_freq        210
+        --display_freq      2400
+        --print_freq        150
         --save_epoch_freq   500
         --gpu_ids           0,1,2
-        --batch_size        42
+        --batch_size        15
         --suffix            05_31_16_42
         --crop_size         256
         --imgseqlen         5
         --seed              1
         --max_consider_len  125
         --scenedetect       True
+        --ch1               64
+        --ch2               48
 """
 
 if __name__ == '__main__':

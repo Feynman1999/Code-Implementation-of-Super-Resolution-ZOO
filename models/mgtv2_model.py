@@ -8,17 +8,19 @@ aimax:
         --dataroot          /opt/data/private/datasets/mgtv
         --name              mgtv_mgtv2
         --model             mgtv2
-        --display_freq      840
-        --print_freq        210
+        --display_freq      2400
+        --print_freq        150
         --save_epoch_freq   500
         --gpu_ids           0,1,2
-        --batch_size        42
+        --batch_size        15
         --suffix            05_31_16_42
         --crop_size         256
         --imgseqlen         5
         --seed              1
         --max_consider_len  125
         --scenedetect       True
+        --ch1               64
+        --ch2               48
 
 """
 import torch
@@ -63,8 +65,8 @@ class MGTV2Model(BaseModel):
         parser.set_defaults(scenedetect=True)
         parser.set_defaults(block_size="1_1")
         parser.set_defaults(pre_crop_num=28)
-        parser.add_argument('--ch1', type=int, default=12)
-        parser.add_argument('--ch2', type=int, default=8)
+        parser.add_argument('--ch1', type=int, default=64)
+        parser.add_argument('--ch2', type=int, default=48)
         parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
 
         return parser
