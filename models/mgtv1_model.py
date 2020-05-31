@@ -6,6 +6,7 @@ apply:
 
     nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1500 >> /opt/data/private/mgtv_epoch1500.log 2>&1 &
     nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1000  --block_size 2_3 --ch1 48 --ch2 32 >> /opt/data/private/mgtv_epoch1000_48_32.log 2>&1 &
+    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_add_scene_05_28_12_51 --model mgtv1 --load_epoch epoch_2500 --scenedetect True >> /opt/data/private/mgtv_epoch2500_scenedetect.log 2>&1 &
 
     dataset_images2video(datasetpath = "./results/mgtv_mgtv1_05_24_22_39/apply-A-epoch_1000-block_size_250", fps=25, suffix=".y4m")
     dataset_images2video(datasetpath = "./results/mgtv_mgtv1_48_32_100_05_27_00_25/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
@@ -138,7 +139,7 @@ class MGTV1Model(BaseModel):
         parser.set_defaults(multi_base=32)
         parser.set_defaults(max_consider_len=125)
         parser.set_defaults(scenedetect=True)
-        parser.set_defaults(block_size="2_3")
+        parser.set_defaults(block_size="1_1")
         parser.set_defaults(pre_crop_num=28)
         parser.add_argument('--ch1', type=int, default=12)
         parser.add_argument('--ch2', type=int, default=8)
