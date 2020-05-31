@@ -34,6 +34,7 @@ options = \
         --scenedetect       True
         --ch1               64
         --ch2               48
+        --num_threads       11
 """
 
 if __name__ == '__main__':

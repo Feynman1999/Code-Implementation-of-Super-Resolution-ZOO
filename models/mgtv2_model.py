@@ -21,6 +21,7 @@ aimax:
         --scenedetect       True
         --ch1               64
         --ch2               48
+        --num_threads       11
 
 """
 import torch
