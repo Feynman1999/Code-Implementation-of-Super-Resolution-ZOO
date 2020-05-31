@@ -1,17 +1,4 @@
 """
-apply:
-    v1: python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1000
-    v2: python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1000 --block_size 2_3 --ch1 48 --ch2 32
-    v3: python apply.py --dataroot  ./datasets/mgtv/apply/A --name mgtv_mgtv1_add_scene_05_28_12_51 --model mgtv1 --load_epoch epoch_1000 --block_size 2_3 --scenedetect True
-
-    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_05_24_22_39 --model mgtv1 --load_epoch epoch_1500 >> /opt/data/private/mgtv_epoch1500.log 2>&1 &
-    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_48_32_100_05_27_00_25 --model mgtv1 --load_epoch epoch_1500  --block_size 2_3 --ch1 48 --ch2 32 >> /opt/data/private/mgtv_epoch1500_48_32.log 2>&1 &
-    nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv1_add_scene_05_28_12_51 --model mgtv1 --load_epoch epoch_2500 --scenedetect True >> /opt/data/private/mgtv_epoch2500_scenedetect.log 2>&1 &
-
-    dataset_images2video(datasetpath = "./results/mgtv_mgtv1_05_24_22_39/apply-A-epoch_1000-block_size_250", fps=25, suffix=".y4m")
-    dataset_images2video(datasetpath = "./results/mgtv_mgtv1_48_32_100_05_27_00_25/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
-    dataset_images2video(datasetpath = "./results/mgtv_mgtv1_add_scene_05_28_12_51/apply-A-epoch_2500-block_size_1_1", fps=25, suffix=".y4m")
-
 
 aimax:
     gpu:
@@ -19,94 +6,29 @@ aimax:
     v1:
     python3 train.py
         --dataroot          /opt/data/private/datasets/mgtv
-
-        --name              mgtv_mgtv1
-        --model             mgtv1
-        --display_freq      480
-        --print_freq        320
-        --save_epoch_freq   500
-        --gpu_ids           0
-        --batch_size        16
-        --suffix            05_24_22_39
-        --crop_size         256
-        --imgseqlen         5
-        --seed              1
-        --continue_train    True
-        --load_epoch        epoch_1500
-        --epoch_count       1501
-        --max_consider_len  25
-        --scenedetect       False
-
-    v2:
-    python3 train.py
-        --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv1_48_32_100
-        --model             mgtv1
-        --display_freq      600
-        --print_freq        120
-        --save_epoch_freq   500
-        --gpu_ids           0
-        --batch_size        6
-        --suffix            05_27_00_25
-        --crop_size         256
-        --imgseqlen         5
-        --seed              1
-        --max_consider_len  100
-        --ch1               48
-        --ch2               32
-        --continue_train    True
-        --load_epoch        epoch_1000
-        --epoch_count       1001
-        --scenedetect       False
-
-    v3:
-    python3 train.py
-        --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv1_add_scene
-        --model             mgtv1
-        --display_freq      480
-        --print_freq        320
-        --save_epoch_freq   500
-        --gpu_ids           0
-        --batch_size        16
-        --suffix            05_28_12_51
-        --crop_size         256
-        --imgseqlen         5
-        --seed              1
-        --max_consider_len  100
-        --scenedetect       True
-        --continue_train    True
-        --load_epoch        epoch_1500
-        --epoch_count       1501
-
-
-    v4:
-    python3 train.py
-        --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv1_64_48_125
-        --model             mgtv1
-        --display_freq      600
-        --print_freq        300
+        --name              mgtv_mgtv2
+        --model             mgtv2
+        --display_freq      960
+        --print_freq        240
         --save_epoch_freq   500
         --gpu_ids           0,1,2
-        --batch_size        15
-        --suffix            05_31_15_39
+        --batch_size        48
+        --suffix            05_31_16_42
         --crop_size         256
         --imgseqlen         5
         --seed              1
         --max_consider_len  125
-        --ch1               64
-        --ch2               48
         --scenedetect       True
+
 """
 import torch
 from .base_model import BaseModel
-from . import mgtv1_networks
+from . import mgtv2_networks
 from util import remove_pad_for_tensor
 
 
-class MGTV1Model(BaseModel):
-    """ This class implements the mgtv1 model
+class MGTV2Model(BaseModel):
+    """ This class implements the mgtv2 model
 
     The model training requires '--dataset_mode aligned_video' dataset.
 
@@ -125,7 +47,7 @@ class MGTV1Model(BaseModel):
 
         """
         parser.set_defaults(dataset_mode='aligned_video')
-        parser.set_defaults(batch_size=16)
+        parser.set_defaults(batch_size=48)
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(SR_factor=1)
         parser.set_defaults(crop_size=256)
@@ -166,7 +88,7 @@ class MGTV1Model(BaseModel):
         else:
             self.model_names = ['G']
 
-        self.netG = mgtv1_networks.define_G(opt)
+        self.netG = mgtv2_networks.define_G(opt)
 
         if self.isTrain:
             self.criterionL2 = torch.nn.MSELoss()
