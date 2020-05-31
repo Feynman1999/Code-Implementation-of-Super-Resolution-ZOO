@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # hard-code some parameters for apply
     opt.dataset_mode = "single_video" if opt.video_flag else 'single'
     opt.batch_size = 1  # apply code only supports batch_size = 1
-    opt.num_threads = 1  # apply code only supports num_threads = 1
+    opt.num_threads = 6  # apply code only supports num_threads = 1
     opt.serial_batches = True  # disable data shuffling
     opt.no_flip = True  # no flip; comment this line if results on flipped images are needed.
     opt.no_rotate = True
@@ -62,7 +62,7 @@ if __name__ == '__main__':
             model.set_input(data)
             model.test()
             visuals = model.get_current_visuals()  # get image/video results
-            block_list.append(visuals['HR_G'])
+            block_list.append(visuals['HR_G'].cpu())
             if len(block_list) == block_size[0] * block_size[1]:
                 A_paths, _ = model.get_image_paths()  # get image/video paths
                 video_name = get_dataset_name(A_paths[0])

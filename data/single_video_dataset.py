@@ -5,6 +5,7 @@ import torch
 from data.image_folder import make_images_dataset
 from PIL import Image
 import pickle
+import bisect
 import copy
 
 
@@ -32,13 +33,18 @@ class SingleVideoDataset(BaseDataset):
         self.A_paths = self.A_paths[:min(opt.max_dataset_size, len(self.A_paths))]
 
         self.length_for_videos = []
+        self.length_for_videos_presum = []
         for path in self.A_paths:
             A_path = os.path.join(self.dir_A, path)
             length = len(make_images_dataset(A_path))
             # length = len(make_images_dataset(A_path)) - opt.nframes + 1
             self.length_for_videos.append(length)
+            if len(self.length_for_videos_presum) == 0:
+                self.length_for_videos_presum.append(length)
+            else:
+                presum = self.length_for_videos_presum[-1]
+                self.length_for_videos_presum.append(presum + length)
 
-        self.now_deal_video_index = 0
 
         self.input_nc = self.opt.input_nc
         self.output_nc = self.opt.output_nc
@@ -51,13 +57,13 @@ class SingleVideoDataset(BaseDataset):
             with open(pickle_path, 'rb') as f:
                 self.scene = pickle.load(f)
 
-    def get_image_list(self, A_path, index):
+    def get_image_list(self, A_path, index, now_deal_video_index):
         assert index >= 0
         A_path = os.path.join(self.dir_A, A_path)
         A_img_paths = make_images_dataset(A_path)
 
         if self.opt.scenedetect:
-            for one_scene in self.scene[self.now_deal_video_index]:
+            for one_scene in self.scene[now_deal_video_index]:
                 if one_scene[0] <= index and index <= one_scene[1]:
                     A_img_paths = A_img_paths[one_scene[0]:one_scene[1]+1]
                     index = index - one_scene[0]
@@ -97,26 +103,30 @@ class SingleVideoDataset(BaseDataset):
             end_flag (bool) - - whether end frame for a video
         """
         # read a video given a random integer index
-        A_path = self.A_paths[self.now_deal_video_index]
         frame_index = index//(self.block_size[0] * self.block_size[1])
         block_index = index % (self.block_size[0] * self.block_size[1])
         block_index_h = block_index // self.block_size[1]
         block_index_w = block_index % self.block_size[1]
+        now_deal_video_index = bisect.bisect(self.length_for_videos_presum, frame_index)
+        A_path = self.A_paths[now_deal_video_index]
 
-        if block_index == 0:
-            self.A = self.get_image_list(A_path, frame_index - sum(self.length_for_videos[0:self.now_deal_video_index]))
-            w, h = self.A[0].size
-            self.block_h = list(range(0, h+1, h//self.block_size[0]))
-            if self.block_h[-1] != h:
-                self.block_h[-1] = h
-            self.block_w = list(range(0, w+1, w//self.block_size[1]))
-            if self.block_w[-1] != w:
-                self.block_w[-1] = w
+        # if block_index == 0:
+        if now_deal_video_index == 0:
+            tmpA = self.get_image_list(A_path, frame_index, now_deal_video_index)
+        else:
+            tmpA = self.get_image_list(A_path, frame_index - self.length_for_videos_presum[now_deal_video_index-1], now_deal_video_index)
+        w, h = tmpA[0].size
+        block_h = list(range(0, h+1, h//self.block_size[0]))
+        if block_h[-1] != h:
+            block_h[-1] = h
+        block_w = list(range(0, w+1, w//self.block_size[1]))
+        if block_w[-1] != w:
+            block_w[-1] = w
 
         A = []
-        box = (self.block_w[block_index_w], self.block_h[block_index_h], self.block_w[block_index_w + 1], self.block_h[block_index_h + 1])
+        box = (block_w[block_index_w], block_h[block_index_h], block_w[block_index_w + 1], block_h[block_index_h + 1])
         # blocking from self.A
-        for frame in self.A:
+        for frame in tmpA:
             A.append(frame.crop(box))
 
         w, h = A[0].size
@@ -131,8 +141,7 @@ class SingleVideoDataset(BaseDataset):
         A = torch.stack(A, 0)
 
         end_flag = False
-        if frame_index + 1 == sum(self.length_for_videos[0:self.now_deal_video_index+1]) and block_index+1 == (self.block_size[0] * self.block_size[1]):
-            self.now_deal_video_index += 1
+        if frame_index + 1 == self.length_for_videos_presum[now_deal_video_index] and block_index+1 == (self.block_size[0] * self.block_size[1]):
             end_flag = True
 
         return {'A': A, 'A_paths': os.path.join(self.dir_A, A_path), 'end_flag': end_flag, 'gt_h_w': gt_h_w}
