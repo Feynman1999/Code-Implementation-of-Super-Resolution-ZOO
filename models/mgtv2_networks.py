@@ -115,42 +115,42 @@ class G1(nn.Module):
 class G2(nn.Module):
     def __init__(self, ch=32):
         super(G2, self).__init__()
-        if ch % 32 == 0:
-            num_g = 32
-        elif ch % 16 == 0:
-            num_g = 16
-        elif ch % 8 == 0:
-            num_g = 8
+        if ch == 48:
+            num_g = 3
+        elif ch == 32:
+            num_g = 2
+        elif ch == 8:
+            num_g = 1
         else:
             raise NotImplementedError("make sure ch % 8 == 0")
 
         self.conv1 = nn.Sequential(
-            CONV(9, 90, 'relu', True, 1, False, 15),
+            CONV(9, 90, 'relu', True, 1, False, 5),
             CONV(90, ch, 'relu', True, 1, False, num_g)
         )
         self.conv2 = nn.Sequential(
-            CONV(ch, 2*ch, 'relu', True, 2, False, num_g),
-            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g),
-            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g)
+            CONV(ch, 2*ch, 'relu', True, 2, False, 2*num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, 2*num_g)
         )
         self.conv3 = nn.Sequential(
-            CONV(2*ch, 4*ch, 'relu', True, 2, False, 2*num_g),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
-            CONV(4*ch, 8*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(2*ch, 4*ch, 'relu', True, 2, False, 4*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 4*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 4*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 4*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 4*num_g),
+            CONV(4*ch, 8*ch, 'relu', True, 1, False, 8*num_g),
             nn.PixelShuffle(2)
         )
         self.conv4 = nn.Sequential(
-            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g),
-            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g),
-            CONV(2*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(2*ch, 4*ch, 'relu', True, 1, False, 4*num_g),
             nn.PixelShuffle(2)
         )
         self.conv5 = nn.Sequential(
             CONV(ch, ch, 'relu', True, 1, False, num_g),
-            CONV(ch, 3, 'relu', True, 1, False),
+            CONV(ch, 3, 'relu', False, 1),
         )
 
     def forward(self, x):
@@ -170,9 +170,9 @@ class G2(nn.Module):
         return x5
 
 
-class MGTV1Generator(nn.Module):
+class MGTV2Generator(nn.Module):
     def __init__(self, args):
-        super(MGTV1Generator, self).__init__()
+        super(MGTV2Generator, self).__init__()
         self.nframes = args.nframes
 
         self.g1 = G1(args.ch1)
@@ -192,5 +192,5 @@ class MGTV1Generator(nn.Module):
 
 
 def define_G(opt):
-    net = MGTV1Generator(opt)
+    net = MGTV2Generator(opt)
     return base_networks.init_net(net, opt.init_type, opt.init_gain, opt.gpu_ids)
