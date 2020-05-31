@@ -6,7 +6,7 @@ import torch.nn as nn
 instance normalization
 """
 class CONV(nn.Module):
-    def __init__(self, input_ch, output_ch, activate='relu', use_In = False, stride = 1, bias = True):
+    def __init__(self, input_ch, output_ch, activate='relu', use_Gn=False, stride=1, bias=True, groups_num=1):
         super(CONV, self).__init__()
         if activate == 'relu':
             self.act = nn.ReLU(inplace=True)
@@ -15,16 +15,16 @@ class CONV(nn.Module):
         else:
             raise NotImplementedError("wrong")
 
-        self.use_In = use_In
-        if use_In:
-            self.In = nn.InstanceNorm2d(num_features=output_ch, affine=True)
+        self.use_Gn = use_Gn
+        if use_Gn:
+            self.Gn = nn.GroupNorm(num_groups=groups_num, num_channels=output_ch)
 
         self.conv = nn.Conv2d(input_ch, output_ch, kernel_size=3, stride=stride, padding=1, bias=bias)
 
     def forward(self, x):
         x = self.conv(x)
-        if self.use_In:
-            x = self.In(x)
+        if self.use_Gn:
+            x = self.Gn(x)
         x = self.act(x)
         return x
 
@@ -115,32 +115,41 @@ class G1(nn.Module):
 class G2(nn.Module):
     def __init__(self, ch=32):
         super(G2, self).__init__()
+        if ch % 32 == 0:
+            num_g = 32
+        elif ch % 16 == 0:
+            num_g = 16
+        elif ch % 8 == 0:
+            num_g = 8
+        else:
+            raise NotImplementedError("make sure ch % 8 == 0")
+
         self.conv1 = nn.Sequential(
-            CONV(9, 90, 'relu', True, 1, False),
-            CONV(90, ch, 'relu', True, 1, False)
+            CONV(9, 90, 'relu', True, 1, False, 15),
+            CONV(90, ch, 'relu', True, 1, False, num_g)
         )
         self.conv2 = nn.Sequential(
-            CONV(ch, 2*ch, 'relu', True, 2, False),
-            CONV(2*ch, 2*ch, 'relu', True, 1, False),
-            CONV(2*ch, 2*ch, 'relu', True, 1, False)
+            CONV(ch, 2*ch, 'relu', True, 2, False, num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g)
         )
         self.conv3 = nn.Sequential(
-            CONV(2*ch, 4*ch, 'relu', True, 2, False),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False),
-            CONV(4*ch, 4*ch, 'relu', True, 1, False),
-            CONV(4*ch, 8*ch, 'relu', True, 1, False),
+            CONV(2*ch, 4*ch, 'relu', True, 2, False, 2*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(4*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
+            CONV(4*ch, 8*ch, 'relu', True, 1, False, 2*num_g),
             nn.PixelShuffle(2)
         )
         self.conv4 = nn.Sequential(
-            CONV(2*ch, 2*ch, 'relu', True, 1, False),
-            CONV(2*ch, 2*ch, 'relu', True, 1, False),
-            CONV(2*ch, 4*ch, 'relu', True, 1, False),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g),
+            CONV(2*ch, 2*ch, 'relu', True, 1, False, num_g),
+            CONV(2*ch, 4*ch, 'relu', True, 1, False, 2*num_g),
             nn.PixelShuffle(2)
         )
         self.conv5 = nn.Sequential(
-            CONV(ch, ch, 'relu', True, 1, False),
+            CONV(ch, ch, 'relu', True, 1, False, num_g),
             CONV(ch, 3, 'relu', True, 1, False),
         )
 
