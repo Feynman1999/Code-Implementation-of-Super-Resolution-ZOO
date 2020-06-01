@@ -24,8 +24,8 @@ options = \
         --display_freq      2400
         --print_freq        240
         --save_epoch_freq   500
-        --gpu_ids           0,1,2
-        --batch_size        12
+        --gpu_ids           0
+        --batch_size        4
         --suffix            06_02_00_01
         --crop_size         256
         --imgseqlen         5
