@@ -32,8 +32,8 @@ options = \
         --seed              1
         --max_consider_len  125
         --scenedetect       True
-        --ch1               256
-        --ch2               64
+        --ch1               128
+        --ch2               32
         --num_threads       11
 """
 
