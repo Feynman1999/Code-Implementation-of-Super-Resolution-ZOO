@@ -12,15 +12,15 @@ aimax:
         --print_freq        240
         --save_epoch_freq   500
         --gpu_ids           0
-        --batch_size        4
+        --batch_size        2
         --suffix            06_02_00_01
         --crop_size         256
         --imgseqlen         5
         --seed              1
         --max_consider_len  125
         --scenedetect       True
-        --ch1               256
-        --ch2               64
+        --ch1               160
+        --ch2               40
         --num_threads       11
 
 """
@@ -152,8 +152,8 @@ class MGTV3Model(BaseModel):
     def backward(self):
         """Calculate loss"""
 
-        self.lossG = self.criterionL1(self.HR_G, self.HR_GroundTruth)
-        self.lossG.backward()
+        self.loss_G = self.criterionL1(self.HR_G, self.HR_GroundTruth)
+        self.loss_G.backward()
 
     def optimize_parameters(self):
         self.forward()                   # compute fake images: G(A)
