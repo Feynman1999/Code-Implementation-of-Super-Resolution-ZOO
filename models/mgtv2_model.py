@@ -149,10 +149,10 @@ class MGTV2Model(BaseModel):
 
             # 将HR_G的边缘部分替换为LR的  两个像素
             assert self.LR.shape == self.HR_G.shape #  [1,3,H,W]
-            # self.HR_G[..., 0:2, :] = self.LR[..., 0:2, :]
-            # self.HR_G[..., -2:, :] = self.LR[..., -2:, :]
-            # self.HR_G[..., :, 0:2] = self.LR[..., :, 0:2]
-            # self.HR_G[..., :, -2:] = self.LR[..., :, -2:]
+            self.HR_G[..., 0:2, :] = self.LR[..., 0:2, :]
+            self.HR_G[..., -2:, :] = self.LR[..., -2:, :]
+            self.HR_G[..., :, 0:2] = self.LR[..., :, 0:2]
+            self.HR_G[..., :, -2:] = self.LR[..., :, -2:]
 
 
     def backward(self):
