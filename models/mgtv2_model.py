@@ -1,4 +1,8 @@
 """
+nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_500 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch500_scenedetect.log 2>&1 &
+nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_1000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch1000_scenedetect.log 2>&1 &
+
+dataset_images2video(datasetpath="./results/mgtv_mgtv2_05_31_16_42/apply-A-epoch_500-block_size_2_2", fps=25, suffix=".y4m")
 
 aimax:
     gpu:
@@ -145,10 +149,10 @@ class MGTV2Model(BaseModel):
 
             # 将HR_G的边缘部分替换为LR的  两个像素
             assert self.LR.shape == self.HR_G.shape #  [1,3,H,W]
-            self.HR_G[..., 0:2, :] = self.LR[..., 0:2, :]
-            self.HR_G[..., -2:, :] = self.LR[..., -2:, :]
-            self.HR_G[..., :, 0:2] = self.LR[..., :, 0:2]
-            self.HR_G[..., :, -2:] = self.LR[..., :, -2:]
+            # self.HR_G[..., 0:2, :] = self.LR[..., 0:2, :]
+            # self.HR_G[..., -2:, :] = self.LR[..., -2:, :]
+            # self.HR_G[..., :, 0:2] = self.LR[..., :, 0:2]
+            # self.HR_G[..., :, -2:] = self.LR[..., :, -2:]
 
 
     def backward(self):
