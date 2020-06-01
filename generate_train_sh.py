@@ -19,21 +19,21 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 options = \
 """
         --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv2
-        --model             mgtv2
+        --name              mgtv_mgtv3
+        --model             mgtv3
         --display_freq      2400
         --print_freq        240
         --save_epoch_freq   500
         --gpu_ids           0,1,2
         --batch_size        12
-        --suffix            05_31_16_42
+        --suffix            06_02_00_01
         --crop_size         256
         --imgseqlen         5
         --seed              1
         --max_consider_len  125
         --scenedetect       True
-        --ch1               72
-        --ch2               48
+        --ch1               256
+        --ch2               64
         --num_threads       11
 """
 
