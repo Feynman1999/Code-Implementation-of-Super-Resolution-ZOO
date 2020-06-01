@@ -25,15 +25,15 @@ options = \
         --print_freq        240
         --save_epoch_freq   500
         --gpu_ids           0
-        --batch_size        2
+        --batch_size        3
         --suffix            06_02_00_01
         --crop_size         256
         --imgseqlen         5
-        --seed              1
+        --seed              2
         --max_consider_len  125
         --scenedetect       True
-        --ch1               160
-        --ch2               40
+        --ch1               128
+        --ch2               32
         --num_threads       11
 """
 
