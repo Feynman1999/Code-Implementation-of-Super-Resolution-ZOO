@@ -2,7 +2,7 @@
 nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_500 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch500_scenedetect.log 2>&1 &
 nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_1000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch1000_scenedetect.log 2>&1 &
 
-dataset_images2video(datasetpath="./results/mgtv_mgtv2_05_31_16_42/apply-A-epoch_500-block_size_2_2", fps=25, suffix=".y4m")
+dataset_images2video(datasetpath="./results/mgtv_mgtv2_05_31_16_42/apply-A-epoch_1000-block_size_2_2", fps=25, suffix=".y4m")
 
 aimax:
     gpu:
@@ -26,6 +26,9 @@ aimax:
         --ch1               72
         --ch2               48
         --num_threads       11
+        --continue_train    True
+        --load_epoch        epoch_2000
+        --epoch_count       2001
 
 """
 import torch
@@ -59,11 +62,11 @@ class MGTV2Model(BaseModel):
         parser.set_defaults(SR_factor=1)
         parser.set_defaults(crop_size=256)
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0004)
+        parser.set_defaults(lr=0.0001)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
-        parser.set_defaults(lr_decay_iters=500)
-        parser.set_defaults(lr_gamma=0.7)
+        parser.set_defaults(lr_decay_iters=2000)
+        parser.set_defaults(lr_gamma=0.1)
         parser.set_defaults(n_epochs=5000)
         parser.set_defaults(multi_base=32)
         parser.set_defaults(max_consider_len=125)
