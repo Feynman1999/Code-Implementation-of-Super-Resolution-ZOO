@@ -35,7 +35,7 @@ aimax:
     v2:
     python3 train.py
         --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv2
+        --name              mgtv_mgtv2_large
         --model             mgtv2
         --display_freq      2700
         --print_freq        270

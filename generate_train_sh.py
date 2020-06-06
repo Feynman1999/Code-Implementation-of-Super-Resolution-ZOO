@@ -19,7 +19,7 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 options = \
 """
         --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv2
+        --name              mgtv_mgtv2_large
         --model             mgtv2
         --display_freq      2700
         --print_freq        270
