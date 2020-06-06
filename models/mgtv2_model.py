@@ -184,7 +184,10 @@ class MGTV2Model(BaseModel):
         _, _, C, H, W = self.HR_Gs.shape
         self.loss_pd = self.criterionL2(self.HR_Gs.view(-1, C, H, W), self.HR_GroundTruth.view(-1, C, H, W))
         self.loss_st = self.criterionL2(self.HR_G, self.HR_GroundTruth[:, self.opt.nframes//2, ...])
-        self.loss = self.loss_pd + self.nowepoch / 500 * self.loss_st
+        if self.nowepoch < 2000:
+            self.loss = self.loss_pd + self.nowepoch / 1000 * self.loss_st
+        else:
+            self.loss = 2 * self.loss_st
         self.loss.backward()
 
     def optimize_parameters(self):
