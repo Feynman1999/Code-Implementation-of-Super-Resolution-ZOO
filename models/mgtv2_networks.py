@@ -121,6 +121,8 @@ class G2(nn.Module):
             num_g = 2
         elif ch == 8:
             num_g = 1
+        elif ch == 64:
+            num_g = 4
         else:
             raise NotImplementedError("make sure ch % 8 == 0")
 
