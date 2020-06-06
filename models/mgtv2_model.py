@@ -1,8 +1,10 @@
 """
 nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_500 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch500_scenedetect.log 2>&1 &
 nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_1000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch1000_scenedetect.log 2>&1 &
+nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_2000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch2000_scenedetect.log 2>&1 &
+nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_3000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch3000_scenedetect.log 2>&1 &
 
-dataset_images2video(datasetpath="./results/mgtv_mgtv2_05_31_16_42/apply-A-epoch_1000-block_size_2_2", fps=25, suffix=".y4m")
+dataset_images2video(datasetpath="./results/mgtv_mgtv2_05_31_16_42/apply-A-epoch_3000-block_size_2_2", fps=25, suffix=".y4m")
 
 aimax:
     gpu:
@@ -30,6 +32,25 @@ aimax:
         --load_epoch        epoch_2000
         --epoch_count       2001
 
+    v2:
+    python3 train.py
+        --dataroot          /opt/data/private/datasets/mgtv
+        --name              mgtv_mgtv2
+        --model             mgtv2
+        --display_freq      2700
+        --print_freq        270
+        --save_epoch_freq   500
+        --gpu_ids           0,1,2
+        --batch_size        9
+        --suffix            06_06_11_49
+        --crop_size         256
+        --imgseqlen         5
+        --seed              1
+        --max_consider_len  125
+        --scenedetect       True
+        --ch1               64
+        --ch2               64
+        --num_threads       11
 """
 import torch
 from .base_model import BaseModel
@@ -72,7 +93,7 @@ class MGTV2Model(BaseModel):
         parser.set_defaults(max_consider_len=125)
         parser.set_defaults(scenedetect=True)
         parser.set_defaults(block_size="1_1")
-        parser.set_defaults(pre_crop_num=28)
+        parser.set_defaults(pre_crop_num=0)
         parser.add_argument('--ch1', type=int, default=64)
         parser.add_argument('--ch2', type=int, default=48)
         parser.add_argument('--nframes', type=int, default=5, help='frames used by model')  # used for assert, imgseqlen should set equal to this when train
@@ -163,7 +184,7 @@ class MGTV2Model(BaseModel):
         _, _, C, H, W = self.HR_Gs.shape
         self.loss_pd = self.criterionL2(self.HR_Gs.view(-1, C, H, W), self.HR_GroundTruth.view(-1, C, H, W))
         self.loss_st = self.criterionL2(self.HR_G, self.HR_GroundTruth[:, self.opt.nframes//2, ...])
-        self.loss = self.loss_pd + self.nowepoch / 1000 * self.loss_st
+        self.loss = self.loss_pd + self.nowepoch / 500 * self.loss_st
         self.loss.backward()
 
     def optimize_parameters(self):
