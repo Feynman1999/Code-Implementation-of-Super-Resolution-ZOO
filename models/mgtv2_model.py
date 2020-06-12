@@ -4,7 +4,10 @@ nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --
 nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_2000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch2000_scenedetect.log 2>&1 &
 nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_05_31_16_42 --model mgtv2 --block_size 2_2 --load_epoch epoch_3000 --scenedetect True --ch1  72 --ch2  48 >> /opt/data/private/mgtv2_epoch3000_scenedetect.log 2>&1 &
 
+nohup python3 -u apply.py --dataroot  /opt/data/private/datasets/mgtv/apply/A --name mgtv_mgtv2_large_06_06_11_49 --model mgtv2 --block_size 2_2 --load_epoch epoch_3000 --scenedetect True --ch1  64 --ch2  64 >> /opt/data/private/mgtv2_large_epoch3000_scenedetect.log 2>&1 &
+
 dataset_images2video(datasetpath="./results/mgtv_mgtv2_05_31_16_42/apply-A-epoch_3000-block_size_2_2", fps=25, suffix=".y4m")
+dataset_images2video(datasetpath="./results/mgtv_mgtv2_large_06_06_11_49/apply-A-epoch_3000-block_size_2_2", fps=25, suffix=".y4m")
 
 aimax:
     gpu:
