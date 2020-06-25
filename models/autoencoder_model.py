@@ -18,6 +18,7 @@ aimax:
         --suffix            06_25_17_09
         --crop_size         96
         --seed              1
+        --max_dataset_size  50000
 """
 
 import torch

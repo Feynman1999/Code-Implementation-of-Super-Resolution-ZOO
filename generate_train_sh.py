@@ -30,6 +30,7 @@ options = \
         --crop_size         96
         --seed              1
         --num_threads       8
+        --max_dataset_size  50000
 """
 
 if __name__ == '__main__':
