@@ -53,9 +53,9 @@ class AUTOENCODERModel(BaseModel):
         parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
-        parser.set_defaults(lr_decay_iters=20)
+        parser.set_defaults(lr_decay_iters=30)
         parser.set_defaults(lr_gamma=0.75)
-        parser.set_defaults(n_epochs=100)
+        parser.set_defaults(n_epochs=200)
         parser.add_argument('--block_size', type=str, default='1_1', help='for save memory, we make blocks')
         return parser
 

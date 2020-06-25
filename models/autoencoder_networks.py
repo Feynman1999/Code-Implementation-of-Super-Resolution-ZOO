@@ -31,12 +31,12 @@ class encoder(nn.Module):
     def __init__(self):
         super(encoder, self).__init__()
         self.model = nn.Sequential(
-            CONV(3, 32, use_bn=True),  # [B, 32, 96, 96]
+            CONV(3, 64, use_bn=True),  # [B, 32, 96, 96]
             nn.MaxPool2d(2, stride=2),  # [B, 32, 48, 48]
-            CONV(32, 32, use_bn=True),
-            CONV(32, 16, use_bn=True),  # [B, 16, 48, 48]
+            CONV(64, 64, use_bn=True),
+            CONV(64, 32, use_bn=True),  # [B, 16, 48, 48]
             nn.MaxPool2d(2, stride=2),  # [B, 16, 24, 24]
-            CONV(16, 16, use_bn=True),  # [B, 16, 24, 24]
+            CONV(32, 16, use_bn=True),  # [B, 16, 24, 24]
             nn.MaxPool2d(2, stride=2),  # [B, 16, 12, 12]
         )
 
@@ -51,12 +51,12 @@ class decoder(nn.Module):
             nn.ConvTranspose2d(16, 16, kernel_size=3, stride=2, padding=1, output_padding=1),
             nn.PReLU(num_parameters=1, init=0.25),  # [B, 16, 24, 24]
             CONV(16, 16),  # [B, 16, 24, 24]
-            nn.ConvTranspose2d(16, 16, kernel_size=3, stride=2, padding=1, output_padding=1),
+            nn.ConvTranspose2d(16, 32, kernel_size=3, stride=2, padding=1, output_padding=1),
             nn.PReLU(num_parameters=1, init=0.25),  # [B, 16, 48, 48]
-            CONV(16, 16),  # [B, 16, 48, 48]
-            nn.ConvTranspose2d(16, 16, kernel_size=3, stride=2, padding=1, output_padding=1),
+            CONV(32, 32),  # [B, 16, 48, 48]
+            nn.ConvTranspose2d(32, 32, kernel_size=3, stride=2, padding=1, output_padding=1),
             nn.PReLU(num_parameters=1, init=0.25),  # [B, 16, 96, 96]
-            CONV(16, 32),
+            CONV(32, 32),
             CONV(32, 3),
         )
 
