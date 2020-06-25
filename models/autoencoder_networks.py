@@ -31,11 +31,12 @@ class encoder(nn.Module):
     def __init__(self):
         super(encoder, self).__init__()
         self.model = nn.Sequential(
-            CONV(3, 32),  # [B, 32, 96, 96]
+            CONV(3, 32, use_bn=True),  # [B, 32, 96, 96]
             nn.MaxPool2d(2, stride=2),  # [B, 32, 48, 48]
-            CONV(32, 16),  # [B, 16, 48, 48]
+            CONV(32, 32, use_bn=True),
+            CONV(32, 16, use_bn=True),  # [B, 16, 48, 48]
             nn.MaxPool2d(2, stride=2),  # [B, 16, 24, 24]
-            CONV(16, 16),  # [B, 16, 24, 24]
+            CONV(16, 16, use_bn=True),  # [B, 16, 24, 24]
             nn.MaxPool2d(2, stride=2),  # [B, 16, 12, 12]
         )
 
