@@ -7,7 +7,7 @@ aimax:
 
     v1:
     python3 train.py
-        --dataroot          /opt/data/private/datasets/cartoonfaces/train
+        --dataroot          /opt/data/private/datasets/cartoonfaces
         --name              cartoonfaces_autoencoder
         --model             autoencoder
         --display_freq      25600

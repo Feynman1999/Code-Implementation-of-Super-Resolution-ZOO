@@ -18,7 +18,7 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 
 options = \
 """
-        --dataroot          /opt/data/private/datasets/cartoonfaces/train
+        --dataroot          /opt/data/private/datasets/cartoonfaces
         --name              cartoonfaces_autoencoder
         --model             autoencoder
         --display_freq      25600
