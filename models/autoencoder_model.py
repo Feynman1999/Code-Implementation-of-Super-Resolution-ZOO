@@ -10,11 +10,11 @@ aimax:
         --dataroot          /opt/data/private/datasets/cartoonfaces/train
         --name              cartoonfaces_autoencoder
         --model             autoencoder
-        --display_freq      1600
-        --print_freq        800
+        --display_freq      25600
+        --print_freq        25600
         --save_epoch_freq   10
-        --gpu_ids           0,1
-        --batch_size        64
+        --gpu_ids           0
+        --batch_size        256
         --suffix            06_25_17_09
         --crop_size         96
         --seed              1
@@ -49,7 +49,7 @@ class AUTOENCODERModel(BaseModel):
         parser.set_defaults(crop_size=96)
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.0001)
+        parser.set_defaults(lr=0.001)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)

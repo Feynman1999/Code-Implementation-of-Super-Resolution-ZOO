@@ -18,23 +18,18 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 
 options = \
 """
-        --dataroot          /opt/data/private/datasets/mgtv
-        --name              mgtv_mgtv2_large
-        --model             mgtv2
-        --display_freq      2700
-        --print_freq        270
-        --save_epoch_freq   500
-        --gpu_ids           0,1,2
-        --batch_size        9
-        --suffix            06_06_11_49
-        --crop_size         256
-        --imgseqlen         5
+        --dataroot          /opt/data/private/datasets/cartoonfaces/train
+        --name              cartoonfaces_autoencoder
+        --model             autoencoder
+        --display_freq      25600
+        --print_freq        25600
+        --save_epoch_freq   10
+        --gpu_ids           0
+        --batch_size        256
+        --suffix            06_25_17_09
+        --crop_size         96
         --seed              1
-        --max_consider_len  125
-        --scenedetect       True
-        --ch1               64
-        --ch2               64
-        --num_threads       11
+        --num_threads       8
 """
 
 if __name__ == '__main__':
