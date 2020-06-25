@@ -79,7 +79,7 @@ class CustomDatasetDataLoader():
             shuffle=not opt.serial_batches,
             num_workers=int(opt.num_threads),
             drop_last=True,
-            pin_memory=False)
+            pin_memory=True)
 
     def load_data(self):
         return self

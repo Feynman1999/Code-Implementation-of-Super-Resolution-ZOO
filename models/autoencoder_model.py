@@ -50,7 +50,7 @@ class AUTOENCODERModel(BaseModel):
         parser.set_defaults(crop_size=96)
         parser.set_defaults(preprocess='crop')
         parser.set_defaults(beta1='0.9')
-        parser.set_defaults(lr=0.001)
+        parser.set_defaults(lr=0.0002)
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=20)
