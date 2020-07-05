@@ -5,15 +5,15 @@ aimax:
     gpu:
     v1:
     python3 train.py
-        --dataroot          /opt/data/private/datasets/celtic-spiral-tile2.jpg
-        --name              1593850115897_siren
+        --dataroot          /opt/data/private/datasets/siren/trump.jpg
+        --name              trump_siren
         --model             siren
         --display_freq      81920
         --print_freq        81920
         --save_epoch_freq   1000
         --gpu_ids           0
         --batch_size        8192
-        --suffix            07_05_13_14
+        --suffix            07_05_19_13
         --crop_size         512
 """
 
@@ -48,7 +48,7 @@ class SIRENModel(BaseModel):
         parser.set_defaults(init_type='kaiming')
         parser.set_defaults(lr_policy='step')
         parser.set_defaults(lr_decay_iters=1000)
-        parser.set_defaults(lr_gamma=0.75)
+        parser.set_defaults(lr_gamma=0.7)
         parser.set_defaults(n_epochs=5000)
         parser.set_defaults(num_threads=7)
         parser.set_defaults(normalize_means='0,0,0')

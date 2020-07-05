@@ -18,15 +18,15 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 
 options = \
 """
-        --dataroot          /opt/data/private/datasets/celtic-spiral-tile2.jpg
-        --name              1593850115897_siren
+        --dataroot          /opt/data/private/datasets/siren/trump.jpg
+        --name              trump_siren
         --model             siren
         --display_freq      81920
         --print_freq        81920
         --save_epoch_freq   1000
         --gpu_ids           0
         --batch_size        8192
-        --suffix            07_05_13_14
+        --suffix            07_05_19_13
         --crop_size         512
 """
 
