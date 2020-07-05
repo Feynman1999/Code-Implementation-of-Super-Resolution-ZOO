@@ -37,7 +37,7 @@ class FitimageDataset(BaseDataset):
         self.background_img = transform(self.background_img)
 
         channels, self.rows, self.cols = self.img.shape
-        sampled_pixel_count = int(rows * cols / opt.Reduction_factor)
+        sampled_pixel_count = int(self.rows * self.cols / opt.Reduction_factor)
 
         loc_list = []
         for i in range(self.rows):
