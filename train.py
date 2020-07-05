@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
             '''visualize'''
             if total_iters % opt.display_freq == 0:   # display images on visdom
-                model.compute_visuals()  # Calculate additional output images for visualization if you need
+                model.compute_visuals(dataset)  # Calculate additional output images for visualization if you need
                 visualizer.display_and_save(model.get_current_visuals(), epoch)
 
             '''loss'''

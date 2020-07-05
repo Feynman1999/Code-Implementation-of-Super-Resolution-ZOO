@@ -21,11 +21,11 @@ options = \
         --dataroot          /opt/data/private/datasets/1593850115897.jpg
         --name              1593850115897_siren
         --model             siren
-        --display_freq      320000
-        --print_freq        32000
+        --display_freq      81920
+        --print_freq        81920
         --save_epoch_freq   1000
         --gpu_ids           0
-        --batch_size        3200
+        --batch_size        8192
         --suffix            07_05_13_14
         --crop_size         512
 """

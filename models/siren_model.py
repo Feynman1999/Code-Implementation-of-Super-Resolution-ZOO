@@ -1,4 +1,6 @@
 """
+python train.py --dataroot  C:\\Users\\76397\\Desktop\\1593850115897.jpg  --name              1593850115897_siren --model             siren  --display_freq      320000  --print_freq        32000         --save_epoch_freq   1000
+
 aimax:
     gpu:
     v1:
@@ -6,11 +8,11 @@ aimax:
         --dataroot          /opt/data/private/datasets/1593850115897.jpg
         --name              1593850115897_siren
         --model             siren
-        --display_freq      320000
-        --print_freq        32000
+        --display_freq      81920
+        --print_freq        81920
         --save_epoch_freq   1000
         --gpu_ids           0
-        --batch_size        3200
+        --batch_size        8192
         --suffix            07_05_13_14
         --crop_size         512
 """
@@ -36,7 +38,7 @@ class SIRENModel(BaseModel):
             the modified parser.
         """
         parser.set_defaults(dataset_mode='fitimage')
-        parser.set_defaults(batch_size=3200)
+        parser.set_defaults(batch_size=8192)
         parser.set_defaults(SR_factor=1)
         parser.set_defaults(normalize_means='0.5,0.5,0.5')
         parser.set_defaults(crop_size=512)
@@ -48,7 +50,7 @@ class SIRENModel(BaseModel):
         parser.set_defaults(lr_decay_iters=1000)
         parser.set_defaults(lr_gamma=0.75)
         parser.set_defaults(n_epochs=5000)
-        parser.set_defaults(num_threads=3)
+        parser.set_defaults(num_threads=7)
         parser.add_argument('--Reduction_factor', type=int, default=16)
         return parser
 
@@ -93,14 +95,16 @@ class SIRENModel(BaseModel):
         """
         self.A = input['A'].to(self.device, non_blocking=True)  # [B,2]
         self.B = input['B'].to(self.device, non_blocking=True)  # [B,3]
-        self.origin = input['C']
-        self.GT = input['D']
+        # self.origin = input['C']
+        # self.GT = input['D']
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
         self.P = self.netsiren(self.A)  # G(A)
 
-    def compute_visuals(self):
+    def compute_visuals(self, dataset=None):
+        self.origin = dataset.dataset.background_img
+        self.GT = dataset.dataset.img
         loc_list = []
         h, w = self.GT.shape[1], self.GT.shape[2]
         for i in range(h):
@@ -108,10 +112,11 @@ class SIRENModel(BaseModel):
                 loc_list.append([i, j])
 
         with torch.no_grad():
-            rst = self.netsiren(torch.tensor(loc_list))  # [B,2]
+            rst = self.netsiren(torch.tensor(loc_list, dtype=torch.float32))  # [B,2]
 
         rst = rst.view(h, w, -1)
         self.restore = rst.permute(2, 0, 1)
+        pass
 
     def backward(self):
         """Calculate loss for the G"""

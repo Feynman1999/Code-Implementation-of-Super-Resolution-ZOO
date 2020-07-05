@@ -64,7 +64,7 @@ class FitimageDataset(BaseDataset):
             index - - a random integer for data indexing
         """
         A = self.sampled_loc_list[index]
-        return {'A': torch.tensor(A), 'B': self.img[:, A[0], A[1]], 'C': self.background_img, 'D': self.img}
+        return {'A': torch.tensor(A, dtype=torch.float32), 'B': self.img[:, A[0], A[1]]}
 
     def __len__(self):
         """Return the total number of images in the dataset."""

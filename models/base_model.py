@@ -81,7 +81,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    def compute_visuals(self):
+    def compute_visuals(self, dataset=None):
         """Calculate additional output images for visualization"""
         pass
 
