@@ -48,7 +48,7 @@ class SIRENModel(BaseModel):
         parser.set_defaults(lr_decay_iters=1000)
         parser.set_defaults(lr_gamma=0.75)
         parser.set_defaults(n_epochs=5000)
-        parser.set_defaults(num_threads=0)
+        parser.set_defaults(num_threads=3)
         parser.add_argument('--Reduction_factor', type=int, default=16)
         return parser
 

@@ -45,6 +45,7 @@ class FitimageDataset(BaseDataset):
                 loc_list.append([i, j])
 
         self.sampled_loc_list = random.sample(loc_list, sampled_pixel_count)
+        print("random sample 1/{} ok!".format(opt.Reduction_factor))
 
         for loc in self.sampled_loc_list:
             self.background_img[:, loc[0], loc[1]] = self.img[:, loc[0], loc[1]]
