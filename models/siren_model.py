@@ -8,7 +8,7 @@ aimax:
         --dataroot          /opt/data/private/datasets/siren/trump.jpg
         --name              trump_siren
         --model             siren
-        --display_freq      81920
+        --display_freq      819200
         --print_freq        81920
         --save_epoch_freq   1000
         --gpu_ids           0
