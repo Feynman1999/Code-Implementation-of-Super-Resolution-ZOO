@@ -1,5 +1,5 @@
 """
-python train.py --dataroot  C:\\Users\\76397\\Desktop\\1593850115897.jpg  --name              1593850115897_siren --model             siren  --display_freq      320000  --print_freq        32000         --save_epoch_freq   1000
+python train.py --dataroot  C:\\Users\\76397\\Desktop\\1593850115897.jpg  --name   1593850115897_siren --model   siren  --display_freq  320000  --print_freq 32000  --save_epoch_freq   1000 --batch_size 3200
 
 aimax:
     gpu:
@@ -51,7 +51,7 @@ class SIRENModel(BaseModel):
         parser.set_defaults(lr_gamma=0.75)
         parser.set_defaults(n_epochs=5000)
         parser.set_defaults(num_threads=7)
-        parser.add_argument('--Reduction_factor', type=int, default=16)
+        parser.add_argument('--Reduction_factor', type=int, default=10)
         return parser
 
     def __init__(self, opt):
@@ -103,20 +103,20 @@ class SIRENModel(BaseModel):
         self.P = self.netsiren(self.A)  # G(A)
 
     def compute_visuals(self, dataset=None):
-        self.origin = dataset.dataset.background_img
-        self.GT = dataset.dataset.img
+        self.origin = dataset.dataset.background_img.unsqueeze(0)
+        self.GT = dataset.dataset.img.unsqueeze(0)
         loc_list = []
-        h, w = self.GT.shape[1], self.GT.shape[2]
+        h, w = self.GT.shape[-2], self.GT.shape[-1]
         for i in range(h):
             for j in range(w):
                 loc_list.append([i, j])
 
         with torch.no_grad():
             rst = self.netsiren(torch.tensor(loc_list, dtype=torch.float32))  # [B,2]
+            print(rst.shape)
 
         rst = rst.view(h, w, -1)
-        self.restore = rst.permute(2, 0, 1)
-        pass
+        self.restore = rst.permute(2, 0, 1).unsqueeze(0)
 
     def backward(self):
         """Calculate loss for the G"""
