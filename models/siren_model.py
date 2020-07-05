@@ -113,7 +113,6 @@ class SIRENModel(BaseModel):
 
         with torch.no_grad():
             rst = self.netsiren(torch.tensor(loc_list, dtype=torch.float32))  # [B,2]
-            print(rst.shape)
 
         rst = rst.view(h, w, -1)
         self.restore = rst.permute(2, 0, 1).unsqueeze(0)
