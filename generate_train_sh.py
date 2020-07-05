@@ -18,19 +18,16 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 
 options = \
 """
-        --dataroot          /opt/data/private/datasets/cartoonfaces
-        --name              cartoonfaces_autoencoder
-        --model             autoencoder
-        --display_freq      25600
-        --print_freq        25600
-        --save_epoch_freq   10
+        --dataroot          /opt/data/private/datasets/1593850115897.jpg
+        --name              1593850115897_siren
+        --model             siren
+        --display_freq      320000
+        --print_freq        32000
+        --save_epoch_freq   1000
         --gpu_ids           0
-        --batch_size        256
-        --suffix            06_25_17_09
-        --crop_size         96
-        --seed              1
-        --num_threads       8
-        --max_dataset_size  50000
+        --batch_size        3200
+        --suffix            07_05_13_14
+        --crop_size         512
 """
 
 if __name__ == '__main__':
