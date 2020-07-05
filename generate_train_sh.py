@@ -18,7 +18,7 @@ content = '# ================ train shell ( {} ) ================\n'.format(time
 
 options = \
 """
-        --dataroot          /opt/data/private/datasets/1593850115897.jpg
+        --dataroot          /opt/data/private/datasets/celtic-spiral-tile2.jpg
         --name              1593850115897_siren
         --model             siren
         --display_freq      81920
