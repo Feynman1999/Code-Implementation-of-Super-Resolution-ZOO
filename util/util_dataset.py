@@ -151,7 +151,7 @@ def images2video(dirpath, fps=2, suffix='.avi', must_have="HR_G"):
     """
     imagepathlist = sorted(make_images_dataset(dirpath))
     dn = os.path.dirname(dirpath)
-    name = os.path.split(dirpath)[-1] + "_" + must_have + suffix
+    name = os.path.split(dirpath)[-1] + "_" + must_have + "_fps-{}".format(fps) + suffix
 
     # framelist = []
     # id = 0

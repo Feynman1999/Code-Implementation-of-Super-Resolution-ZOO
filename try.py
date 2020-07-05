@@ -5,7 +5,7 @@ import pickle
 
 # dataset_images2video(datasetpath = "./results/mgtv_mgtv1_add_scene_05_28_12_51/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
 # dataset_images2video(datasetpath = "./results/mgtv_mgtv1_add_scene_05_28_12_51/apply-A-epoch_1000-block_size_2_3", fps=25, suffix=".y4m")
-images2video(dirpath="./checkpoints/1593850115897_siren_07_05_13_14/images", fps=10, must_have="restore")
+images2video(dirpath="./checkpoints/1593850115897_siren_07_05_13_14/images", fps=24, must_have="restore")
 # if __name__ == '__main__':
 # #     # videodataset_pre_crop(path2AB="/opt/data/private/datasets/mgtv/train", crop_size=256)
 #      videodataset_pre_crop("./datasets/mgtv/train/A", crop_size=256, process_num=2)
