@@ -36,12 +36,12 @@ class FitimageDataset(BaseDataset):
         self.img = transform(self.img)
         self.background_img = transform(self.background_img)
 
-        channels, rows, cols = self.img.shape
+        channels, self.rows, self.cols = self.img.shape
         sampled_pixel_count = int(rows * cols / opt.Reduction_factor)
 
         loc_list = []
-        for i in range(rows):
-            for j in range(cols):
+        for i in range(self.rows):
+            for j in range(self.cols):
                 loc_list.append([i, j])
 
         self.sampled_loc_list = random.sample(loc_list, sampled_pixel_count)
@@ -64,7 +64,7 @@ class FitimageDataset(BaseDataset):
             index - - a random integer for data indexing
         """
         A = self.sampled_loc_list[index]
-        return {'A': torch.tensor(A, dtype=torch.float32), 'B': self.img[:, A[0], A[1]]}
+        return {'A': torch.tensor([A[0]*1.0/self.rows, A[1]*1.0/self.cols], dtype=torch.float32), 'B': self.img[:, A[0], A[1]]}
 
     def __len__(self):
         """Return the total number of images in the dataset."""

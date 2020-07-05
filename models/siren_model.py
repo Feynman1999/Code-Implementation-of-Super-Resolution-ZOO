@@ -111,7 +111,7 @@ class SIRENModel(BaseModel):
         h, w = self.GT.shape[-2], self.GT.shape[-1]
         for i in range(h):
             for j in range(w):
-                loc_list.append([i, j])
+                loc_list.append([i/h, j/w])
 
         with torch.no_grad():
             rst = self.netsiren(torch.tensor(loc_list, dtype=torch.float32))  # [B,2]
