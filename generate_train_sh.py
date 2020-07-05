@@ -26,8 +26,9 @@ options = \
         --save_epoch_freq   1000
         --gpu_ids           0
         --batch_size        8192
-        --suffix            07_05_19_13
+        --suffix            07_05_23_34
         --crop_size         512
+        --Reduction_factor  1
 """
 
 if __name__ == '__main__':
