@@ -59,7 +59,6 @@ class SIRENModel(BaseModel):
         parser.set_defaults(normalize_means='0,0,0')
         parser.set_defaults(normalize_stds='0.00392156862745098,0.00392156862745098,0.00392156862745098')
         parser.add_argument('--Reduction_factor', type=int, default=10)
-        parser.add_argument('--', type=int, default=10)
         return parser
 
     def __init__(self, opt):
