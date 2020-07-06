@@ -29,6 +29,10 @@ options = \
         --suffix            07_05_23_34
         --crop_size         512
         --Reduction_factor  1
+        --continue_train    True
+        --load_epoch        epoch_5000
+        --epoch_count       5001
+        --n_epochs          5010
 """
 
 if __name__ == '__main__':

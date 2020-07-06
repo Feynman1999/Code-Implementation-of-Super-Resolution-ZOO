@@ -16,6 +16,10 @@ aimax:
         --suffix            07_05_23_34
         --crop_size         512
         --Reduction_factor  1
+        --continue_train    True
+        --load_epoch        epoch_5000
+        --epoch_count       5001
+        --n_epochs          5010
 """
 
 import torch
@@ -40,7 +44,7 @@ class SIRENModel(BaseModel):
         """
         parser.set_defaults(dataset_mode='fitimage')
         parser.set_defaults(batch_size=8192)
-        parser.set_defaults(SR_factor=1)
+        parser.set_defaults(SR_factor=4)
         parser.set_defaults(normalize_means='0.5,0.5,0.5')
         parser.set_defaults(crop_size=512)
         parser.set_defaults(preprocess='crop')
@@ -55,6 +59,7 @@ class SIRENModel(BaseModel):
         parser.set_defaults(normalize_means='0,0,0')
         parser.set_defaults(normalize_stds='0.00392156862745098,0.00392156862745098,0.00392156862745098')
         parser.add_argument('--Reduction_factor', type=int, default=10)
+        parser.add_argument('--', type=int, default=10)
         return parser
 
     def __init__(self, opt):
@@ -71,9 +76,9 @@ class SIRENModel(BaseModel):
 
         # specify the images you want to save/display. The training/test scripts will call <BaseModel.get_current_visuals>
         if self.opt.phase == "apply":
-            self.visual_names = ['origin', 'restore', 'GT']
+            self.visual_names = ['origin', 'restore', 'GT', 'SR']
         else:
-            self.visual_names = ['origin', 'restore', 'GT']
+            self.visual_names = ['origin', 'restore', 'GT', 'SR']
 
         # specify the models you want to save to the disk. The training/test scripts will call <BaseModel.save_networks> and <BaseModel.load_networks>
         if self.isTrain:
@@ -98,12 +103,13 @@ class SIRENModel(BaseModel):
         """
         self.A = input['A'].to(self.device, non_blocking=True)  # [B,2]
         self.B = input['B'].to(self.device, non_blocking=True)  # [B,3]
-        # self.origin = input['C']
-        # self.GT = input['D']
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
-        self.P = self.netsiren(self.A)  # G(A)
+        if self.opt.phase == "train":
+            self.P = self.netsiren(self.A)  # G(A)
+        elif self.opt.phase == "apply":
+            pass
 
     def compute_visuals(self, dataset=None):
         self.origin = dataset.dataset.background_img.unsqueeze(0)
@@ -119,6 +125,18 @@ class SIRENModel(BaseModel):
 
         rst = rst.view(h, w, -1)
         self.restore = rst.permute(2, 0, 1).unsqueeze(0)
+
+        if self.opt.phase in ("apply", "train"):
+            s = self.opt.SR_factor
+            self.SR = torch.zeros((3, h*s, w*s), dtype=torch.float32)
+            h_loc = torch.linspace(0-0.5, h-1+0.5, s*h)
+            w_loc = torch.linspace(0-0.5, w-1+0.5, s*w)
+            hh, ww = torch.meshgrid(h_loc, w_loc)
+            h_w_loc = torch.stack([hh, ww], dim=2)  # [s*h, s*w, 2]
+            with torch.no_grad():
+                for i in range(s*h):
+                    self.SR[:, i, :] = self.netsiren(h_w_loc[i, :, :]).permute(1, 0)
+                self.SR = self.SR.unsqueeze(0)
 
     def backward(self):
         """Calculate loss for the G"""
