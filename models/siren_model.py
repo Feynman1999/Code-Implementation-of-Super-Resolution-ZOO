@@ -128,8 +128,8 @@ class SIRENModel(BaseModel):
         if self.opt.phase in ("apply", "train"):
             s = self.opt.SR_factor
             self.SR = torch.zeros((3, h*s, w*s), dtype=torch.float32)
-            h_loc = torch.linspace(0-0.5, h-1+0.5, s*h)
-            w_loc = torch.linspace(0-0.5, w-1+0.5, s*w)
+            h_loc = torch.linspace(0-0.5, h-1+0.5, s*h) / h
+            w_loc = torch.linspace(0-0.5, w-1+0.5, s*w) / w
             hh, ww = torch.meshgrid(h_loc, w_loc)
             h_w_loc = torch.stack([hh, ww], dim=2)  # [s*h, s*w, 2]
             with torch.no_grad():
